@@ -131,11 +131,15 @@ def sonarr(path):
 
 
 def plex(path, id):
-    cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
-          + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
-          + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
-          + str(id) + ' --directory \\"' + os.path.dirname(path) + '\\"'
-    final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+    if os.name == 'nt':
+        final_cmd = '"%s" --scan --refresh --section %s --directory "%s"' \
+                    % (config['PLEX_SCANNER'], str(id), os.path.dirname(path))
+    else:
+        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
+              + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
+              + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
+              + str(id) + ' --directory \\"' + os.path.dirname(path) + '\\"'
+        final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
     return os.system(final_cmd)
 
 
@@ -211,10 +215,13 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         if sys.argv[1].lower() == 'sections':
-            cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
-                  + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
-                  + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
-            final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+            if os.name == 'nt':
+                final_cmd = '"%s" --list' % config['PLEX_SCANNER']
+            else:
+                cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
+                      + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
+                      + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
+                final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
             os.system(final_cmd)
 
         elif sys.argv[1].lower() == 'radarr':
