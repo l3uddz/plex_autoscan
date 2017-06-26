@@ -148,7 +148,7 @@ def map_pushed_path(path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
-                logger.debug("Mapping %r to %r", mapping, mapped_path)
+                logger.debug("Mapping '%s' to '%s'", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
