@@ -71,9 +71,9 @@ def upgrade_config(cfg):
         else:
             new_config[name] = cfg[name]
 
-    with open(config_path, 'w') as fp:
-        json.dump(new_config, fp, indent=4, sort_keys=True)
-        fp.close()
+    with open(config_path, 'w') as fpc:
+        json.dump(new_config, fpc, indent=4, sort_keys=True)
+        fpc.close()
 
     if added_fields and len(fields):
         logger.debug("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
