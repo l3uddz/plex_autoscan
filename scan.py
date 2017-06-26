@@ -39,8 +39,14 @@ logger.setLevel(logging.DEBUG)
 
 base_config = {
     'PLEX_USER': 'plex',
-    'PLEX_MOVIE_SECTION': 1,
-    'PLEX_TV_SECTION': 2,
+    'PLEX_SECTION_PATH_MAPPINGS': {
+        '1': [
+            '/Movies/'
+        ],
+        '2': [
+            '/TV/'
+        ]
+    },
     'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
     'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
     'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
@@ -103,19 +109,25 @@ else:
 ############################################################
 
 def radarr(path):
+    section = get_plex_section(path)
+    if section <= 0:
+        return
     if config['USE_SERVER_PUSH']:
         return push_to_server(path, 'radarr')
 
     logger.info("Scanning '%s'", path)
-    plex(path, config['PLEX_MOVIE_SECTION'])
+    plex(path, section)
 
 
 def sonarr(path):
+    section = get_plex_section(path)
+    if section <= 0:
+        return
     if config['USE_SERVER_PUSH']:
         return push_to_server(path, 'sonarr')
 
     logger.info("Scanning '%s'", path)
-    plex(path, config['PLEX_TV_SECTION'])
+    plex(path, section)
 
 
 def plex(path, id):
@@ -125,6 +137,15 @@ def plex(path, id):
           + str(id) + ' --directory \\"' + os.path.dirname(path) + '\\"'
     final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
     return os.system(final_cmd)
+
+
+def get_plex_section(path):
+    for section, mappings in config['PLEX_SECTION_PATH_MAPPINGS'].items():
+        for mapping in mappings:
+            if mapping.lower() in path.lower():
+                return section
+    logger.debug("Unable to map '%s' to a section id....", path)
+    return -1
 
 
 def push_to_server(path, path_type):
