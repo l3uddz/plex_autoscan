@@ -8,8 +8,8 @@ After=network-online.target
 User=YOUR_USER
 Group=YOUR_USER
 Type=simple
-WorkingDirectory=/opt/unionfs_cleaner/
-ExecStart=/opt/unionfs_cleaner/cleaner.py
+WorkingDirectory=/opt/plex_autoscan/
+ExecStart=/opt/plex_autoscan/scan.py server
 Restart=always
 RestartSec=10
 
