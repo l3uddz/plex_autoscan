@@ -57,17 +57,41 @@ base_config = {
 config = None
 config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
 
+
+def upgrade_config(cfg):
+    new_config = {}
+    added_fields = 0
+    fields = []
+
+    for name, data in base_config.items():
+        if name not in cfg:
+            new_config[name] = data
+            fields.append(name)
+            added_fields += 1
+        else:
+            new_config[name] = cfg[name]
+
+    with open(config_path, 'w') as fp:
+        json.dump(new_config, fp, indent=4, sort_keys=True)
+        fp.close()
+
+    if added_fields and len(fields):
+        logger.debug("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
+    return new_config
+
+
 if not os.path.exists(config_path):
     # Create default config
     with open(config_path, 'w') as fp:
         json.dump(base_config, fp, indent=4, sort_keys=True)
         fp.close()
     logger.debug("Created default config.json: '%s'", config_path)
+    logger.debug("Please configure it before running me again.")
     exit(0)
 else:
     # Load config
     with open(config_path, 'r') as fp:
-        config = json.load(fp)
+        config = upgrade_config(json.load(fp))
         fp.close()
 
 
