@@ -132,7 +132,7 @@ def sonarr(path):
 
 def plex(path, id):
     if os.name == 'nt':
-        final_cmd = '"%s" --scan --refresh --section %s --directory "%s"' \
+        final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
                     % (config['PLEX_SCANNER'], str(id), os.path.dirname(path))
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     else:
         if sys.argv[1].lower() == 'sections':
             if os.name == 'nt':
-                final_cmd = '"%s" --list' % config['PLEX_SCANNER']
+                final_cmd = '""%s" --list"' % config['PLEX_SCANNER']
             else:
                 cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
                       + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
