@@ -48,9 +48,9 @@ Your config should now be ready for local automatic plex scans on sonarr/radarr 
 
 Windows installations only need to be concerned with the PLEX_SCANNER and PLEX_SECTION_PATH_MAPPINGS variables.
 PLEX_SCANNER can usually be found in the C:\Program Files (x86)\Plex folder.
-You must use double backslashes for this path, e.g. C:\\Program Files (x86)\\Plex\\Plex Scanner.exe
+You must use double backslashes for this path, e.g. `C:\\Program Files (x86)\\Plex\\Plex Scanner.exe`
 
-Follow the same steps as above for the PLEX_SECTION_PATH_MAPPINGS but instead of / use \\, so, /Movies/ becomes \\Movies\\
+Follow the same steps as above for the PLEX_SECTION_PATH_MAPPINGS but instead of / use `\\`, so, /Movies/ becomes `\\Movies\\`
 
 ## Remote Installations
 
