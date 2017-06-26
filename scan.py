@@ -138,10 +138,8 @@ def push_to_server(path, path_type):
         resp = requests.post(server, payload)
         if resp.status_code == 200 and resp.text == "OK":
             logger.debug("Server accepted push")
-            return True
         else:
             logger.debug("Server declined push with status code: %d", resp.status_code)
-            return False
 
 
 def map_pushed_path(path):
