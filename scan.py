@@ -208,7 +208,7 @@ if __name__ == "__main__":
             else:
                 logger.error("Problem retrieving sonarr_episodefile_path")
         elif sys.argv[1].lower() == 'server':
-            logger.debug("Starting server on port: %d", config['SERVER_PORT'])
+            logger.debug("Starting server: http://%s:%d/push", config['SERVER_IP'], config['SERVER_PORT'])
             app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
             logger.debug("Server stopped")
         else:
