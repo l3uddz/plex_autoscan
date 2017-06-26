@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import sys
+import uuid
 from logging.handlers import RotatingFileHandler
 
 import requests
@@ -45,13 +46,15 @@ base_config = {
     'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
     'SERVER_IP': '0.0.0.0',
     'SERVER_PORT': 3467,
-    'SERVER_PASS': 'password',
+    'SERVER_PASS': uuid.uuid4().hex,
     'SERVER_PATH_MAPPINGS': {
         '/mnt/unionfs': [
             '/home/seed/media/fused'
         ]
     },
-    'SERVER_PUSH_URL': 'http://localhost:3467/push',
+    'SERVER_PUSH_URL': [
+        'http://localhost:3467/push'
+    ],
     'USE_SERVER_PUSH': False
 }
 config = None
@@ -125,19 +128,20 @@ def plex(path, id):
 
 
 def push_to_server(path, path_type):
-    logger.debug("Pushing '%s' to server: '%s'", path, config['SERVER_PUSH_URL'])
-    payload = {
-        'type': path_type,
-        'path': path,
-        'pass': config['SERVER_PASS']
-    }
-    resp = requests.post(config['SERVER_PUSH_URL'], payload)
-    if resp.status_code == 200 and resp.text == "OK":
-        logger.debug("Server accepted push")
-        return True
-    else:
-        logger.debug("Server declined push with status code: %d", resp.status_code)
-        return False
+    for server in config['SERVER_PUSH_URL']:
+        logger.debug("Pushing '%s' to server: '%s'", path, server)
+        payload = {
+            'type': path_type,
+            'path': path,
+            'pass': config['SERVER_PASS']
+        }
+        resp = requests.post(server, payload)
+        if resp.status_code == 200 and resp.text == "OK":
+            logger.debug("Server accepted push")
+            return True
+        else:
+            logger.debug("Server declined push with status code: %d", resp.status_code)
+            return False
 
 
 def map_pushed_path(path):
