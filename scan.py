@@ -3,8 +3,10 @@ import json
 import logging
 import os
 import sys
+import time
 import uuid
 from logging.handlers import RotatingFileHandler
+from multiprocessing import Process
 
 from flask import Flask
 from flask import abort
@@ -37,7 +39,7 @@ logger.setLevel(logging.DEBUG)
 ############################################################
 
 base_config = {
-    'PLEX_USER': 'plex',
+    'PLEX_USER': 'plex_scan',
     'PLEX_SECTION_PATH_MAPPINGS': {
         '1': [
             '/Movies/'
@@ -56,7 +58,8 @@ base_config = {
         '/mnt/unionfs': [
             '/home/seed/media/fused'
         ]
-    }
+    },
+    'SERVER_SCAN_DELAY': 5
 }
 config = None
 config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
@@ -103,35 +106,46 @@ else:
 # FUNCS
 ############################################################
 
-def radarr(path):
+def start_scan(path):
     section = get_plex_section(path)
     if section <= 0:
         return
 
-    logger.info("Scanning '%s'", path)
-    plex(path, section)
+    scan_process = Process(target=plex_scan, args=(path, section, config['SERVER_SCAN_DELAY']))
+    scan_process.start()
+    return
 
 
-def sonarr(path):
-    section = get_plex_section(path)
-    if section <= 0:
-        return
+def plex_scan(path, section, delay):
+    logger.info("Scanning '%s' in %d seconds", path, delay)
+    if delay:
+        time.sleep(delay)
 
-    logger.info("Scanning '%s'", path)
-    plex(path, section)
-
-
-def plex(path, id):
     if os.name == 'nt':
         final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
-                    % (config['PLEX_SCANNER'], str(id), path)
+                    % (config['PLEX_SCANNER'], str(section), path)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
-              + str(id) + ' --directory \\"' + path + '\\"'
+              + str(section) + ' --directory \\"' + path + '\\"'
         final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
-    return os.system(final_cmd)
+
+    logger.debug("Using:\n%s", final_cmd)
+    os.system(final_cmd)
+    logger.debug("Finished")
+    return
+
+
+def show_plex_sections():
+    if os.name == 'nt':
+        final_cmd = '""%s" --list"' % config['PLEX_SCANNER']
+    else:
+        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
+              + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
+              + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
+        final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+    os.system(final_cmd)
 
 
 def get_plex_section(path):
@@ -167,13 +181,13 @@ def client_pushed():
         abort(400)
 
     if 'Movie' in data:
-        logger.debug("Client %r scan request for movie: %s", request.remote_addr, data['Movie']['FilePath'])
+        logger.debug("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
         final_path = map_pushed_path(data['Movie']['FilePath'])
-        radarr(os.path.dirname(final_path))
+        start_scan(os.path.dirname(final_path))
     elif 'Series' in data:
-        logger.debug("Client %r scan request for series: %s", request.remote_addr, data['Series']['Path'])
+        logger.debug("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
         final_path = map_pushed_path(data['Series']['Path'])
-        sonarr(final_path)
+        start_scan(final_path)
     else:
         logger.debug("Unknown scan request from: %r", request.remote_addr)
         abort(400)
@@ -191,15 +205,7 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         if sys.argv[1].lower() == 'sections':
-            if os.name == 'nt':
-                final_cmd = '""%s" --list"' % config['PLEX_SCANNER']
-            else:
-                cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
-                      + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
-                      + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
-                final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
-            os.system(final_cmd)
-
+            show_plex_sections()
         elif sys.argv[1].lower() == 'server':
             logger.debug("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
                          config['SERVER_PASS'])
