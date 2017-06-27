@@ -59,7 +59,8 @@ base_config = {
             '/home/seed/media/fused'
         ]
     },
-    'SERVER_SCAN_DELAY': 5
+    'SERVER_SCAN_DELAY': 5,
+    'SERVER_MAX_FILE_CHECKS': 10
 }
 config = None
 config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
@@ -106,29 +107,53 @@ else:
 # FUNCS
 ############################################################
 
-def start_scan(path):
+def start_scan(path, scan_for):
     section = get_plex_section(path)
     if section <= 0:
         return
 
-    scan_process = Process(target=plex_scan, args=(path, section, config['SERVER_SCAN_DELAY']))
+    scan_process = Process(target=plex_scan, args=(path, scan_for, section, config['SERVER_SCAN_DELAY']))
     scan_process.start()
     return
 
 
-def plex_scan(path, section, delay):
+def plex_scan(path, scan_for, section, delay):
+    scan_path = ""
     logger.info("Scanning '%s' in %d seconds", path, delay)
     if delay:
         time.sleep(delay)
 
+    # check file exists
+    if scan_for == 'radarr':
+        checks = 0
+        while True:
+            checks += 1
+            if os.path.exists(path):
+                logger.debug("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
+                             config['SERVER_MAX_FILE_CHECKS'])
+                scan_path = os.path.dirname(path)
+                break
+            elif checks >= config['SERVER_MAX_FILE_CHECKS']:
+                logger.debug("File '%s' exhausted all available checks, aborting scan", path)
+                return
+            else:
+                logger.debug("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
+                             config['SERVER_MAX_FILE_CHECKS'])
+                time.sleep(60)
+
+    else:
+        # sonarr doesnt pass the sonarr_episodefile_path in webhook, so we cannot check until this is corrected.
+        scan_path = path
+
+    # build plex scanner command
     if os.name == 'nt':
         final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
-                    % (config['PLEX_SCANNER'], str(section), path)
+                    % (config['PLEX_SCANNER'], str(section), scan_path)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
-              + str(section) + ' --directory \\"' + path + '\\"'
+              + str(section) + ' --directory \\"' + scan_path + '\\"'
         final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
 
     logger.debug("Using:\n%s", final_cmd)
@@ -183,11 +208,11 @@ def client_pushed():
     if 'Movie' in data:
         logger.debug("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
         final_path = map_pushed_path(data['Movie']['FilePath'])
-        start_scan(os.path.dirname(final_path))
+        start_scan(final_path, 'radarr')
     elif 'Series' in data:
         logger.debug("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
         final_path = map_pushed_path(data['Series']['Path'])
-        start_scan(final_path)
+        start_scan(final_path, 'sonarr')
     else:
         logger.debug("Unknown scan request from: %r", request.remote_addr)
         abort(400)
