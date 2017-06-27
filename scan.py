@@ -39,7 +39,7 @@ logger.setLevel(logging.DEBUG)
 ############################################################
 
 base_config = {
-    'PLEX_USER': 'plex_scan',
+    'PLEX_USER': 'plex',
     'PLEX_SECTION_PATH_MAPPINGS': {
         '1': [
             '/Movies/'
