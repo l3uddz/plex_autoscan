@@ -20,15 +20,15 @@ def scan(config, lock, path, scan_for, section):
         while True:
             checks += 1
             if os.path.exists(path):
-                logger.debug("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
+                logger.info("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
                              config['SERVER_MAX_FILE_CHECKS'])
                 scan_path = os.path.dirname(path)
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
-                logger.debug("File '%s' exhausted all available checks, aborting scan", path)
+                logger.info("File '%s' exhausted all available checks, aborting scan", path)
                 return
             else:
-                logger.debug("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
+                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
                              config['SERVER_MAX_FILE_CHECKS'])
                 time.sleep(60)
 
@@ -51,7 +51,7 @@ def scan(config, lock, path, scan_for, section):
     with lock:
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
-        logger.debug("Finished")
+        logger.info("Finished")
     return
 
 

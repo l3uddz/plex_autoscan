@@ -53,7 +53,7 @@ def upgrade(cfg):
         fpc.close()
 
     if added_fields and len(fields):
-        logger.debug("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
+        logger.info("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
     return new_config
 
 
@@ -72,6 +72,6 @@ def build():
     with open(config_path, 'w') as fp:
         json.dump(base_config, fp, indent=4, sort_keys=True)
         fp.close()
-    logger.debug("Created default config.json: '%s'", config_path)
-    logger.debug("Please configure it before running me again.")
+    logger.info("Created default config.json: '%s'", config_path)
+    logger.info("Please configure it before running me again.")
     exit(0)

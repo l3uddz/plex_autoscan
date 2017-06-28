@@ -18,7 +18,7 @@ import utils
 ############################################################
 
 # Logging
-logFormatter = logging.Formatter('%(asctime)24s - %(funcName)17s() :: %(message)s')
+logFormatter = logging.Formatter('%(asctime)24s - %(levelname)7s - %(name)14s - %(funcName)17s() :: %(message)s')
 rootLogger = logging.getLogger()
 
 consoleHandler = logging.StreamHandler()
@@ -67,19 +67,19 @@ app = Flask(__name__)
 def client_pushed():
     data = request.get_json(silent=True)
     if not data:
-        logger.debug("Invalid scan request from: %r", request.remote_addr)
+        logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)
 
     if 'Movie' in data:
-        logger.debug("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
+        logger.info("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
         final_path = utils.map_pushed_path(config, data['Movie']['FilePath'])
         start_scan(final_path, 'radarr')
     elif 'Series' in data:
-        logger.debug("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
+        logger.info("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
         final_path = utils.map_pushed_path(config, data['Series']['Path'])
         start_scan(final_path, 'sonarr')
     else:
-        logger.debug("Unknown scan request from: %r", request.remote_addr)
+        logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
 
     return "OK"
@@ -97,9 +97,9 @@ if __name__ == "__main__":
         if sys.argv[1].lower() == 'sections':
             plex.show_sections(config)
         elif sys.argv[1].lower() == 'server':
-            logger.debug("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
-                         config['SERVER_PASS'])
+            logger.info("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
+                        config['SERVER_PASS'])
             app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
-            logger.debug("Server stopped")
+            logger.info("Server stopped")
         else:
             logger.error("You must pass an argument of either sections or server...")
