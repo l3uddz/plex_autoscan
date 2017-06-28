@@ -1,10 +1,8 @@
 #!/usr/bin/env python2.7
-import json
 import logging
 import os
 import sys
 import time
-import uuid
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process, Lock
 
@@ -12,11 +10,13 @@ from flask import Flask
 from flask import abort
 from flask import request
 
+import config
+
 ############################################################
 # INIT
 ############################################################
 
-# Setup logging
+# Logging
 logFormatter = logging.Formatter('%(asctime)24s - %(funcName)17s() :: %(message)s')
 rootLogger = logging.getLogger()
 
@@ -35,76 +35,10 @@ logger = rootLogger.getChild("PLEX_AUTOSCAN")
 logger.setLevel(logging.DEBUG)
 
 # Multiprocessing
-
 scan_lock = Lock()
 
-############################################################
-# CONFIG
-############################################################
-
-base_config = {
-    'PLEX_USER': 'plex',
-    'PLEX_SECTION_PATH_MAPPINGS': {
-        '1': [
-            '/Movies/'
-        ],
-        '2': [
-            '/TV/'
-        ]
-    },
-    'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
-    'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
-    'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
-    'SERVER_IP': '0.0.0.0',
-    'SERVER_PORT': 3467,
-    'SERVER_PASS': uuid.uuid4().hex,
-    'SERVER_PATH_MAPPINGS': {
-        '/mnt/unionfs': [
-            '/home/seed/media/fused'
-        ]
-    },
-    'SERVER_SCAN_DELAY': 5,
-    'SERVER_MAX_FILE_CHECKS': 10
-}
-config = None
-config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
-
-
-def upgrade_config(cfg):
-    new_config = {}
-    added_fields = 0
-    fields = []
-
-    for name, data in base_config.items():
-        if name not in cfg:
-            new_config[name] = data
-            fields.append(name)
-            added_fields += 1
-        else:
-            new_config[name] = cfg[name]
-
-    with open(config_path, 'w') as fpc:
-        json.dump(new_config, fpc, indent=4, sort_keys=True)
-        fpc.close()
-
-    if added_fields and len(fields):
-        logger.debug("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
-    return new_config
-
-
-if not os.path.exists(config_path):
-    # Create default config
-    with open(config_path, 'w') as fp:
-        json.dump(base_config, fp, indent=4, sort_keys=True)
-        fp.close()
-    logger.debug("Created default config.json: '%s'", config_path)
-    logger.debug("Please configure it before running me again.")
-    exit(0)
-else:
-    # Load config
-    with open(config_path, 'r') as fp:
-        config = upgrade_config(json.load(fp))
-        fp.close()
+# Config
+config = config.load()
 
 
 ############################################################
@@ -194,6 +128,9 @@ def map_pushed_path(path):
                 logger.debug("Mapping '%s' to '%s'", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
+
+
+# plex config guess functions
 
 
 ############################################################
