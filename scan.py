@@ -18,7 +18,7 @@ import utils
 ############################################################
 
 # Logging
-logFormatter = logging.Formatter('%(asctime)24s - %(levelname)7s - %(name)14s - %(funcName)17s() :: %(message)s')
+logFormatter = logging.Formatter('%(asctime)24s - %(levelname)7s - %(name)14s :: %(message)s')
 rootLogger = logging.getLogger()
 
 consoleHandler = logging.StreamHandler()
