@@ -9,6 +9,7 @@ logger.setLevel(logging.DEBUG)
 def scan(config, lock, path, scan_for, section):
     scan_path = ""
 
+    # sleep for delay
     logger.info("Scanning '%s' in %d seconds", path, config['SERVER_SCAN_DELAY'])
     if config['SERVER_SCAN_DELAY']:
         time.sleep(config['SERVER_SCAN_DELAY'])
@@ -46,6 +47,7 @@ def scan(config, lock, path, scan_for, section):
               + str(section) + ' --directory \\"' + scan_path + '\\"'
         final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
 
+    # invoke plex scanner
     with lock:
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
