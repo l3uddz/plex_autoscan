@@ -2,11 +2,13 @@ import logging
 import os
 import time
 
+import requests
+
 logger = logging.getLogger("PLEX")
 logger.setLevel(logging.DEBUG)
 
 
-def scan(config, lock, path, scan_for, section):
+def scan(config, lock, path, scan_for, section, scan_type):
     scan_path = ""
 
     # sleep for delay
@@ -21,7 +23,7 @@ def scan(config, lock, path, scan_for, section):
             checks += 1
             if os.path.exists(path):
                 logger.info("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
-                             config['SERVER_MAX_FILE_CHECKS'])
+                            config['SERVER_MAX_FILE_CHECKS'])
                 scan_path = os.path.dirname(path)
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
@@ -29,7 +31,7 @@ def scan(config, lock, path, scan_for, section):
                 return
             else:
                 logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
-                             config['SERVER_MAX_FILE_CHECKS'])
+                            config['SERVER_MAX_FILE_CHECKS'])
                 time.sleep(60)
 
     else:
@@ -52,6 +54,10 @@ def scan(config, lock, path, scan_for, section):
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished")
+        if config['PLEX_EMPTY_TRASH_UPGRADE'] and scan_type == 'Upgrade':
+            time.sleep(5)
+            empty_trash(config, section)
+
     return
 
 
@@ -64,3 +70,22 @@ def show_sections(config):
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
         final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
     os.system(final_cmd)
+
+
+def empty_trash(config, section):
+    for control in config['PLEX_EMPTY_TRASH_CONTROL_FILES']:
+        if not os.path.exists(control):
+            logger.info("Skipping emptying trash as control file does not exist: '%s'", control)
+            return
+
+    logger.info("Control file(s) exist, performing empty trash on section %d", section)
+    try:
+        resp = requests.put('%s/library/sections/%d/emptyTrash' % (config['PLEX_LOCAL_URL'], section), data=None)
+        if resp.status_code == 200:
+            logger.debug("Trash cleared for section %d", section)
+        else:
+            logger.error("Unexpected response status_code for empty trash request: %d", resp.status_code)
+
+    except Exception as ex:
+        logger.exception("Exception while sending empty trash request")
+    return

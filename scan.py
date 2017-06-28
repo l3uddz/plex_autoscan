@@ -46,12 +46,12 @@ config = config.load()
 # FUNCS
 ############################################################
 
-def start_scan(path, scan_for):
+def start_scan(path, scan_for, scan_type):
     section = utils.get_plex_section(config, path)
     if section <= 0:
         return
 
-    scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section))
+    scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
     scan_process.start()
     return
 
@@ -73,11 +73,11 @@ def client_pushed():
     if 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
         final_path = utils.map_pushed_path(config, data['Movie']['FilePath'])
-        start_scan(final_path, 'radarr')
+        start_scan(final_path, 'radarr', data['EventType'])
     elif 'Series' in data:
         logger.info("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
         final_path = utils.map_pushed_path(config, data['Series']['Path'])
-        start_scan(final_path, 'sonarr')
+        start_scan(final_path, 'sonarr', data['EventType'])
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)

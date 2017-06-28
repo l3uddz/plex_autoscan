@@ -22,6 +22,11 @@ base_config = {
     'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
     'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
     'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
+    'PLEX_LOCAL_URL': 'http://localhost:32400',
+    'PLEX_EMPTY_TRASH_UPGRADE': False,
+    'PLEX_EMPTY_TRASH_CONTROL_FILES': [
+        '/mnt/unionfs/mounted.bin'
+    ],
     'SERVER_IP': '0.0.0.0',
     'SERVER_PORT': 3467,
     'SERVER_PASS': uuid.uuid4().hex,
