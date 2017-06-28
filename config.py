@@ -27,6 +27,7 @@ base_config = {
     'PLEX_EMPTY_TRASH_CONTROL_FILES': [
         '/mnt/unionfs/mounted.bin'
     ],
+    'PLEX_TOKEN': '',
     'SERVER_IP': '0.0.0.0',
     'SERVER_PORT': 3467,
     'SERVER_PASS': uuid.uuid4().hex,

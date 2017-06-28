@@ -54,7 +54,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished")
-        if config['PLEX_EMPTY_TRASH_UPGRADE'] and scan_type == 'Upgrade':
+        if config['PLEX_EMPTY_TRASH_UPGRADE'] and config['PLEX_TOKEN'] and scan_type == 'Upgrade':
             time.sleep(5)
             empty_trash(config, section)
 
@@ -80,7 +80,8 @@ def empty_trash(config, section):
 
     logger.info("Control file(s) exist, performing empty trash on section %d", section)
     try:
-        resp = requests.put('%s/library/sections/%d/emptyTrash' % (config['PLEX_LOCAL_URL'], section), data=None)
+        resp = requests.put('%s/library/sections/%d/emptyTrash?X-Plex-Token=%s' % (
+            config['PLEX_LOCAL_URL'], section, config['PLEX_TOKEN']), data=None)
         if resp.status_code == 200:
             logger.debug("Trash cleared for section %d", section)
         else:
