@@ -6,7 +6,7 @@ import sys
 import time
 import uuid
 from logging.handlers import RotatingFileHandler
-from multiprocessing import Process
+from multiprocessing import Process, Lock
 
 from flask import Flask
 from flask import abort
@@ -33,6 +33,10 @@ rootLogger.addHandler(fileHandler)
 
 logger = rootLogger.getChild("PLEX_AUTOSCAN")
 logger.setLevel(logging.DEBUG)
+
+# Multiprocessing
+
+scan_lock = Lock()
 
 ############################################################
 # CONFIG
@@ -112,12 +116,12 @@ def start_scan(path, scan_for):
     if section <= 0:
         return
 
-    scan_process = Process(target=plex_scan, args=(path, scan_for, section, config['SERVER_SCAN_DELAY']))
+    scan_process = Process(target=plex_scan, args=(scan_lock, path, scan_for, section, config['SERVER_SCAN_DELAY']))
     scan_process.start()
     return
 
 
-def plex_scan(path, scan_for, section, delay):
+def plex_scan(lock, path, scan_for, section, delay):
     scan_path = ""
     logger.info("Scanning '%s' in %d seconds", path, delay)
     if delay:
@@ -156,9 +160,10 @@ def plex_scan(path, scan_for, section, delay):
               + str(section) + ' --directory \\"' + scan_path + '\\"'
         final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
 
-    logger.debug("Using:\n%s", final_cmd)
-    os.system(final_cmd)
-    logger.debug("Finished")
+    with lock:
+        logger.debug("Using:\n%s", final_cmd)
+        os.system(final_cmd)
+        logger.debug("Finished")
     return
 
 
