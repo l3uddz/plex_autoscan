@@ -7,9 +7,6 @@ import uuid
 logger = logging.getLogger("CONFIG")
 logger.setLevel(logging.DEBUG)
 
-############################################################
-# CONFIG
-############################################################
 config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
 
 base_config = {
