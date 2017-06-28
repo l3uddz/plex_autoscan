@@ -83,7 +83,7 @@ def empty_trash(config, section):
         resp = requests.put('%s/library/sections/%d/emptyTrash?X-Plex-Token=%s' % (
             config['PLEX_LOCAL_URL'], section, config['PLEX_TOKEN']), data=None)
         if resp.status_code == 200:
-            logger.debug("Trash cleared for section %d", section)
+            logger.info("Trash cleared for section %d", section)
         else:
             logger.error("Unexpected response status_code for empty trash request: %d", resp.status_code)
 
