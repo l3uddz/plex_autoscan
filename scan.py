@@ -71,11 +71,13 @@ def client_pushed():
         abort(400)
 
     if 'Movie' in data:
-        logger.info("Client %r scan request for movie: '%s'", request.remote_addr, data['Movie']['FilePath'])
+        logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
+                    data['Movie']['FilePath'], data['Movie']['FilePath'])
         final_path = utils.map_pushed_path(config, data['Movie']['FilePath'])
         start_scan(final_path, 'radarr', data['EventType'])
     elif 'Series' in data:
-        logger.info("Client %r scan request for series: '%s'", request.remote_addr, data['Series']['Path'])
+        logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['Series']['Path'],
+                    data['EventType'])
         final_path = utils.map_pushed_path(config, data['Series']['Path'])
         start_scan(final_path, 'sonarr', data['EventType'])
     else:
