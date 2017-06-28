@@ -55,7 +55,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         os.system(final_cmd)
         logger.info("Finished")
         if config['PLEX_EMPTY_TRASH_UPGRADE'] and config['PLEX_TOKEN'] and scan_type == 'Upgrade':
-            time.sleep(5)
+            time.sleep(10)
             empty_trash(config, section)
 
     return
