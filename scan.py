@@ -72,7 +72,7 @@ def client_pushed():
 
     if 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
-                    data['Movie']['FilePath'], data['Movie']['FilePath'])
+                    data['Movie']['FilePath'], data['EventType'])
         final_path = utils.map_pushed_path(config, data['Movie']['FilePath'])
         start_scan(final_path, 'radarr', data['EventType'])
     elif 'Series' in data:
