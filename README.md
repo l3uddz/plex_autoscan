@@ -77,7 +77,7 @@ PLEX_SECTION_PATH_MAPPINGS example:
     }, 
 ```
 
-This tells the script that if the filepath that was imported by sonarr/radarr has /Movies/ in the path, use section 1, otherwise use 2 when /TV/ is in the path. This is used when starting the plex command line scanner.
+This tells the script that if the filepath that we have decided to scan has /Movies/ in the path, use section 1, otherwise use 2 when /TV/ is in the path. This is used when starting the plex command line scanner.
 
 PLEX_USER is self explanatory, again this should be fine as the default plex. **Ignore for Windows installations**
 
