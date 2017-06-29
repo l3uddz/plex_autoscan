@@ -149,5 +149,5 @@ To start the server, simply `python scan.py server` - this will start the reques
 
 ## Windows
 
-Follow the same steps as above to run the server. As for startup, this can be achieved using the Windows Task Scheduler. Bear in mind however you decide to get your script to startup, it must be executed as a user that has permissions to access the PLEX_SCANNER file, typically Administrator. If this is not the case, it will hang.
+Follow the same steps as above to run the server. As for startup, this can be achieved using the Windows Task Scheduler. Bear in mind however you decide to get your script to startup, it must be executed as a user that has permissions to access the `PLEX_SCANNER` file, typically Administrator. If this is not the case, it will hang.
 
