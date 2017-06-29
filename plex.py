@@ -56,7 +56,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
     with lock:
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
-        logger.info("Finished")
+        logger.info("Finished scan")
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN']:
             logger.info("Emptying trash in 5 seconds...")
             time.sleep(5)
