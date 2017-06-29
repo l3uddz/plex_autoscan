@@ -8,7 +8,7 @@ def get_plex_section(config, path):
     for section, mappings in config['PLEX_SECTION_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if mapping.lower() in path.lower():
-                return section
+                return int(section)
     logger.error("Unable to map '%s' to a section id....", path)
     return -1
 
