@@ -60,7 +60,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.info("Finished scan")
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
-            logging.debug("Checking deleted item count in 5 seconds...")
+            logger.debug("Checking deleted item count in 5 seconds...")
             time.sleep(5)
 
             # check deleted item count, don't proceed if more than this value
@@ -99,9 +99,7 @@ def empty_trash(config, section):
             return
 
     if len(config['PLEX_EMPTY_TRASH_CONTROL_FILES']):
-        logger.info("Control file(s) exist, performing empty trash on section %s", section)
-    else:
-        logger.info("Emptying trash for section %s", section)
+        logger.info("Control file(s) exist!")
 
     try:
         resp = requests.put('%s/library/sections/%s/emptyTrash?X-Plex-Token=%s' % (
