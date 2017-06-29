@@ -69,10 +69,13 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 logger.warning("There were %d deleted files, skipping emptying trash for section %s", deleted_items,
                                section)
                 return
-            if not deleted_items:
-                logger.info("Skipping emptying trash as there were no deleted items")
+            if deleted_items == -1:
+                logger.error("Could not determine deleted item count, aborting emptying trash")
                 return
-            logger.info("Emptying trash to clear %d deleted items", deleted_items)
+            # if not deleted_items:
+            #     logger.info("Skipping emptying trash as there were no deleted items")
+            #     return
+            logger.info("Emptying trash to clear section %s", section)
             empty_trash(config, str(section))
 
     return
@@ -125,4 +128,4 @@ def get_deleted_count(config):
         return int(deleted)
     except Exception as ex:
         logger.exception("Exception retrieving deleted item count from database: ")
-        return 0
+        return -1
