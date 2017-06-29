@@ -57,9 +57,9 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished")
-        if config['PLEX_EMPTY_TRASH_UPGRADE'] and config['PLEX_TOKEN'] and scan_type == 'Upgrade':
-            logger.info("Emptying trash in 10 seconds...")
-            time.sleep(10)
+        if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN']:
+            logger.info("Emptying trash in 5 seconds...")
+            time.sleep(5)
             empty_trash(config, str(section))
 
     return
@@ -85,7 +85,11 @@ def empty_trash(config, section):
             logger.info("Skipping emptying trash as control file does not exist: '%s'", control)
             return
 
-    logger.info("Control file(s) exist, performing empty trash on section %s", section)
+    if len(config['PLEX_EMPTY_TRASH_CONTROL_FILES']):
+        logger.info("Control file(s) exist, performing empty trash on section %s", section)
+    else:
+        logger.info("Emptying trash for section %s", section)
+
     try:
         resp = requests.put('%s/library/sections/%s/emptyTrash?X-Plex-Token=%s' % (
             config['PLEX_LOCAL_URL'], section, config['PLEX_TOKEN']), data=None)
@@ -95,5 +99,5 @@ def empty_trash(config, section):
             logger.error("Unexpected response status_code for empty trash request: %d", resp.status_code)
 
     except Exception as ex:
-        logger.exception("Exception while sending empty trash request")
+        logger.exception("Exception while sending empty trash request: ")
     return
