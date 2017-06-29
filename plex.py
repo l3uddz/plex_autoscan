@@ -75,7 +75,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
             if not config['PLEX_EMPTY_TRASH_ZERO_DELETED'] and not deleted_items:
                 logger.info("Skipping emptying trash as there were no deleted items")
                 return
-            logger.info("Emptying trash to clear section %s of %d deleted items", section, deleted_items)
+            logger.info("Emptying trash to clear %d deleted items", deleted_items)
             empty_trash(config, str(section))
 
     return
