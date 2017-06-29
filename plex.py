@@ -47,7 +47,10 @@ def scan(config, lock, path, scan_for, section, scan_type):
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
               + str(section) + ' --directory \\"' + scan_path + '\\"'
-        final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+        if config['USE_SUDO']:
+            final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+        else:
+            final_cmd = cmd
 
     # invoke plex scanner
     with lock:
@@ -69,7 +72,10 @@ def show_sections(config):
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
-        final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+        if config['USE_SUDO']:
+            final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+        else:
+            final_cmd = cmd
     os.system(final_cmd)
 
 
