@@ -32,7 +32,7 @@ fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 
-logger = rootLogger.getChild("PLEX_AUTOSCAN")
+logger = rootLogger.getChild("AUTOSCAN")
 logger.setLevel(logging.DEBUG)
 
 # Multiprocessing
