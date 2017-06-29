@@ -11,17 +11,57 @@ Script to assist sonarr/radarr with plex imports. Will only scan the folder that
 5. `sudo pip install -r requirements.txt`
 6. `python scan.py` to generate default config.json
 
+**The user that runs plex_autoscan needs to beable to sudo without a password otherwise it cannot execute the PLEX_SCANNER as plex. 
+This can be disabled by config option USE_SUDO**
+
 ## Windows
 
 1. Git clone / Download the master folder
 2. Install python requirements.txt, e.g. c:\python27\scripts\pip install -r c:\plex_autoscan\requirements.txt
 3. `python scan.py` to generate default config.json
 
-# Configure
-## Debian/Ubuntu
-**Note: The user that runs sonarr/radarr needs to beable to sudo without a password otherwise it cannot execute the PLEX_SCANNER as plex.**
+**The user running plex_autoscan MUST be the same user as the one running plex, e.g. Administrator)**
 
-Ensure the PLEX_LD_LIBRARY_PATH / PLEX_SCANNER / PLEX_SUPPORT_DIR variables are the correct locations (these should be the defaults).
+# Configuration
+
+Example configuration:
+```json
+{
+    "PLEX_EMPTY_TRASH": true, 
+    "PLEX_EMPTY_TRASH_CONTROL_FILES": [
+        "/mnt/unionfs/mounted.bin"
+    ], 
+    "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver", 
+    "PLEX_LOCAL_URL": "http://localhost:32400", 
+    "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner", 
+    "PLEX_SECTION_PATH_MAPPINGS": {
+        "1": [
+            "/Movies/"
+        ], 
+        "2": [
+            "/TV/"
+        ]
+    }, 
+    "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support", 
+    "PLEX_TOKEN": "etewytw6y4", 
+    "PLEX_USER": "plex", 
+    "SERVER_IP": "0.0.0.0", 
+    "SERVER_MAX_FILE_CHECKS": 10, 
+    "SERVER_PASS": "0c1fa7c786fe18b2bb3aj055cb86f531", 
+    "SERVER_PATH_MAPPINGS": {
+        "/mnt/unionfs": [
+            "/home/seed/media/fused"
+        ]
+    }, 
+    "SERVER_PORT": 3468, 
+    "SERVER_SCAN_DELAY": 5, 
+    "USE_SUDO": true
+}
+```
+
+## Plex
+
+Ensure the PLEX_LD_LIBRARY_PATH / PLEX_SCANNER / PLEX_SUPPORT_DIR variables are the correct locations (the defaults should be preset).
 You can verify this is working correctly by doing, `python scan.py sections` which will return a list of your plex library sections & id's, which we will use to setup PLEX_SECTION_PATH_MAPPINGS.
 
 PLEX_SECTION_PATH_MAPPINGS example:
@@ -37,76 +77,69 @@ PLEX_SECTION_PATH_MAPPINGS example:
     }, 
 ```
 
-This tells the script that if the imported file has /Movies/ in the path, use section 1, otherwise use 2 if /TV/ is in the path.
+This tells the script that if the filepath that was imported by sonarr/radarr has /Movies/ in the path, use section 1, otherwise use 2 when /TV/ is in the path. This is used when starting the plex command line scanner.
 
-PLEX_USER is self explanatory, again this should be fine as the default plex.
+PLEX_USER is self explanatory, again this should be fine as the default plex. **Ignore for Windows installations**
 
-Your config should now be ready for local automatic plex scans on sonarr/radarr imports.
+PLEX_TOKEN only needs to be used in conjunction with PLEX_EMPTY_TRASH and PLEX_LOCAL_URL.
 
-## Windows
-**Note: The user running the sonarr/radarr service MUST be the same user as the one running plex, e.g. Administrator)**
+PLEX_LOCAL_URL is the local url of plex server where the empty trash request is sent.
 
-Windows installations only need to be concerned with the PLEX_SCANNER and PLEX_SECTION_PATH_MAPPINGS variables.
-PLEX_SCANNER can usually be found in the C:\Program Files (x86)\Plex folder.
-You must use double backslashes for this path, e.g. `C:\\Program Files (x86)\\Plex\\Plex Scanner.exe`
+PLEX_EMPTY_TRASH when set to true, after a scan was performed, empty trash will also be performed for that section.
 
-Follow the same steps as above for the PLEX_SECTION_PATH_MAPPINGS but instead of / use `\\`, so, /Movies/ becomes `\\Movies\\`
+PLEX_EMPTY_TRASH_CONTROL_FILES is used before performing an empty trash request, this allows you to specify a list of files that must exist. If they dont then no empty trash request is sent. If this is not needed, you can leave the list empty to disable the check.
 
-## Remote Installations
+USE_SUDO is on by default. If the user that runs your plex_autoscan server is able to run the Plex CLI Scanner without sudo, you can disable the sudo requirement here. **Ignore for Windows installations**
 
-plex_autoscan is capable of sending the scan request to remote installations (e.g. sonarr/radarr/downloaders on one machine, plex/plex_autoscan on another). 
+## Server
+
+SERVER_IP is the server IP that plex_autoscan will listen on. usually 0.0.0.0 for remote access and 127.0.0.1 for local.
+
+SERVER_PORT is the port that plex_autoscan will listen on.
+
+SERVER_SCAN_DELAY is the seconds that is slept before a scan request can continue.
+
+SERVER_MAX_FILE_CHECKS is an additional check that is performed after the SERVER_SCAN_DELAY. It will check if the file that was requested to be scanned exists, if it does not then it will sleep for 1 minute and check again until this value has been reached. **This setting does not work with sonarr until https://github.com/Sonarr/Sonarr/commit/4189bc6f76347aee00db4449dba142ae04961e0a has been merged with master**
+
+SERVER_PASS is a random 32 character string generated on config build. This is used in the URL given to sonarr/radarr of plex_autoscan server.
+
+SERVER_PATH_MAPPINGS is a list of paths that will be remapped before being scanned. This is useful for receiving scan requests from a remote sonarr/radarr installation. Lets take for example:
 
 ```json
-    "SERVER_IP": "0.0.0.0", 
-    "SERVER_PASS": "0c1fa7c986fe48b2bb3aa055cb86f533", 
     "SERVER_PATH_MAPPINGS": {
         "/mnt/unionfs": [
             "/home/seed/media/fused"
         ]
     }, 
-    "SERVER_PORT": 3467, 
-    "SERVER_PUSH_URL": [
-        "http://localhost:3467/push"
-    ], 
-    "USE_SERVER_PUSH": true
 ```
 
-SERVER_IP / SERVER_PORT is the IP & Port for the server to listen on for incoming scan requests.
-
-SERVER_PASS is a random 32 character key generated on config build. This must be the same for both the local/remote plex_autoscan installations so the server can verify its an authenticated scan request.
-
-SERVER_PATH_MAPINGS is used by the server to map incoming scan request paths to their appropriate location, using the above example:
-
-/home/seed/media/fused/Media/TV/Doctor Who/Season 1/Doctor Who - S01E01 - meh.mkv would become /mnt/unionfs/Media/TV/Doctor Who/Season 1/Doctor Who - S01E01 - meh.mkv.
-
-This is useful for where the server/requester systems have different mount locations. If they are the same, you can leave this blank, e.g.:
-
-```json
-    "SERVER_PATH_MAPPINGS": {
-    }, 
-```
-
-SERVER_PUSH_URL is used by the requester plex_autoscan installation, this is where to send the scan requests, as you can see, you could have more than one remote plex/plex_autoscan installation receive the requests.
-
-Finally USE_SERVER_PUSH, this is the key variable that tells plex_autoscan to push the scan request instead of performing a local scan. This needs to be set to true if you wish for your scan requests to be sent to another plex_autoscan installation. 
-**Note: this MUST be false on the setup running the server, otherwise it will push incoming requests to itself and repeat forever.**
-
-To start the server, simply `python scan.py server` - this will start the request server. Alternatively you can use the systemd service included in the system folder todo this for you to keep it running & autostart on boot.
-
-# Sonarr/Radarr
-## Debian/Ubuntu
-
-To setup your sonarr/radarr installations to use plex_autoscan, simply go to Settings -> Connect -> Add New -> Custom Script.
-Untick on Grab and tick Download, Rename, Upgrade. Then choose the scan.py as the file and add either sonarr or radarr as the argument.
-
-![Sonarr](http://i.imgur.com/SXcnvkT.png)
-
-You should now be ready!
+If the filepath that was reported to plex_autoscan by sonarr/radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by plex would become `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
 
 ## Windows
 
-Follow the same steps as above but path must be set to your python executable.
+Windows installations only need to be concerned with the PLEX_SCANNER, ignore the USE_SUDO, PLEX_USER, PLEX_SUPPORT_DIR and PLEX_LD_LIBRARY_PATH variables.
 
-The arguments should be "PATH OF SCRIPT" sonarr OR radarr
+PLEX_SCANNER can usually be found in the C:\Program Files (x86)\Plex folder.
+You must use double backslashes for this path, e.g. `C:\\Program Files (x86)\\Plex\\Plex Scanner.exe`
 
-![Sonarr Windows](http://i.imgur.com/OAcunrd.png)
+Follow the same guidelines as above but instead of / in paths, use `\\`, so, /Movies/ becomes `\\Movies\\`.
+
+# Sonarr/Radarr
+
+To setup your sonarr/radarr installations to use plex_autoscan, simply go to Settings -> Connect -> Add New -> Webhook.
+Untick on Grab and tick Download, Rename, Upgrade. Then enter the url to your server which is normally:
+
+http://SERVER_IP:SERVER_PORT/SERVER_PASS
+
+![Sonarr](http://i.imgur.com/KxaRlwo.png)
+
+## Startup
+
+## Linux
+
+To start the server, simply `python scan.py server` - this will start the request server. This is good todo too grab a quick file and ensure your configuration is correct, before configuring / starting / enabling the included systemd service file.
+
+## Windows
+
+Follow the same steps as above to run the server. As for startup, this can be achieved using the Windows Task Scheduler. Bear in mind however you decide to get your script to startup, it must be executed as a user that has permissions to access the PLEX_SCANNER file, typically Administrator. If this is not the case, it will hang.
+
