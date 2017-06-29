@@ -30,6 +30,7 @@ base_config = {
     'PLEX_EMPTY_TRASH_CONTROL_FILES': [
         '/mnt/unionfs/mounted.bin'
     ],
+    'PLEX_EMPTY_TRASH_ZERO_DELETED': True,
     'PLEX_TOKEN': '',
     'SERVER_IP': '0.0.0.0',
     'SERVER_PORT': 3467,
