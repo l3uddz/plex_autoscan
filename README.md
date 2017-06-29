@@ -31,6 +31,8 @@ Example configuration:
     "PLEX_EMPTY_TRASH_CONTROL_FILES": [
         "/mnt/unionfs/mounted.bin"
     ], 
+    "PLEX_EMPTY_TRASH_MAX_FILES": 10,
+    "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db", 
     "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver", 
     "PLEX_LOCAL_URL": "http://localhost:32400", 
     "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner", 
@@ -85,9 +87,13 @@ PLEX_TOKEN only needs to be used in conjunction with PLEX_EMPTY_TRASH and PLEX_L
 
 PLEX_LOCAL_URL is the local url of plex server where the empty trash request is sent.
 
-PLEX_EMPTY_TRASH when set to true, after a scan was performed, empty trash will also be performed for that section.
+PLEX_EMPTY_TRASH when set to true, after a scan was performed, empty trash will also be performed for that section. PLEX_DATABASE_PATH and PLEX_EMPTY_TRASH_MAX_FILES must be set when this is enabled.
 
 PLEX_EMPTY_TRASH_CONTROL_FILES is used before performing an empty trash request, this allows you to specify a list of files that must exist. If they dont then no empty trash request is sent. If this is not needed, you can leave the list empty to disable the check.
+
+PLEX_EMPTY_TRASH_MAX_FILES must be set when using PLEX_EMPTY_TRASH, this value is the maximum deleted items to delete, so if there is more than than this amount deleted items, abort the empty trash.
+
+PLEX_DATABASE_PATH is the plex library database location. Make sure the user running plex_autoscan has access to this file directly, e.g. chmod 777 -R /var/lib/plexmediaserver or the empty trash will never be performed. On Windows, this database filepath can usually be found at "%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases"
 
 USE_SUDO is on by default. If the user that runs your plex_autoscan server is able to run the Plex CLI Scanner without sudo, you can disable the sudo requirement here. **Ignore for Windows installations**
 
@@ -117,7 +123,7 @@ If the filepath that was reported to plex_autoscan by sonarr/radarr was `/home/s
 
 ## Windows
 
-Windows installations only need to be concerned with the PLEX_SCANNER, ignore the USE_SUDO, PLEX_USER, PLEX_SUPPORT_DIR and PLEX_LD_LIBRARY_PATH variables.
+Windows installations only need to be concerned with the PLEX_SCANNER and PLEX_LIBRARY_PATH if empty trash is being used, ignore the USE_SUDO, PLEX_USER, PLEX_SUPPORT_DIR and PLEX_LD_LIBRARY_PATH variables.
 
 PLEX_SCANNER can usually be found in the C:\Program Files (x86)\Plex folder.
 You must use double backslashes for this path, e.g. `C:\\Program Files (x86)\\Plex\\Plex Scanner.exe`
