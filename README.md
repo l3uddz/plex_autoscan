@@ -81,7 +81,7 @@ This tells the script that if the filepath that was imported by sonarr/radarr ha
 
 PLEX_USER is self explanatory, again this should be fine as the default plex. **Ignore for Windows installations**
 
-PLEX_TOKEN only needs to be used in conjunction with PLEX_EMPTY_TRASH and PLEX_LOCAL_URL.
+PLEX_TOKEN only needs to be used in conjunction with PLEX_EMPTY_TRASH and PLEX_LOCAL_URL. For more on how to retrieve this, visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
 
 PLEX_LOCAL_URL is the local url of plex server where the empty trash request is sent.
 
