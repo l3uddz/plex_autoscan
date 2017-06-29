@@ -1,5 +1,6 @@
 import logging
 import os
+import sqlite3
 import time
 
 import requests
@@ -57,9 +58,21 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished scan")
-        if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN']:
-            logger.info("Emptying trash in 5 seconds...")
+        # empty trash if configured
+        if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
+            logging.debug("Checking deleted item count in 5 seconds...")
             time.sleep(5)
+
+            # check deleted item count, don't proceed if more than this value
+            deleted_items = get_deleted_count(config)
+            if deleted_items > config['PLEX_EMPTY_TRASH_MAX_FILES']:
+                logger.warning("There were %d deleted files, skipping emptying trash for section %s", deleted_items,
+                               section)
+                return
+            if not deleted_items:
+                logger.info("Skipping emptying trash as there were no deleted items")
+                return
+            logger.info("Emptying trash to clear %d deleted items", deleted_items)
             empty_trash(config, str(section))
 
     return
@@ -101,3 +114,17 @@ def empty_trash(config, section):
     except Exception as ex:
         logger.exception("Exception while sending empty trash request: ")
     return
+
+
+def get_deleted_count(config):
+    deleted = 0
+
+    try:
+        conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
+        c = conn.cursor()
+        deleted = c.execute('SELECT count(*) FROM metadata_items WHERE deleted_at IS NOT NULL').fetchone()[0]
+        conn.close()
+        return int(deleted)
+    except Exception as ex:
+        logger.exception("Exception retrieving deleted item count from database: ")
+        return 0
