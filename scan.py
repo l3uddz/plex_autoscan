@@ -65,7 +65,7 @@ app = Flask(__name__)
 
 @app.route("/%s" % config['SERVER_PASS'], methods=['POST'])
 def client_pushed():
-    data = request.get_json(silent=True)
+    data = utils.byteify(request.get_json(silent=True))
     if not data:
         logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)
