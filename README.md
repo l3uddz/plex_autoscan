@@ -27,12 +27,13 @@ This can be disabled by config option USE_SUDO**
 Example configuration:
 ```json
 {
+    "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db", 
     "PLEX_EMPTY_TRASH": true, 
     "PLEX_EMPTY_TRASH_CONTROL_FILES": [
         "/mnt/unionfs/mounted.bin"
     ], 
-    "PLEX_EMPTY_TRASH_MAX_FILES": 10,
-    "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db", 
+    "PLEX_EMPTY_TRASH_MAX_FILES": 10, 
+    "PLEX_EMPTY_TRASH_ZERO_DELETED": false, 
     "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver", 
     "PLEX_LOCAL_URL": "http://localhost:32400", 
     "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner", 
@@ -45,11 +46,11 @@ Example configuration:
         ]
     }, 
     "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support", 
-    "PLEX_TOKEN": "etewytw6y4", 
+    "PLEX_TOKEN": "XXXXXXXXXXXX", 
     "PLEX_USER": "plex", 
     "SERVER_IP": "0.0.0.0", 
     "SERVER_MAX_FILE_CHECKS": 10, 
-    "SERVER_PASS": "0c1fa7c786fe18b2bb3aj055cb86f531", 
+    "SERVER_PASS": "0c11a7c926fe48b6bb3aa055cb86f553", 
     "SERVER_PATH_MAPPINGS": {
         "/mnt/unionfs": [
             "/home/seed/media/fused"
@@ -60,6 +61,9 @@ Example configuration:
     "USE_SUDO": true
 }
 ```
+
+Output:
+![Config output](http://i.imgur.com/AfI0qWv.png)
 
 ## Plex
 
