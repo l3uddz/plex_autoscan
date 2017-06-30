@@ -82,6 +82,13 @@ def client_pushed():
                     data['EventType'])
         final_path = utils.map_pushed_path(config, data['Series']['Path'])
         start_scan(final_path, 'sonarr', data['EventType'])
+    elif 'series' and 'episodeFile' in data:
+        # new sonarr webhook
+        path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
+        logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
+                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+        final_path = utils.map_pushed_path(config, path)
+        start_scan(final_path, 'sonarr_dev', "Upgrade" if data['isUpgrade'] else data['eventType'])
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
