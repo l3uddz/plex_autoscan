@@ -5,6 +5,8 @@ import time
 
 import requests
 
+import utils
+
 logger = logging.getLogger("PLEX")
 logger.setLevel(logging.DEBUG)
 
@@ -55,6 +57,18 @@ def scan(config, lock, path, scan_for, section, scan_type):
 
     # invoke plex scanner
     with lock:
+        # wait for existing scanners being ran by plex
+        if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
+            scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
+            if not utils.wait_running_process(scanner_name):
+                logger.warning(
+                    "There was a problem waiting for existing Plex Scanners to finish: '%s', aborting scan...",
+                    scanner_name)
+                return
+            else:
+                logger.info("There are no '%s' processes being ran right now, continuing scan", scanner_name)
+
+        # begin scan
         logger.debug("Using:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished scan")

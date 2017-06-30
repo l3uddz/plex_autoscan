@@ -48,6 +48,7 @@ Example configuration:
     "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support", 
     "PLEX_TOKEN": "XXXXXXXXXXXX", 
     "PLEX_USER": "plex", 
+    "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
     "SERVER_IP": "0.0.0.0", 
     "SERVER_MAX_FILE_CHECKS": 10, 
     "SERVER_PASS": "0c11a7c926fe48b6bb3aa055cb86f553", 
@@ -101,7 +102,10 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 `PLEX_DATABASE_PATH` is the plex library database location. Make sure the user running plex_autoscan has access to this file directly, e.g. chmod 777 -R /var/lib/plexmediaserver or the empty trash will never be performed. On Windows, this database filepath can usually be found at "%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases"
 
+`PLEX_WAIT_FOR_EXTERNAL_SCANNERS` when set to true, the active scanner in the plex_autoscan queue will once the lock is acquired, before a plex scan is commenced, scan the process list looking for existing Plex Media Scanners. If one is found, it will sleep 60 seconds and check again in a constant loop. Once all Plex Media Scanner's are no longer in the process list, the scan will commence, thus continuing the plex_autoscan scan backlog.
+
 `USE_SUDO` is on by default. If the user that runs your plex_autoscan server is able to run the Plex CLI Scanner without sudo, you can disable the sudo requirement here. **Ignore for Windows installations**
+
 
 ## Server
 
