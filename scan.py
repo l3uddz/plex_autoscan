@@ -61,11 +61,12 @@ def start_scan(path, scan_for, scan_type):
 ############################################################
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 
 @app.route("/%s" % config['SERVER_PASS'], methods=['POST'])
 def client_pushed():
-    data = utils.byteify(request.get_json(silent=True))
+    data = request.get_json(silent=True)
     if not data:
         logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)

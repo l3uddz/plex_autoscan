@@ -49,15 +49,3 @@ def wait_running_process(process_name):
     except:
         logger.exception("Exception waiting for process: '%s'", process_name())
         return False
-
-
-def byteify(input):
-    if isinstance(input, dict):
-        return {byteify(key): byteify(value)
-                for key, value in input.iteritems()}
-    elif isinstance(input, list):
-        return [byteify(element) for element in input]
-    elif isinstance(input, unicode):
-        return input.encode('utf-8')
-    else:
-        return input
