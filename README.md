@@ -32,7 +32,7 @@ Example configuration:
     "PLEX_EMPTY_TRASH_CONTROL_FILES": [
         "/mnt/unionfs/mounted.bin"
     ], 
-    "PLEX_EMPTY_TRASH_MAX_FILES": 10, 
+    "PLEX_EMPTY_TRASH_MAX_FILES": 100,
     "PLEX_EMPTY_TRASH_ZERO_DELETED": false, 
     "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver", 
     "PLEX_LOCAL_URL": "http://localhost:32400", 

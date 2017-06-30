@@ -118,14 +118,13 @@ def empty_trash(config, section):
 
 
 def get_deleted_count(config):
-    deleted = 0
-
     try:
         conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
         c = conn.cursor()
-        deleted = c.execute('SELECT count(*) FROM metadata_items WHERE deleted_at IS NOT NULL').fetchone()[0]
+        deleted_metadata = c.execute('SELECT count(*) FROM metadata_items WHERE deleted_at IS NOT NULL').fetchone()[0]
+        deleted_media_parts = c.execute('SELECT count(*) FROM media_parts WHERE deleted_at IS NOT NULL').fetchone()[0]
         conn.close()
-        return int(deleted)
+        return int(deleted_metadata) + int(deleted_media_parts)
     except Exception as ex:
         logger.exception("Exception retrieving deleted item count from database: ")
         return -1

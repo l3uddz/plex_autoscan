@@ -26,7 +26,7 @@ base_config = {
                           '/Plug-in Support/Databases/com.plexapp.plugins.library.db',
     'PLEX_LOCAL_URL': 'http://localhost:32400',
     'PLEX_EMPTY_TRASH': False,
-    'PLEX_EMPTY_TRASH_MAX_FILES': 10,
+    'PLEX_EMPTY_TRASH_MAX_FILES': 100,
     'PLEX_EMPTY_TRASH_CONTROL_FILES': [
         '/mnt/unionfs/mounted.bin'
     ],
