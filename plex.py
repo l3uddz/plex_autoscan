@@ -25,7 +25,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
             if os.path.exists(path):
                 logger.info("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
                             config['SERVER_MAX_FILE_CHECKS'])
-                scan_path = os.path.dirname(path)
+                scan_path = os.path.dirname(path).encode('utf-8').strip()
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
                 logger.info("File '%s' exhausted all available checks, aborting scan", path)
@@ -37,7 +37,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
 
     else:
         # sonarr doesnt pass the sonarr_episodefile_path in webhook, so we cannot check until this is corrected.
-        scan_path = path
+        scan_path = path.encode('utf-8').strip()
 
     # build plex scanner command
     if os.name == 'nt':
