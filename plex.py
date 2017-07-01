@@ -86,7 +86,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
             if deleted_items == -1:
                 logger.error("Could not determine deleted item count, aborting emptying trash")
                 return
-            if not config['PLEX_EMPTY_TRASH_ZERO_DELETED'] and not deleted_items:
+            if not config['PLEX_EMPTY_TRASH_ZERO_DELETED'] and not deleted_items and scan_type != 'Upgrade':
                 logger.info("Skipping emptying trash as there were no deleted items")
                 return
             logger.info("Emptying trash to clear %d deleted items", deleted_items)
