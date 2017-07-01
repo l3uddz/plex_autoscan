@@ -20,7 +20,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         time.sleep(config['SERVER_SCAN_DELAY'])
 
     # check file exists
-    if scan_for == 'radarr' or scan_for == 'sonarr_dev':
+    if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':
         checks = 0
         while True:
             checks += 1

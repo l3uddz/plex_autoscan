@@ -65,9 +65,27 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 
+@app.route("/%s" % config['SERVER_PASS'], methods=['GET'])
+def manual_scan():
+    if not config['SERVER_ALLOW_MANUAL_SCAN']:
+        return abort(401)
+    page = '<html><body>' \
+           '<form action="/' + config['SERVER_PASS'] + '" method="post"> File to be scanned:<br>' \
+                                                       '<input type="text" name="filepath" value=""> ' \
+                                                       '<input type="hidden" name="eventType" value="Manual"> ' \
+                                                       '<br><br><input type="submit" value="Submit"></form> ' \
+                                                       '<p>Clicking submit will request this file ' \
+                                                       'to be queued in the scan backlog.</p></body></html>'
+    return page, 200
+
+
 @app.route("/%s" % config['SERVER_PASS'], methods=['POST'])
 def client_pushed():
-    data = request.get_json(silent=True)
+    if request.content_type == 'application/json':
+        data = request.get_json(silent=True)
+    else:
+        data = request.form.to_dict()
+
     if not data:
         logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)
@@ -75,7 +93,10 @@ def client_pushed():
 
     if ('eventType' in data and data['eventType'] == 'Test') or ('EventType' in data and data['EventType'] == 'Test'):
         logger.info("Client %r made a test request, event: '%s'", request.remote_addr, 'Test')
-        return "OK"
+    elif 'eventType' in data and data['eventType'] == 'Manual':
+        logger.info("Client %r made a manual scan request for: '%s'", request.remote_addr, data['filepath'])
+        final_path = utils.map_pushed_path(config, data['filepath'])
+        start_scan(final_path, 'manual', 'Manual')
     elif 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])

@@ -133,6 +133,9 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 If the filepath that was reported to plex_autoscan by sonarr/radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by plex would become `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
 
+`SERVER_ALLOW_MANUAL_SCAN` when set to true will allow GET visits to the webhook URL where you can perform manual scans on a filepath. Remember all path mappings and section id mappings of server apply. So this is a good way of testing your configuration manually.
+
+
 ## Windows
 
 Windows installations only need to be concerned with the `PLEX_SCANNER` and `PLEX_LIBRARY_PATH` if empty trash is being used, ignore the `USE_SUDO`, `PLEX_USER`, `PLEX_SUPPORT_DIR` and `PLEX_LD_LIBRARY_PATH` variables.
