@@ -71,7 +71,7 @@ def client_pushed():
     if not data:
         logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)
-        logger.debug("Client %r request dump:\n%s", request.remote_addr, json.dumps(data, indent=4, sort_keys=True))
+    logger.debug("Client %r request dump:\n%s", request.remote_addr, json.dumps(data, indent=4, sort_keys=True))
     if 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])
