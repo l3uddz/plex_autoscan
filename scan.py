@@ -50,11 +50,11 @@ config = config.load()
 def start_scan(path, scan_for, scan_type):
     section = utils.get_plex_section(config, path)
     if section <= 0:
-        return
+        return False
 
     scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
     scan_process.start()
-    return
+    return True
 
 
 ############################################################
@@ -96,7 +96,11 @@ def client_pushed():
     elif 'eventType' in data and data['eventType'] == 'Manual':
         logger.info("Client %r made a manual scan request for: '%s'", request.remote_addr, data['filepath'])
         final_path = utils.map_pushed_path(config, data['filepath'])
-        start_scan(final_path, 'manual', 'Manual')
+        if start_scan(final_path, 'manual', 'Manual'):
+            return "'%s' was added to scan backlog." % final_path
+        else:
+            return "Error adding '%s' to scan backlog." % data['filepath']
+
     elif 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])
