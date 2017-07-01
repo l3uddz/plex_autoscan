@@ -73,7 +73,7 @@ def client_pushed():
         abort(400)
     logger.debug("Client %r request dump:\n%s", request.remote_addr, json.dumps(data, indent=4, sort_keys=True))
 
-    if ('eventType' in data or 'EventType' in data) and (data['eventType'] == 'Test' or data['EventType'] == 'Test'):
+    if ('eventType' in data and data['eventType'] == 'Test') or ('EventType' in data and data['EventType'] == 'Test'):
         logger.info("Client %r made a test request, event: '%s'", request.remote_addr, 'Test')
         return "OK"
     elif 'Movie' in data:
