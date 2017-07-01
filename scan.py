@@ -71,7 +71,7 @@ def client_pushed():
     if not data:
         logger.error("Invalid scan request from: %r", request.remote_addr)
         abort(400)
-    logger.debug("Client %r request dump:\n%s", request.remote_addr, json.dumps(data, indent=4, sort_keys=True))
+        logger.debug("Client %r request dump:\n%s", request.remote_addr, json.dumps(data, indent=4, sort_keys=True))
     if 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])
@@ -89,6 +89,10 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(config, path)
         start_scan(final_path, 'sonarr_dev', "Upgrade" if data['isUpgrade'] else data['eventType'])
+    elif 'eventType' == 'Test' or 'EventType' == 'Test':
+        logger.info("Client %r made a test request, event: '%s'", request.remote_addr, 'Test')
+        return "OK"
+
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
