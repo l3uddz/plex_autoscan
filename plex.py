@@ -46,10 +46,14 @@ def scan(config, lock, path, scan_for, section, scan_type):
         final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
                     % (config['PLEX_SCANNER'], str(section), scan_path)
     else:
+        scan_dir = '\\"' + scan_path + '\\"'
+        if not config['USE_SUDO'] and not config['USE_QUOTED_SCAN_DIRECTORY']:
+            scan_dir = scan_path.replace(' ', '\\ ')
+
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
-              + str(section) + ' --directory \\"' + scan_path + '\\"'
+              + str(section) + ' --directory ' + scan_dir
         if config['USE_SUDO']:
             final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
         else:

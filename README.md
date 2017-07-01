@@ -106,6 +106,8 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 `USE_SUDO` is on by default. If the user that runs your plex_autoscan server is able to run the Plex CLI Scanner without sudo, you can disable the sudo requirement here. **Ignore for Windows installations**
 
+`USE_QUOTED_SCAN_DIRECTORY` is on by default. If USE_SUDO is false, this can also be set to false so that the directory given to plex scanner cli to be scanned, is note contained within "" quotes. When set to false, instead spaces are escaped, e.g. `/mnt/TV/The\ Big\ Bang\ Theory`.
+
 
 ## Server
 
