@@ -27,8 +27,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         while True:
             checks += 1
             if os.path.exists(path):
-                logger.info("File '%s' exists on check %d of %d, proceeding with scan request", path, checks,
-                            config['SERVER_MAX_FILE_CHECKS'])
+                logger.info("File '%s' exists on check %d of %d.", path, checks, config['SERVER_MAX_FILE_CHECKS'])
                 scan_path = os.path.dirname(path).strip()
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
