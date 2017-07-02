@@ -77,7 +77,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
 
         # begin scan
         logger.debug("Starting scanner:\n%s", final_cmd)
-        os.system(final_cmd)
+        os.system(final_cmd.encode("utf-8"))
         logger.info("Finished scan")
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
