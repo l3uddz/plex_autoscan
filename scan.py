@@ -70,12 +70,11 @@ def manual_scan():
     if not config['SERVER_ALLOW_MANUAL_SCAN']:
         return abort(401)
     page = '<html><body>' \
-           '<form action="/' + config['SERVER_PASS'] + '" method="post"> File to be scanned:<br>' \
-                                                       '<input type="text" name="filepath" value=""> ' \
-                                                       '<input type="hidden" name="eventType" value="Manual"> ' \
-                                                       '<br><br><input type="submit" value="Submit"></form> ' \
-                                                       '<p>Clicking submit will request this file ' \
-                                                       'to be queued in the scan backlog.</p></body></html>'
+           '<form action="" method="post"> File to be scanned:<br>' \
+           '<input type="text" name="filepath" value=""> ' \
+           '<input type="hidden" name="eventType" value="Manual"> ' \
+           '<br><br><input type="submit" value="Submit"></form> ' \
+           '<p>Clicking submit will add this file to the scan backlog.</p></body></html>'
     return page, 200
 
 
