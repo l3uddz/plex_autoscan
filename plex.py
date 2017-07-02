@@ -65,7 +65,6 @@ def scan(config, lock, path, scan_for, section, scan_type):
     if lock.locked():
         logger.debug("Waiting for turn in the scan request backlog")
     with lock:
-        logger.info("Scan request is now commencing")
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
             scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
@@ -75,10 +74,10 @@ def scan(config, lock, path, scan_for, section, scan_type):
                     scanner_name)
                 return
             else:
-                logger.info("There are no '%s' processes being ran right now, continuing scan", scanner_name)
+                logger.info("No '%s' processes were found. Scan request is now beginning...", scanner_name)
 
         # begin scan
-        logger.debug("Starting scanner with:\n%s", final_cmd)
+        logger.debug("Starting scanner:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished scan")
         # empty trash if configured
