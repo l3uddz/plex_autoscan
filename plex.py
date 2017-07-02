@@ -15,9 +15,11 @@ def scan(config, lock, path, scan_for, section, scan_type):
     scan_path = ""
 
     # sleep for delay
-    logger.info("Scanning '%s' in %d seconds", path, config['SERVER_SCAN_DELAY'])
     if config['SERVER_SCAN_DELAY']:
+        logger.info("Scan request for '%s', scan delay of %d seconds. Sleeping...", path, config['SERVER_SCAN_DELAY'])
         time.sleep(config['SERVER_SCAN_DELAY'])
+    else:
+        logger.info("Scan request for '%s'", path)
 
     # check file exists
     if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':
@@ -25,12 +27,12 @@ def scan(config, lock, path, scan_for, section, scan_type):
         while True:
             checks += 1
             if os.path.exists(path):
-                logger.info("File '%s' exists on check %d of %d, proceeding with scan", path, checks,
+                logger.info("File '%s' exists on check %d of %d, proceeding with scan request", path, checks,
                             config['SERVER_MAX_FILE_CHECKS'])
                 scan_path = os.path.dirname(path).strip()
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
-                logger.info("File '%s' exhausted all available checks, aborting scan", path)
+                logger.warning("File '%s' exhausted all available checks, aborting scan request", path)
                 return
             else:
                 logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
@@ -38,7 +40,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 time.sleep(60)
 
     else:
-        # sonarr doesnt pass the sonarr_episodefile_path in webhook, so we cannot check until this is corrected.
+        # old sonarr doesnt pass the sonarr_episodefile_path in webhook, so we cannot check until this is corrected.
         scan_path = path.strip()
 
     # build plex scanner command
@@ -60,7 +62,10 @@ def scan(config, lock, path, scan_for, section, scan_type):
             final_cmd = cmd
 
     # invoke plex scanner
+    if lock.locked():
+        logger.debug("Waiting for turn in the scan request backlog")
     with lock:
+        logger.info("Scan request is now commencing")
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
             scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
@@ -73,7 +78,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 logger.info("There are no '%s' processes being ran right now, continuing scan", scanner_name)
 
         # begin scan
-        logger.debug("Using:\n%s", final_cmd)
+        logger.debug("Starting scanner with:\n%s", final_cmd)
         os.system(final_cmd)
         logger.info("Finished scan")
         # empty trash if configured
