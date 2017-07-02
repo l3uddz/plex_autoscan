@@ -133,8 +133,8 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 If the filepath that was reported to plex_autoscan by sonarr/radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by plex would become `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
 
-`SERVER_ALLOW_MANUAL_SCAN` when set to true will allow GET visits to the webhook URL where you can perform manual scans on a filepath. Remember all path mappings and section id mappings of server apply. So this is a good way of testing your configuration manually.
-
+`SERVER_ALLOW_MANUAL_SCAN` when set to true will allow GET requests to the webhook URL where you can perform manual scans on a filepath. Remember all path mappings and section id mappings of server apply. So this is a good way of testing your configuration manually.
+You can either visit your webhook url in a browser, or initiate a scan by curl e.g. `curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (20166f533t In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://localhost:3468/0c1fa3c9867e48b1bb3aa055cb86`
 
 ## Windows
 
