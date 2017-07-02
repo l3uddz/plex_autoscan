@@ -31,10 +31,10 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 scan_path = os.path.dirname(path).strip()
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
-                logger.warning("File '%s' exhausted all available checks, aborting scan request", path)
+                logger.warning("File '%s' exhausted all available checks, aborting scan request.", path)
                 return
             else:
-                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds", path, checks,
+                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", path, checks,
                             config['SERVER_MAX_FILE_CHECKS'])
                 time.sleep(60)
 
@@ -61,23 +61,23 @@ def scan(config, lock, path, scan_for, section, scan_type):
             final_cmd = cmd
 
     # invoke plex scanner
-    logger.debug("Waiting for turn in the scan request backlog")
+    logger.debug("Waiting for turn in the scan request backlog...")
     with lock:
+        logger.debug("Scan request is now being processed")
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
             scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
             if not utils.wait_running_process(scanner_name):
                 logger.warning(
-                    "There was a problem waiting for existing Plex Scanners to finish: '%s', aborting scan...",
-                    scanner_name)
+                    "There was a problem waiting for existing '%s' process(s) to finish, aborting scan.", scanner_name)
                 return
             else:
-                logger.info("No '%s' processes were found. Scan request is now beginning...", scanner_name)
+                logger.info("No '%s' processes were found.", scanner_name)
 
         # begin scan
-        logger.debug("Starting scanner:\n%s", final_cmd)
+        logger.debug("Starting Plex Scanner:\n%s", final_cmd)
         os.system(final_cmd.encode("utf-8"))
-        logger.info("Finished scan")
+        logger.info("Finished scan!")
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
             logger.info("Checking deleted item count in 5 seconds...")
