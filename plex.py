@@ -63,7 +63,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
     # invoke plex scanner
     logger.debug("Waiting for turn in the scan request backlog...")
     with lock:
-        logger.debug("Scan request is now being processed")
+        logger.info("Scan request is now being processed")
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
             scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
