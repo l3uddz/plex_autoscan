@@ -62,8 +62,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
             final_cmd = cmd
 
     # invoke plex scanner
-    if lock.locked():
-        logger.debug("Waiting for turn in the scan request backlog")
+    logger.debug("Waiting for turn in the scan request backlog")
     with lock:
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
