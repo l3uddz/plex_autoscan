@@ -75,7 +75,8 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 logger.info("No '%s' processes were found.", scanner_name)
 
         # begin scan
-        logger.debug("Starting Plex Scanner:\n%s", final_cmd)
+        logger.info("Starting Plex Scanner")
+        logger.debug(final_cmd)
         os.system(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
         # empty trash if configured
