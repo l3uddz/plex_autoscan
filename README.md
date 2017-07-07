@@ -100,7 +100,7 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 `PLEX_EMPTY_TRASH_ZERO_DELETED` if set to True, will always perform an empty trash on the scanned section. If False, trash will only be emptied when the database returns more than 0 deleted items.
 
-`PLEX_DATABASE_PATH` is the plex library database location. Make sure the user running plex_autoscan has access to this file directly, e.g. chmod 777 -R /var/lib/plexmediaserver or the empty trash will never be performed. On Windows, this database filepath can usually be found at "%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases"
+`PLEX_DATABASE_PATH` is the plex library database location. Make sure the user running plex_autoscan has access to this file directly, e.g. chmod -R 777 /var/lib/plexmediaserver or the empty trash will never be performed. On Windows, this database filepath can usually be found at "%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases"
 
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` when set to true, the active scanner in the plex_autoscan queue will once the lock is acquired, before a plex scan is commenced, scan the process list looking for existing Plex Media Scanners. If one is found, it will sleep 60 seconds and check again in a constant loop. Once all Plex Media Scanner's are no longer in the process list, the scan will commence, thus continuing the plex_autoscan scan backlog.
 
