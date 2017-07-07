@@ -27,8 +27,7 @@ consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-fileHandler = RotatingFileHandler(os.path.join(os.path.dirname(sys.argv[0]), 'plex_autoscan.log'),
-                                  maxBytes=1024 * 1024 * 5, backupCount=5)
+fileHandler = RotatingFileHandler(utils.get_logfile_path(), maxBytes=1024 * 1024 * 5, backupCount=5)
 fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)

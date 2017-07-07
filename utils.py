@@ -1,4 +1,6 @@
 import logging
+import os
+import sys
 import time
 
 import psutil
@@ -49,3 +51,19 @@ def wait_running_process(process_name):
     except:
         logger.exception("Exception waiting for process: '%s'", process_name())
         return False
+
+
+def get_logfile_path():
+    pos = 0
+    log_path = os.path.join(os.path.dirname(sys.argv[0]), 'plex_autoscan.log')
+
+    try:
+        for item in sys.argv:
+            if item == '--logfile':
+                log_path = sys.argv[pos + 1]
+                break
+            pos += 1
+    except:
+        logger.exception("Exception retrieving supplied logfile: ")
+
+    return log_path
