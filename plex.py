@@ -3,6 +3,10 @@ import os
 import sqlite3
 import time
 
+try:
+    from shlex import quote as cmd_quote
+except ImportError:
+    from pipes import quote as cmd_quote
 import requests
 
 import utils
@@ -47,16 +51,12 @@ def scan(config, lock, path, scan_for, section, scan_type):
         final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
                     % (config['PLEX_SCANNER'], str(section), scan_path)
     else:
-        scan_dir = '\\"' + scan_path + '\\"'
-        if not config['USE_SUDO'] and not config['USE_QUOTED_SCAN_DIRECTORY']:
-            scan_dir = scan_path.replace(' ', '\\ ')
-
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --scan --refresh --section ' \
-              + str(section) + ' --directory ' + scan_dir
+              + str(section) + ' --directory ' + cmd_quote(scan_path)
         if config['USE_SUDO']:
-            final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
+            final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
         else:
             final_cmd = cmd
 
@@ -77,7 +77,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
         # begin scan
         logger.info("Starting Plex Scanner")
         logger.debug(final_cmd)
-        os.system(final_cmd.encode("utf-8"))
+        utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:

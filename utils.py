@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import sys
 import time
 
@@ -67,3 +68,16 @@ def get_logfile_path():
         logger.exception("Exception retrieving supplied logfile: ")
 
     return log_path
+
+
+def run_command(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while True:
+        output = str(process.stdout.readline()).strip()
+        if process.poll() is not None:
+            break
+        if output and len(output):
+            logger.info(output)
+
+    rc = process.poll()
+    return rc

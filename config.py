@@ -44,8 +44,7 @@ base_config = {
     'SERVER_SCAN_DELAY': 5,
     'SERVER_MAX_FILE_CHECKS': 10,
     'SERVER_ALLOW_MANUAL_SCAN': False,
-    'USE_SUDO': True,
-    'USE_QUOTED_SCAN_DIRECTORY': True
+    'USE_SUDO': True
 }
 
 
