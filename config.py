@@ -44,6 +44,8 @@ base_config = {
     'SERVER_SCAN_DELAY': 5,
     'SERVER_MAX_FILE_CHECKS': 10,
     'SERVER_ALLOW_MANUAL_SCAN': False,
+    'DOCKER_NAME': 'plex',
+    'USE_DOCKER': False,
     'USE_SUDO': True
 }
 
