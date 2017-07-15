@@ -111,7 +111,9 @@ def show_sections(config):
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] \
               + ';export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' \
               + config['PLEX_SUPPORT_DIR'] + ';' + config['PLEX_SCANNER'] + ' --list'
-        if config['USE_SUDO']:
+        if config['USE_DOCKER']:
+            final_cmd = 'docker exec -it %s bash -c %s' % (cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
+        elif config['USE_SUDO']:
             final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
         else:
             final_cmd = cmd
