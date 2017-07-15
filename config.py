@@ -45,6 +45,11 @@ base_config = {
     'SERVER_MAX_FILE_CHECKS': 10,
     'SERVER_ALLOW_MANUAL_SCAN': False,
     'DOCKER_NAME': 'plex',
+    'DOCKER_FILE_EXIST_PATH_MAPPINGS': {
+        '/home/thompsons/plexdrive': [
+            '/data'
+        ]
+    },
     'USE_DOCKER': False,
     'USE_SUDO': True
 }

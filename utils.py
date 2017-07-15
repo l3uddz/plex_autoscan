@@ -28,6 +28,15 @@ def map_pushed_path(config, path):
     return path
 
 
+def map_pushed_path_docker(config, path):
+    for mapped_path, mappings in config['DOCKER_FILE_EXIST_PATH_MAPPINGS'].items():
+        for mapping in mappings:
+            if mapping in path:
+                logger.debug("Mapping docker path '%s' to '%s'", mapping, mapped_path)
+                return path.replace(mapping, mapped_path)
+    return path
+
+
 def is_process_running(process_name):
     try:
         for process in psutil.process_iter():

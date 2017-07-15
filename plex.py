@@ -28,17 +28,19 @@ def scan(config, lock, path, scan_for, section, scan_type):
     # check file exists
     if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':
         checks = 0
+        check_path = utils.map_pushed_path_docker(config, path)
         while True:
             checks += 1
-            if os.path.exists(path):
-                logger.info("File '%s' exists on check %d of %d.", path, checks, config['SERVER_MAX_FILE_CHECKS'])
+            if os.path.exists(check_path):
+                logger.info("File '%s' exists on check %d of %d.", check_path, checks, config['SERVER_MAX_FILE_CHECKS'])
                 scan_path = os.path.dirname(path).strip()
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
-                logger.warning("File '%s' exhausted all available checks, aborting scan request.", path)
+                logger.warning("File '%s' exhausted all available checks, aborting scan request.", check_path)
                 return
             else:
-                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", path, checks,
+                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", check_path,
+                            checks,
                             config['SERVER_MAX_FILE_CHECKS'])
                 time.sleep(60)
 
