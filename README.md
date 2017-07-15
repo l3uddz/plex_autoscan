@@ -102,9 +102,13 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 
 `PLEX_DATABASE_PATH` is the plex library database location. Make sure the user running plex_autoscan has access to this file directly, e.g. chmod -R 777 /var/lib/plexmediaserver or the empty trash will never be performed. On Windows, this database filepath can usually be found at "%LOCALAPPDATA%\Plex Media Server\Plug-in Support\Databases"
 
-`PLEX_WAIT_FOR_EXTERNAL_SCANNERS` when set to true, the active scanner in the plex_autoscan queue will once the lock is acquired, before a plex scan is commenced, scan the process list looking for existing Plex Media Scanners. If one is found, it will sleep 60 seconds and check again in a constant loop. Once all Plex Media Scanner's are no longer in the process list, the scan will commence, thus continuing the plex_autoscan scan backlog.
+`PLEX_WAIT_FOR_EXTERNAL_SCANNERS` when set to true, the active scanner in the plex_autoscan queue will once the lock is acquired, before a plex scan is commenced, scan the process list looking for existing Plex Media Scanners. If one is found, it will sleep 60 seconds and check again in a constant loop. Once all Plex Media Scanner's are no longer in the process list, the scan will commence, thus continuing the plex_autoscan scan backlog. **Note: if USE_DOCKER is enabled, this will not work properly if there is multiple plex dockers being ran, as it will see all the plex scanners being ran in all the containers. So turn this off when using USE_DOCKER unless there is only 1 docker container**
+ 
+`DOCKER_NAME` is the name of the docker container to execute the plex scanner in, if USE_DOCKER is enabled.
 
 `USE_SUDO` is on by default. If the user that runs your plex_autoscan server is able to run the Plex CLI Scanner without sudo, you can disable the sudo requirement here. **Ignore for Windows installations**
+
+`USE_DOCKER` is off by default. If this is enabled, then docker exec will be used to execute the plex scanner inside the DOCKER_NAME container.
 
 ## Server
 
@@ -129,6 +133,8 @@ This tells the script that if the filepath that we have decided to scan has /Mov
 ```
 
 If the filepath that was reported to plex_autoscan by sonarr/radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by plex would become `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
+
+`SERVER_FILE_EXIST_PATH_MAPPINGS` this is exactly like the option above, but for the file exist checks. this is useful when using docker, because the folder being scanned by the plex container, may be different to the path on the host system running plex_autoscan. This config option allows you to specify a path mapping to be used exclusively for the file exist checks, and then continue using the remapped path using the setting above for the plex scanner.
 
 `SERVER_ALLOW_MANUAL_SCAN` when set to true will allow GET requests to the webhook URL where you can perform manual scans on a filepath. Remember all path mappings and section id mappings of server apply. So this is a good way of testing your configuration manually.
 You can either visit your webhook url in a browser, or initiate a scan by curl e.g. `curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (20166f533t In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://localhost:3468/0c1fa3c9867e48b1bb3aa055cb86`
