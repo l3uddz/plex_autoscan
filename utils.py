@@ -76,7 +76,7 @@ def run_command(command):
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
         if process.poll() is not None:
             break
-        if output and len(output) >= 6:
+        if output and len(output) >= 8:
             logger.info(output)
 
     rc = process.poll()
