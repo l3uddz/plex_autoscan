@@ -28,11 +28,11 @@ def map_pushed_path(config, path):
     return path
 
 
-def map_pushed_path_docker(config, path):
-    for mapped_path, mappings in config['DOCKER_FILE_EXIST_PATH_MAPPINGS'].items():
+def map_pushed_path_file_exists(config, path):
+    for mapped_path, mappings in config['SERVER_FILE_EXIST_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
-                logger.debug("Mapping docker path '%s' to '%s'", mapping, mapped_path)
+                logger.debug("Mapping file check path '%s' to '%s'", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 

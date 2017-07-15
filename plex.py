@@ -28,7 +28,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
     # check file exists
     if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':
         checks = 0
-        check_path = utils.map_pushed_path_docker(config, path)
+        check_path = utils.map_pushed_path_file_exists(config, path)
         while True:
             checks += 1
             if os.path.exists(check_path):
