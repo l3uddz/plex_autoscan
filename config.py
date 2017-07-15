@@ -20,7 +20,6 @@ base_config = {
         ]
     },
     'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
-    'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
     'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
     'PLEX_DATABASE_PATH': '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server'
                           '/Plug-in Support/Databases/com.plexapp.plugins.library.db',
