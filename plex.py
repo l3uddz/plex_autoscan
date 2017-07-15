@@ -117,6 +117,8 @@ def show_sections(config):
             final_cmd = 'sudo -u %s bash -c "%s"' % (config['PLEX_USER'], cmd)
         else:
             final_cmd = cmd
+    logger.info("Using Plex Scanner")
+    logger.debug(final_cmd)
     os.system(final_cmd)
 
 
