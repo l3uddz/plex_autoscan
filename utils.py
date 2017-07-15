@@ -73,7 +73,7 @@ def get_logfile_path():
 def run_command(command):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
-        output = str(process.stdout.readline()).strip()
+        output = str(process.stdout.readline()).lstrip('b').replace('\\n', '')
         if process.poll() is not None:
             break
         if output and len(output):
