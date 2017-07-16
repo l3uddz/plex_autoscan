@@ -60,7 +60,7 @@ def scan(config, lock, path, scan_for, section, scan_type):
             scan_path)
 
         if config['USE_DOCKER']:
-            final_cmd = 'docker exec -it %s bash -c %s' % (cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
+            final_cmd = 'docker exec -i %s bash -c %s' % (cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
         elif config['USE_SUDO']:
             final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
         else:
