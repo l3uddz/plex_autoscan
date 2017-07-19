@@ -7,7 +7,8 @@ import uuid
 logger = logging.getLogger("CONFIG")
 logger.setLevel(logging.DEBUG)
 
-config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+config_folder = os.path.join(os.path.dirname(sys.argv[0]), 'config')
+config_path = os.path.join(config_folder, 'config.json')
 
 base_config = {
     'PLEX_USER': 'plex',
