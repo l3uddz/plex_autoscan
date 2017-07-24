@@ -39,7 +39,11 @@ logger.setLevel(logging.DEBUG)
 scan_lock = Lock()
 
 # Config
-config = config.load()
+docker = False
+for item in sys.argv:
+    if item == 'docker':
+        docker = True
+config = config.load(docker)
 
 
 ############################################################

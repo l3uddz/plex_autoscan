@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+import time
 import uuid
 
 logger = logging.getLogger("CONFIG")
@@ -78,9 +79,12 @@ def upgrade(cfg):
     return new_config
 
 
-def load():
+def load(docker):
     if not os.path.exists(config_path):
         build()
+        if docker:
+            while True:
+                time.sleep(1)
         exit(0)
     cfg = {}
     with open(config_path, 'r') as fp:
