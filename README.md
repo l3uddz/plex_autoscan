@@ -27,40 +27,49 @@ This can be disabled by config option USE_SUDO**
 Example configuration:
 ```json
 {
-    "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db", 
-    "PLEX_EMPTY_TRASH": true, 
+    "DOCKER_NAME": "plex",
+    "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
+    "PLEX_EMPTY_TRASH": true,
     "PLEX_EMPTY_TRASH_CONTROL_FILES": [
         "/mnt/unionfs/mounted.bin"
-    ], 
+    ],
     "PLEX_EMPTY_TRASH_MAX_FILES": 100,
-    "PLEX_EMPTY_TRASH_ZERO_DELETED": false, 
-    "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver", 
-    "PLEX_LOCAL_URL": "http://localhost:32400", 
-    "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner", 
+    "PLEX_EMPTY_TRASH_ZERO_DELETED": false,
+    "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
+    "PLEX_LOCAL_URL": "http://localhost:32400",
+    "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
     "PLEX_SECTION_PATH_MAPPINGS": {
         "1": [
             "/Movies/"
-        ], 
+        ],
         "2": [
             "/TV/"
         ]
-    }, 
-    "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support", 
-    "PLEX_TOKEN": "XXXXXXXXXXXX", 
-    "PLEX_USER": "plex", 
+    },
+    "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
+    "PLEX_TOKEN": "XXXXXXXXXX",
+    "PLEX_USER": "plex",
     "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
-    "SERVER_IP": "0.0.0.0", 
-    "SERVER_MAX_FILE_CHECKS": 10, 
-    "SERVER_PASS": "0c11a7c926fe48b6bb3aa055cb86f553", 
+    "SERVER_ALLOW_MANUAL_SCAN": false,
+    "SERVER_FILE_EXIST_PATH_MAPPINGS": {
+        "/home/thompsons/plexdrive": [
+            "/data"
+        ]
+    },
+    "SERVER_IP": "0.0.0.0",
+    "SERVER_MAX_FILE_CHECKS": 10,
+    "SERVER_PASS": "0c1fa7c986fe48b2bb3aa055cb86f533",
     "SERVER_PATH_MAPPINGS": {
         "/mnt/unionfs": [
             "/home/seed/media/fused"
         ]
-    }, 
-    "SERVER_PORT": 3468, 
-    "SERVER_SCAN_DELAY": 5, 
+    },
+    "SERVER_PORT": 3468,
+    "SERVER_SCAN_DELAY": 5,
+    "USE_DOCKER": false,
     "USE_SUDO": true
 }
+
 ```
 
 Output:
