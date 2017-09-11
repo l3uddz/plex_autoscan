@@ -90,3 +90,10 @@ def run_command(command):
 
     rc = process.poll()
     return rc
+
+
+def should_ignore(file_path, config):
+    for item in config['SERVER_IGNORE_LIST']:
+        if item.lower() in file_path.lower():
+            return True, item
+    return False, None

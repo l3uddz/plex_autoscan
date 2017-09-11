@@ -51,6 +51,11 @@ base_config = {
         ]
     },
     'SERVER_ALLOW_MANUAL_SCAN': False,
+    'SERVER_IGNORE_LIST': [
+        '/.grab/',
+        '.DS_Store',
+        'Thumbs.db'
+    ],
     'DOCKER_NAME': 'plex',
     'USE_DOCKER': False,
     'USE_SUDO': True

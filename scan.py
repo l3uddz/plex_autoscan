@@ -98,6 +98,12 @@ def client_pushed():
     elif 'eventType' in data and data['eventType'] == 'Manual':
         logger.info("Client %r made a manual scan request for: '%s'", request.remote_addr, data['filepath'])
         final_path = utils.map_pushed_path(config, data['filepath'])
+        # ignore this request?
+        ignore, ignore_match = utils.should_ignore(final_path, config)
+        if ignore:
+            logger.info("Ignored scan request for '%s' because '%s' was matched from SERVER_IGNORE_LIST", final_path,
+                        ignore_match)
+            return "Ignoring scan request because %s was matched from your SERVER_IGNORE_LIST" % ignore_match
         if start_scan(final_path, 'manual', 'Manual'):
             return "'%s' was added to scan backlog." % final_path
         else:
