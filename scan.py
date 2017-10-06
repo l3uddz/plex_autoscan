@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import sys
+import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process, Lock
 
@@ -47,6 +48,22 @@ config = config.load(docker)
 
 
 ############################################################
+# QUEUE PROCESSOR
+############################################################
+
+def queue_processor():
+    logger.info("Starting queue processor")
+    while True:
+        try:
+            logger.info("Queue processor started")
+
+        except:
+            logger.exception("Exception while processing scan queue: ")
+        logger.warning("Restarting queue processor in 10 seconds")
+        time.sleep(10)
+
+
+############################################################
 # FUNCS
 ############################################################
 
@@ -57,6 +74,12 @@ def start_scan(path, scan_for, scan_type):
 
     scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
     scan_process.start()
+    return True
+
+
+def start_queue_processor():
+    queue_process = Process(target=queue_processor, args=())
+    queue_process.start()
     return True
 
 
@@ -139,6 +162,8 @@ def client_pushed():
 ############################################################
 
 if __name__ == "__main__":
+
+    exit(0)
     if len(sys.argv) <= 1:
         logger.error("You must pass an argument, sections or server...")
         sys.exit(0)
@@ -146,6 +171,7 @@ if __name__ == "__main__":
         if sys.argv[1].lower() == 'sections':
             plex.show_sections(config)
         elif sys.argv[1].lower() == 'server':
+            start_queue_processor()
             logger.info("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
                         config['SERVER_PASS'])
             app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
