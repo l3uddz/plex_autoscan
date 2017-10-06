@@ -83,7 +83,7 @@ def start_scan(path, scan_for, scan_type):
 
     if config['SERVER_USE_SQLITE']:
         if db.add_item(path, scan_for, section, scan_type):
-            logger.info("Added new unique job '%s' to database", path)
+            logger.info("Added '%s' to database, proceeding with scan", path)
         else:
             logger.info("Already processing '%s', aborting adding an extra scan request to the queue", path)
             return False
