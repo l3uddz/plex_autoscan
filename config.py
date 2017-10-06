@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-import time
 import uuid
 
 logger = logging.getLogger("CONFIG")
@@ -56,6 +55,7 @@ base_config = {
         '.DS_Store',
         'Thumbs.db'
     ],
+    'SERVER_USE_SQLITE': False,
     'DOCKER_NAME': 'plex',
     'USE_DOCKER': False,
     'USE_SUDO': True
@@ -75,9 +75,11 @@ def upgrade(cfg):
         else:
             new_config[name] = cfg[name]
 
-    with open(config_path, 'w') as fpc:
-        json.dump(new_config, fpc, indent=4, sort_keys=True)
-        fpc.close()
+    # dump generated config only if added_fields > 0
+    if added_fields:
+        with open(config_path, 'w') as fpc:
+            json.dump(new_config, fpc, indent=4, sort_keys=True)
+            fpc.close()
 
     if added_fields and len(fields):
         logger.info("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
@@ -87,9 +89,6 @@ def upgrade(cfg):
 def load(docker):
     if not os.path.exists(config_path):
         build()
-        if docker:
-            while True:
-                time.sleep(1)
         exit(0)
     cfg = {}
     with open(config_path, 'r') as fp:

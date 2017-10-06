@@ -3,6 +3,8 @@ import os
 import sqlite3
 import time
 
+import db
+
 try:
     from shlex import quote as cmd_quote
 except ImportError:
@@ -37,6 +39,13 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 break
             elif checks >= config['SERVER_MAX_FILE_CHECKS']:
                 logger.warning("File '%s' exhausted all available checks, aborting scan request.", check_path)
+                # remove item from database if sqlite is enabled
+                if config['SERVER_USE_SQLITE']:
+                    if db.remove_item(path):
+                        logger.info("Removed '%s' from database", path)
+                        time.sleep(1)
+                    else:
+                        logger.error("Failed removing '%s' from database", path)
                 return
             else:
                 logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", check_path,
@@ -77,6 +86,13 @@ def scan(config, lock, path, scan_for, section, scan_type):
             if not utils.wait_running_process(scanner_name):
                 logger.warning(
                     "There was a problem waiting for existing '%s' process(s) to finish, aborting scan.", scanner_name)
+                # remove item from database if sqlite is enabled
+                if config['SERVER_USE_SQLITE']:
+                    if db.remove_item(path):
+                        logger.info("Removed '%s' from database", path)
+                        time.sleep(1)
+                    else:
+                        logger.error("Failed removing '%s' from database", path)
                 return
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
@@ -86,6 +102,14 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
+        # remove item from database if sqlite is enabled
+        if config['SERVER_USE_SQLITE']:
+            if db.remove_item(path):
+                logger.info("Removed '%s' from database", path)
+                time.sleep(1)
+            else:
+                logger.error("Failed removing '%s' from database", path)
+
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
             logger.info("Checking deleted item count in 10 seconds...")

@@ -12,6 +12,7 @@ from flask import abort
 from flask import request
 
 import config
+import db
 import plex
 import utils
 
@@ -52,15 +53,23 @@ config = config.load(docker)
 ############################################################
 
 def queue_processor():
-    logger.info("Starting queue processor")
-    while True:
-        try:
-            logger.info("Queue processor started")
-
-        except:
-            logger.exception("Exception while processing scan queue: ")
-        logger.warning("Restarting queue processor in 10 seconds")
+    logger.info("Starting queue processor in 10 seconds")
+    try:
         time.sleep(10)
+        logger.info("Queue processor started")
+        db_scan_requests = db.get_all_items()
+        items = 0
+        for db_item in db_scan_requests:
+            scan_process = Process(target=plex.scan, args=(
+                config, scan_lock, db_item['scan_path'], db_item['scan_for'], db_item['scan_section'],
+                db_item['scan_type']))
+            scan_process.start()
+            items += 1
+            time.sleep(2)
+        logger.info("Restored %d scan requests from database", items)
+    except:
+        logger.exception("Exception while processing scan requests from database: ")
+    return
 
 
 ############################################################
@@ -72,12 +81,18 @@ def start_scan(path, scan_for, scan_type):
     if section <= 0:
         return False
 
+    if config['SERVER_USE_SQLITE']:
+        if db.add_item(path, scan_for, section, scan_type):
+            logger.info("Added new unique job '%s' to database", path)
+        else:
+            logger.info("Already processing '%s', aborting adding an extra scan request to the queue", path)
+            return False
     scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
     scan_process.start()
     return True
 
 
-def start_queue_processor():
+def start_queue_reloader():
     queue_process = Process(target=queue_processor, args=())
     queue_process.start()
     return True
@@ -149,7 +164,6 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(config, path)
         start_scan(final_path, 'sonarr_dev', "Upgrade" if data['isUpgrade'] else data['eventType'])
-
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
@@ -162,8 +176,6 @@ def client_pushed():
 ############################################################
 
 if __name__ == "__main__":
-
-    exit(0)
     if len(sys.argv) <= 1:
         logger.error("You must pass an argument, sections or server...")
         sys.exit(0)
@@ -171,10 +183,12 @@ if __name__ == "__main__":
         if sys.argv[1].lower() == 'sections':
             plex.show_sections(config)
         elif sys.argv[1].lower() == 'server':
-            start_queue_processor()
+            if config['SERVER_USE_SQLITE']:
+                start_queue_reloader()
             logger.info("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
                         config['SERVER_PASS'])
-            app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
+            app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, threaded=True,
+                    use_reloader=False)
             logger.info("Server stopped")
         else:
             logger.error("You must pass an argument of either sections or server...")
