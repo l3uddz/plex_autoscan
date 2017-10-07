@@ -82,10 +82,11 @@ def start_scan(path, scan_for, scan_type):
         return False
 
     if config['SERVER_USE_SQLITE']:
-        if db.add_item(path, scan_for, section, scan_type):
+        if not db.exists_file_root_path(path) and db.add_item(path, scan_for, section, scan_type):
             logger.info("Added '%s' to database, proceeding with scan", path)
         else:
-            logger.info("Already processing '%s', aborting adding an extra scan request to the queue", path)
+            logger.info(
+                "Already processing the root folder of '%s', aborting adding an extra scan request to the queue", path)
             return False
     scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
     scan_process.start()

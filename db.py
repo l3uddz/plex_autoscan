@@ -48,6 +48,19 @@ def get_next_item():
     return item
 
 
+def exists_file_root_path(file_path):
+    items = get_all_items()
+    if '.' in file_path:
+        dir_path = os.path.dirname(file_path)
+    else:
+        dir_path = file_path
+
+    for item in items:
+        if dir_path.lower() in item['scan_path'].lower():
+            return True
+    return False
+
+
 def get_all_items():
     items = []
     try:
