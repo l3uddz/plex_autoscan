@@ -102,6 +102,12 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
+        # analyze file
+        if config['PLEX_ANALYZE_FILE']:
+            logger.debug("Sleeping 10 seconds before initiating analysis")
+            time.sleep(10)
+            analyze_item(config, path)
+
         # remove item from database if sqlite is enabled
         if config['SERVER_USE_SQLITE']:
             if db.remove_item(path):
@@ -152,6 +158,59 @@ def show_sections(config):
     logger.info("Using Plex Scanner")
     logger.debug(final_cmd)
     os.system(final_cmd)
+
+
+def analyze_item(config, scan_path):
+    if not os.path.exists(config['PLEX_DATABASE_PATH']):
+        logger.info("Could not analyze '%s' because plex database could not be found?", scan_path)
+        return
+    # get files metadata_item_id
+    metadata_item_id = get_file_metadata_id(config, scan_path)
+    if not metadata_item_id:
+        logger.info("Aborting analyze of '%s' because could not find a metadata_item_id for it", scan_path)
+        return
+    # build plex scanner analyze command
+    if os.name == 'nt':
+        final_cmd = '""%s" --analyze --item %d --log-file-suffix  Analysis"' \
+                    % (config['PLEX_SCANNER'], metadata_item_id)
+    else:
+        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
+        if not config['USE_DOCKER']:
+            cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
+        cmd += config['PLEX_SCANNER'] + ' --analyze --item ' + str(metadata_item_id) + ' --log-file-suffix  Analysis'
+
+        if config['USE_DOCKER']:
+            final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
+                        (cmd_quote(config['PLEX_USER']), cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
+        elif config['USE_SUDO']:
+            final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
+        else:
+            final_cmd = cmd
+
+    logger.info("Starting Plex Scanner for Analysis")
+    logger.debug(final_cmd)
+    utils.run_command(final_cmd.encode("utf-8"))
+    logger.info("Finished analysis!")
+    return
+
+
+def get_file_metadata_id(config, file_path):
+    # query db to locate media_item_id
+    result = None
+    try:
+        conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
+        c = conn.cursor()
+        media_item_id = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()[1]
+        # query db to find metadata_item_id
+        if int(media_item_id):
+            metadata_item_id = c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
+            if int(metadata_item_id):
+                logger.debug("Found metadata_item_id for '%s': %d", file_path, int(metadata_item_id))
+                result = int(metadata_item_id)
+        conn.close()
+    except Exception as ex:
+        logger.exception("Exception finding metadata_item_id for '%s': ", file_path)
+    return result
 
 
 def empty_trash(config, section):
