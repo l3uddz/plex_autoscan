@@ -172,13 +172,14 @@ def analyze_item(config, scan_path):
         return
     # build plex scanner analyze command
     if os.name == 'nt':
-        final_cmd = '""%s" --analyze --item %d --log-file-suffix  Analysis"' \
+        final_cmd = '""%s" --analyze --force --item %d --log-file-suffix  Analysis"' \
                     % (config['PLEX_SCANNER'], metadata_item_id)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
         if not config['USE_DOCKER']:
             cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
-        cmd += config['PLEX_SCANNER'] + ' --analyze --item ' + str(metadata_item_id) + ' --log-file-suffix  Analysis'
+        cmd += config['PLEX_SCANNER'] + ' --analyze --force --item ' + str(
+            metadata_item_id) + ' --log-file-suffix  Analysis'
 
         if config['USE_DOCKER']:
             final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
