@@ -102,11 +102,6 @@ def scan(config, lock, path, scan_for, section, scan_type):
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
-        # analyze file
-        if config['PLEX_ANALYZE_FILE']:
-            logger.debug("Sleeping 10 seconds before initiating analysis")
-            time.sleep(10)
-            analyze_item(config, path)
 
         # remove item from database if sqlite is enabled
         if config['SERVER_USE_SQLITE']:
@@ -135,6 +130,12 @@ def scan(config, lock, path, scan_for, section, scan_type):
                 return
             logger.info("Emptying trash to clear %d deleted items", deleted_items)
             empty_trash(config, str(section))
+
+        # analyze file
+        if config['PLEX_ANALYZE_FILE']:
+            logger.debug("Sleeping 10 seconds before initiating analysis")
+            time.sleep(10)
+            analyze_item(config, path)
 
     return
 
