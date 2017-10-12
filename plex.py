@@ -206,8 +206,15 @@ def get_file_metadata_id(config, file_path):
         if int(media_item_id):
             metadata_item_id = c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
             if int(metadata_item_id):
-                logger.debug("Found metadata_item_id for '%s': %d", file_path, int(metadata_item_id))
-                result = int(metadata_item_id)
+                # check for parent_id in metadata_items
+                parent_id = c.execute("SELECT * FROM metadata_items WHERE id=?", (int(metadata_item_id),)).fetchone()[2]
+                if parent_id:
+                    result = int(parent_id)
+                    logger.debug("Found parent_id for '%s': %d", file_path, result)
+                else:
+                    result = int(metadata_item_id)
+                    logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
+
         conn.close()
     except Exception as ex:
         logger.exception("Exception finding metadata_item_id for '%s': ", file_path)
