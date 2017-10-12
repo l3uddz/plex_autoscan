@@ -121,17 +121,15 @@ def scan(config, lock, path, scan_for, section, scan_type):
             if deleted_items > config['PLEX_EMPTY_TRASH_MAX_FILES']:
                 logger.warning("There were %d deleted files, skipping emptying trash for section %s", deleted_items,
                                section)
-                return
-            if deleted_items == -1:
+            elif deleted_items == -1:
                 logger.error("Could not determine deleted item count, aborting emptying trash")
-                return
-            if not config['PLEX_EMPTY_TRASH_ZERO_DELETED'] and not deleted_items and scan_type != 'Upgrade':
+            elif not config['PLEX_EMPTY_TRASH_ZERO_DELETED'] and not deleted_items and scan_type != 'Upgrade':
                 logger.info("Skipping emptying trash as there were no deleted items")
-                return
-            logger.info("Emptying trash to clear %d deleted items", deleted_items)
-            empty_trash(config, str(section))
+            else:
+                logger.info("Emptying trash to clear %d deleted items", deleted_items)
+                empty_trash(config, str(section))
 
-        # analyze file
+        # analyze movie/season
         if config['PLEX_ANALYZE_FILE'] and config['PLEX_TOKEN'] and config['PLEX_LOCAL_URL']:
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
