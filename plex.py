@@ -132,8 +132,8 @@ def scan(config, lock, path, scan_for, section, scan_type):
             empty_trash(config, str(section))
 
         # analyze file
-        if config['PLEX_ANALYZE_FILE']:
-            logger.debug("Sleeping 10 seconds before initiating analysis")
+        if config['PLEX_ANALYZE_FILE'] and config['PLEX_TOKEN'] and config['PLEX_LOCAL_URL']:
+            logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
 
@@ -170,29 +170,17 @@ def analyze_item(config, scan_path):
     if not metadata_item_id:
         logger.info("Aborting analyze of '%s' because could not find a metadata_item_id for it", scan_path)
         return
-    # build plex scanner analyze command
-    if os.name == 'nt':
-        final_cmd = '""%s" --analyze --force --item %d --log-file-suffix  Analysis"' \
-                    % (config['PLEX_SCANNER'], metadata_item_id)
-    else:
-        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
-        if not config['USE_DOCKER']:
-            cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
-        cmd += config['PLEX_SCANNER'] + ' --analyze --force --item ' + str(
-            metadata_item_id) + ' --log-file-suffix  Analysis'
 
-        if config['USE_DOCKER']:
-            final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
-                        (cmd_quote(config['PLEX_USER']), cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
-        elif config['USE_SUDO']:
-            final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
+    # send analyze request to server
+    try:
+        resp = requests.put("%s/library/metadata/%d/analyze?X-Plex-Token=%s" % (
+            config['PLEX_LOCAL_URL'], metadata_item_id, config['PLEX_TOKEN']))
+        if resp.status_code == 200:
+            logger.info("Sent analyze request!")
         else:
-            final_cmd = cmd
-
-    logger.info("Starting Plex Scanner for Analysis")
-    logger.debug(final_cmd)
-    utils.run_command(final_cmd.encode("utf-8"))
-    logger.info("Finished analysis!")
+            logger.error("Unexpected response status_code for analyze request: %d", resp.status_code)
+    except:
+        logger.exception("Exception sending analyze request for library item %d: ", metadata_item_id)
     return
 
 
