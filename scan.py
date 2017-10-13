@@ -5,7 +5,7 @@ import os
 import sys
 import time
 from logging.handlers import RotatingFileHandler
-from multiprocessing import Process, Lock
+from multiprocessing import Process, Lock, Manager
 
 from flask import Flask
 from flask import abort
@@ -39,7 +39,8 @@ logger.setLevel(logging.DEBUG)
 
 # Multiprocessing
 scan_lock = Lock()
-resleep_paths = []
+mngr = Manager()
+resleep_paths = mngr.list()
 
 # Config
 docker = False

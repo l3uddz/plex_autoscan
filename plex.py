@@ -23,15 +23,14 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     # sleep for delay
     while True:
         if config['SERVER_SCAN_DELAY']:
-            logger.info("Scan request for '%s', scan delay of %d seconds. Sleeping...", path,
-                        config['SERVER_SCAN_DELAY'])
+            logger.info("Scan request for '%s', sleeping for %d seconds...", path, config['SERVER_SCAN_DELAY'])
             time.sleep(config['SERVER_SCAN_DELAY'])
         else:
             logger.info("Scan request for '%s'", path)
-            
+
         # check if root scan folder for
         if path in resleep_paths:
-            logger.info("Another scan request came for root folder of '%s' while sleeping, sleeping again...",
+            logger.info("Another scan request occurred for folder of '%s', sleeping again!",
                         path)
             utils.remove_item_from_list(path, resleep_paths)
         else:
