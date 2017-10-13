@@ -57,8 +57,8 @@ def exists_file_root_path(file_path):
 
     for item in items:
         if dir_path.lower() in item['scan_path'].lower():
-            return True
-    return False
+            return True, item['scan_path']
+    return False, None
 
 
 def get_all_items():

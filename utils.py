@@ -97,3 +97,9 @@ def should_ignore(file_path, config):
         if item.lower() in file_path.lower():
             return True, item
     return False, None
+
+
+def remove_item_from_list(item, from_list):
+    while item in from_list:
+        from_list.pop(from_list.index(item))
+    return

@@ -17,15 +17,24 @@ logger = logging.getLogger("PLEX")
 logger.setLevel(logging.DEBUG)
 
 
-def scan(config, lock, path, scan_for, section, scan_type):
+def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     scan_path = ""
 
     # sleep for delay
-    if config['SERVER_SCAN_DELAY']:
-        logger.info("Scan request for '%s', scan delay of %d seconds. Sleeping...", path, config['SERVER_SCAN_DELAY'])
-        time.sleep(config['SERVER_SCAN_DELAY'])
-    else:
-        logger.info("Scan request for '%s'", path)
+    while True:
+        if config['SERVER_SCAN_DELAY']:
+            logger.info("Scan request for '%s', scan delay of %d seconds. Sleeping...", path,
+                        config['SERVER_SCAN_DELAY'])
+            time.sleep(config['SERVER_SCAN_DELAY'])
+        else:
+            logger.info("Scan request for '%s'", path)
+        # check if root scan folder for
+        if path in resleep_paths:
+            logger.info("Another scan request came for root folder of '%s' while sleeping, sleeping again...",
+                        path)
+            utils.remove_item_from_list(path, resleep_paths)
+        else:
+            break
 
     # check file exists
     if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':

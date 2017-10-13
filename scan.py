@@ -39,6 +39,7 @@ logger.setLevel(logging.DEBUG)
 
 # Multiprocessing
 scan_lock = Lock()
+resleep_paths = []
 
 # Config
 docker = False
@@ -82,13 +83,16 @@ def start_scan(path, scan_for, scan_type):
         return False
 
     if config['SERVER_USE_SQLITE']:
-        if not db.exists_file_root_path(path) and db.add_item(path, scan_for, section, scan_type):
+        db_exists, db_file = db.exists_file_root_path(path)
+        if not db_exists and db.add_item(path, scan_for, section, scan_type):
             logger.info("Added '%s' to database, proceeding with scan", path)
         else:
             logger.info(
-                "Already processing the root folder of '%s', aborting adding an extra scan request to the queue", path)
+                "Already processing '%s' from same folder, aborting adding an extra scan request to the queue", db_file)
+            resleep_paths.append(db_file)
             return False
-    scan_process = Process(target=plex.scan, args=(config, scan_lock, path, scan_for, section, scan_type))
+    scan_process = Process(target=plex.scan,
+                           args=(config, scan_lock, path, scan_for, section, scan_type, resleep_paths))
     scan_process.start()
     return True
 
