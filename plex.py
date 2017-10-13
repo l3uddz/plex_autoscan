@@ -28,6 +28,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             time.sleep(config['SERVER_SCAN_DELAY'])
         else:
             logger.info("Scan request for '%s'", path)
+            
         # check if root scan folder for
         if path in resleep_paths:
             logger.info("Another scan request came for root folder of '%s' while sleeping, sleeping again...",

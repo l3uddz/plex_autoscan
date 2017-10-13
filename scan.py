@@ -63,7 +63,7 @@ def queue_processor():
         for db_item in db_scan_requests:
             scan_process = Process(target=plex.scan, args=(
                 config, scan_lock, db_item['scan_path'], db_item['scan_for'], db_item['scan_section'],
-                db_item['scan_type']))
+                db_item['scan_type'], resleep_paths))
             scan_process.start()
             items += 1
             time.sleep(2)
