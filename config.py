@@ -2,14 +2,10 @@ import json
 import logging
 import os
 import sys
-import time
 import uuid
 
 logger = logging.getLogger("CONFIG")
 logger.setLevel(logging.DEBUG)
-
-config_folder = os.path.join(os.path.dirname(sys.argv[0]), 'config')
-config_path = os.path.join(config_folder, 'config.json')
 
 base_config = {
     'PLEX_USER': 'plex',
@@ -62,46 +58,72 @@ base_config = {
 }
 
 
-def upgrade(cfg):
-    new_config = {}
-    added_fields = 0
+def upgrade(config_path, cfg):
     fields = []
+    fields_env = {}
 
     for name, data in base_config.items():
         if name not in cfg:
-            new_config[name] = data
+            cfg[name] = data
             fields.append(name)
-            added_fields += 1
-        else:
-            new_config[name] = cfg[name]
 
-    with open(config_path, 'w') as fpc:
-        json.dump(new_config, fpc, indent=4, sort_keys=True)
-        fpc.close()
+        if name in os.environ:
+            fields_env[name] = os.environ[name]
+            logger.info("Using ENV setting %s=%s", name, os.environ[name])
 
-    if added_fields and len(fields):
-        logger.info("Upgraded config.json, added %d new field(s): %r", added_fields, fields)
-    return new_config
+    # Only rewrite config file if new fields added
+    if len(fields):
+        build(cfg)
+        logger.info("Upgraded config, added %d new field(s): %r", len(fields), fields)
 
+    # Update in-memory config with environment settings
+    cfg.update(fields_env)
 
-def load(docker):
-    if not os.path.exists(config_path):
-        build()
-        if docker:
-            while True:
-                time.sleep(1)
-        exit(0)
-    cfg = {}
-    with open(config_path, 'r') as fp:
-        cfg = upgrade(json.load(fp))
-        fp.close()
     return cfg
 
 
-def build():
+def load():
+    config_path = get_setting(
+        '--config',
+        'PLEX_AUTOSCAN_CONFIG',
+        os.path.join(os.path.dirname(sys.argv[0]), 'config', 'config.json')
+    )
+
+    if not os.path.exists(config_path):
+        logger.info("No config file found, creating default config.")
+        build(config_path)
+
+    cfg = {}
+    with open(config_path, 'r') as fp:
+        cfg = upgrade(config_path, json.load(fp))
+
+    return cfg
+
+
+def build(config_path, cfg=base_config):
     with open(config_path, 'w') as fp:
-        json.dump(base_config, fp, indent=4, sort_keys=True)
-        fp.close()
-    logger.info("Created default config.json: '%s'", config_path)
-    logger.info("Please configure it before running me again.")
+        json.dump(cfg, fp, indent=4, sort_keys=True)
+
+    logger.info("Please configure/review config before running again: %r", config_path)
+
     exit(0)
+
+
+def get_setting(argv_name, env_name, argv_default):
+    try:
+        # Argrument priority: cmd < environment < default
+        if argv_name in sys.argv:
+            argv_value = sys.argv[sys.argv.index(argv_name) + 1]
+
+        elif env_name in os.environ:
+            argv_value = os.environ[env_name]
+
+        else:
+            argv_value = argv_default
+
+        logger.debug("Using ARG setting %s=%s", env_name, argv_value)
+
+    except Exception:
+        logger.exception("Exception retrieving argument value: %r" % argv_name)
+
+    return argv_value

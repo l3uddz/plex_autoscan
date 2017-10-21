@@ -1,9 +1,6 @@
 import logging
-import os
 import subprocess
-import sys
 import time
-
 import psutil
 
 logger = logging.getLogger("UTILS")
@@ -44,7 +41,8 @@ def is_process_running(process_name):
                 return True, process
 
         return False, None
-    except:
+
+    except Exception:
         logger.exception("Exception checking for process: '%s': ", process_name)
         return False, None
 
@@ -57,26 +55,13 @@ def wait_running_process(process_name):
                          process.pid, process.cmdline())
             time.sleep(60)
             running, process = is_process_running(process_name)
+
         return True
-    except:
+
+    except Exception:
         logger.exception("Exception waiting for process: '%s'", process_name())
+
         return False
-
-
-def get_logfile_path():
-    pos = 0
-    log_path = os.path.join(os.path.dirname(sys.argv[0]), 'plex_autoscan.log')
-
-    try:
-        for item in sys.argv:
-            if item == '--logfile':
-                log_path = sys.argv[pos + 1]
-                break
-            pos += 1
-    except:
-        logger.exception("Exception retrieving supplied logfile: ")
-
-    return log_path
 
 
 def run_command(command):
@@ -96,4 +81,5 @@ def should_ignore(file_path, config):
     for item in config['SERVER_IGNORE_LIST']:
         if item.lower() in file_path.lower():
             return True, item
+
     return False, None

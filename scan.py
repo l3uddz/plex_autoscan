@@ -27,7 +27,15 @@ consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-fileHandler = RotatingFileHandler(utils.get_logfile_path(), maxBytes=1024 * 1024 * 5, backupCount=5)
+fileHandler = RotatingFileHandler(
+    config.get_setting(
+        '--logfile',
+        'PLEX_AUTOSCAN_LOGFILE',
+        os.path.join(os.path.dirname(sys.argv[0]), 'plex_autoscan.log')
+    ),
+    maxBytes=1024 * 1024 * 5,
+    backupCount=5
+)
 fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
@@ -39,16 +47,12 @@ logger.setLevel(logging.DEBUG)
 scan_lock = Lock()
 
 # Config
-docker = False
-for item in sys.argv:
-    if item == 'docker':
-        docker = True
-config = config.load(docker)
-
+config = config.load()
 
 ############################################################
 # FUNCS
 ############################################################
+
 
 def start_scan(path, scan_for, scan_type):
     section = utils.get_plex_section(config, path)
