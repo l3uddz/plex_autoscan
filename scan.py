@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 import json
 import logging
+import os
 import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process, Lock, Manager
@@ -169,7 +170,7 @@ def client_pushed():
         start_scan(final_path, 'sonarr', data['EventType'])
     elif 'series' and 'episodeFile' in data:
         # new sonarr webhook
-        path = path.join(data['series']['path'], data['episodeFile']['relativePath'])
+        path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(config, path)
