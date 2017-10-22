@@ -29,6 +29,8 @@ rootLogger = logging.getLogger()
 rootLogger.setLevel(config.get_setting(cmd_args, 'loglevel'))
 
 # Console logger
+logging.getLogger('urllib3').setLevel(logging.ERROR)
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
 consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
