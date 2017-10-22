@@ -37,7 +37,6 @@ def create_database(db_path):
 
 def connect():
     if not db.is_closed():
-        logger.error("Already connected to database...")
         return False
     return db.connect()
 
