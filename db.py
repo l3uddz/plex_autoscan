@@ -8,7 +8,10 @@ import config
 
 logger = logging.getLogger("DB")
 
-db_path = config.get_setting(config.parse_args(), 'queuefile')
+# Config
+conf = config.Config()
+
+db_path = conf.settings['queuefile']
 database = SqliteDatabase(db_path, threadlocals=True)
 
 

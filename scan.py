@@ -10,23 +10,17 @@ from flask import Flask
 from flask import abort
 from flask import request
 
+# Get config
 import config
-import db
-import plex
-import utils
 
 ############################################################
 # INIT
 ############################################################
 
-
-# Get parsed command line arguments
-cmd_args = config.parse_args()
-
 # Logging
 logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(process)5d]: %(message)s')
 rootLogger = logging.getLogger()
-rootLogger.setLevel(config.get_setting(cmd_args, 'loglevel'))
+rootLogger.setLevel(logging.INFO)
 
 # Console logger
 logging.getLogger('requests').setLevel(logging.ERROR)
@@ -37,14 +31,22 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
+# Load initial config
+conf = config.Config()
+
 # File logger
 fileHandler = RotatingFileHandler(
-    config.get_setting(cmd_args, 'logfile'),
+    conf.settings['logfile'],
     maxBytes=1024 * 1024 * 5,
     backupCount=5
 )
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
+
+# Set configured log level
+rootLogger.setLevel(conf.settings['loglevel'])
+# Load config file
+conf.load()
 
 # Scan logger
 logger = rootLogger.getChild("AUTOSCAN")
@@ -54,9 +56,10 @@ scan_lock = Lock()
 mngr = Manager()
 resleep_paths = mngr.list()
 
-# Config
-config = config.load(cmd_args)
-
+# local imports
+import db
+import plex
+import utils
 
 ############################################################
 # QUEUE PROCESSOR
@@ -71,7 +74,7 @@ def queue_processor():
         items = 0
         for db_item in db_scan_requests:
             scan_process = Process(target=plex.scan, args=(
-                config, scan_lock, db_item['scan_path'], db_item['scan_for'], db_item['scan_section'],
+                conf.configs, scan_lock, db_item['scan_path'], db_item['scan_for'], db_item['scan_section'],
                 db_item['scan_type'], resleep_paths))
             scan_process.start()
             items += 1
@@ -88,11 +91,11 @@ def queue_processor():
 
 
 def start_scan(path, scan_for, scan_type):
-    section = utils.get_plex_section(config, path)
+    section = utils.get_plex_section(conf.configs, path)
     if section <= 0:
         return False
 
-    if config['SERVER_USE_SQLITE']:
+    if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
         if not db_exists and db.add_item(path, scan_for, section, scan_type):
             logger.info("Added '%s' to database, proceeding with scan", path)
@@ -102,7 +105,7 @@ def start_scan(path, scan_for, scan_type):
             resleep_paths.append(db_file)
             return False
     scan_process = Process(target=plex.scan,
-                           args=(config, scan_lock, path, scan_for, section, scan_type, resleep_paths))
+                           args=(conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths))
     scan_process.start()
     return True
 
@@ -121,9 +124,9 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 
-@app.route("/%s" % config['SERVER_PASS'], methods=['GET'])
+@app.route("/%s" % conf.configs['SERVER_PASS'], methods=['GET'])
 def manual_scan():
-    if not config['SERVER_ALLOW_MANUAL_SCAN']:
+    if not conf.configs['SERVER_ALLOW_MANUAL_SCAN']:
         return abort(401)
     page = '<html><body>' \
            '<form action="" method="post"> File to be scanned:<br>' \
@@ -134,7 +137,7 @@ def manual_scan():
     return page, 200
 
 
-@app.route("/%s" % config['SERVER_PASS'], methods=['POST'])
+@app.route("/%s" % conf.configs['SERVER_PASS'], methods=['POST'])
 def client_pushed():
     if request.content_type == 'application/json':
         data = request.get_json(silent=True)
@@ -150,9 +153,9 @@ def client_pushed():
         logger.info("Client %r made a test request, event: '%s'", request.remote_addr, 'Test')
     elif 'eventType' in data and data['eventType'] == 'Manual':
         logger.info("Client %r made a manual scan request for: '%s'", request.remote_addr, data['filepath'])
-        final_path = utils.map_pushed_path(config, data['filepath'])
+        final_path = utils.map_pushed_path(conf.configs, data['filepath'])
         # ignore this request?
-        ignore, ignore_match = utils.should_ignore(final_path, config)
+        ignore, ignore_match = utils.should_ignore(final_path, conf.configs)
         if ignore:
             logger.info("Ignored scan request for '%s' because '%s' was matched from SERVER_IGNORE_LIST", final_path,
                         ignore_match)
@@ -165,19 +168,19 @@ def client_pushed():
     elif 'Movie' in data:
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])
-        final_path = utils.map_pushed_path(config, data['Movie']['FilePath'])
+        final_path = utils.map_pushed_path(conf.configs, data['Movie']['FilePath'])
         start_scan(final_path, 'radarr', data['EventType'])
     elif 'Series' in data:
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['Series']['Path'],
                     data['EventType'])
-        final_path = utils.map_pushed_path(config, data['Series']['Path'])
+        final_path = utils.map_pushed_path(conf.configs, data['Series']['Path'])
         start_scan(final_path, 'sonarr', data['EventType'])
     elif 'series' and 'episodeFile' in data:
         # new sonarr webhook
         path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
-        final_path = utils.map_pushed_path(config, path)
+        final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'sonarr_dev', "Upgrade" if data['isUpgrade'] else data['eventType'])
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
@@ -191,19 +194,19 @@ def client_pushed():
 ############################################################
 
 if __name__ == "__main__":
-    if cmd_args['cmd'] == 'sections':
-        plex.show_sections(config)
+    if conf.args['cmd'] == 'sections':
+        plex.show_sections(conf.configs)
 
-    elif cmd_args['cmd'] == 'server':
-        if config['SERVER_USE_SQLITE']:
+    elif conf.args['cmd'] == 'server':
+        if conf.configs['SERVER_USE_SQLITE']:
             start_queue_reloader()
 
         logger.info("Starting server: http://%s:%d/%s",
-                    config['SERVER_IP'],
-                    config['SERVER_PORT'],
-                    config['SERVER_PASS']
+                    conf.configs['SERVER_IP'],
+                    conf.configs['SERVER_PORT'],
+                    conf.configs['SERVER_PASS']
                     )
-        app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
+        app.run(host=conf.configs['SERVER_IP'], port=conf.configs['SERVER_PORT'], debug=False, use_reloader=False)
         logger.info("Server stopped")
 
     else:
