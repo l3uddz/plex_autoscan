@@ -88,8 +88,9 @@ def upgrade(config_path, cfg):
             fields.append(name)
 
         if name in os.environ:
-            fields_env[name] = os.environ[name]
-            logger.info("Using ENV setting %s=%s", name, os.environ[name])
+            # Use JSON decoder to get same behaviour as config file
+            fields_env[name] = json.JSONDecoder().decode(os.environ[name])
+            logger.info("Using ENV setting %s=%s", name, fields_env[name])
 
     # Only rewrite config file if new fields added
     if len(fields):
