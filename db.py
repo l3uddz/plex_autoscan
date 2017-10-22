@@ -1,21 +1,20 @@
 import logging
 import os
-import sys
 
-from peewee import Model, SqliteDatabase, CharField, IntegerField, DeleteQuery
+from peewee import DeleteQuery
+from peewee import Model, SqliteDatabase, CharField, IntegerField
 
-logging.getLogger("peewee").setLevel(logging.ERROR)
+import config
+
 logger = logging.getLogger("DB")
-logger.setLevel(logging.INFO)
 
-# Init DB
-db_path = os.path.join(os.path.dirname(sys.argv[0]), 'queue.db')
-db = SqliteDatabase(db_path, threadlocals=True)
+db_path = config.get_setting(config.parse_args(), 'queuefile')
+database = SqliteDatabase(db_path, threadlocals=True)
 
 
 class BaseQueueModel(Model):
     class Meta:
-        database = db
+        database = database
 
 
 class QueueItemModel(BaseQueueModel):
@@ -25,17 +24,22 @@ class QueueItemModel(BaseQueueModel):
     scan_type = CharField(max_length=64, null=False)
 
 
-def create_database():
+def create_database(db, db_path):
     if not os.path.exists(db_path):
         db.create_tables([QueueItemModel])
         logger.info("Created database tables")
 
 
-def connet():
+def connect(db):
     if not db.is_closed():
-        logger.error("Already connected to database...")
         return False
     return db.connect()
+
+
+def init(db, db_path):
+    if not os.path.exists(db_path):
+        create_database(db, db_path)
+    connect(db)
 
 
 def get_next_item():
@@ -96,7 +100,5 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
     return item
 
 
-# Create database
-if not os.path.exists(db_path):
-    create_database()
-connet()
+# Init
+init(database, db_path)
