@@ -57,6 +57,9 @@ resleep_paths = mngr.list()
 # Config
 config = config.load(cmd_args)
 
+# Database
+db.init()
+
 
 ############################################################
 # QUEUE PROCESSOR
