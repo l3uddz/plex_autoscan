@@ -5,9 +5,7 @@ from peewee import Model, SqliteDatabase, CharField, IntegerField, DeleteQuery
 
 import config
 
-logging.getLogger("peewee").setLevel(logging.ERROR)
 logger = logging.getLogger("DB")
-logger.setLevel(logging.INFO)
 
 # Init
 
