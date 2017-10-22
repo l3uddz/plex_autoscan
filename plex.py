@@ -116,6 +116,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             if db.remove_item(path):
                 logger.info("Removed '%s' from database", path)
                 time.sleep(1)
+                logger.info("There are %d items left to scan", db.queued_count())
             else:
                 logger.error("Failed removing '%s' from database", path)
 

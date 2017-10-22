@@ -100,5 +100,13 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
     return item
 
 
+def queued_count():
+    try:
+        return QueueItemModel.select().count()
+    except:
+        logger.exception("Exception retrieving queued count: ")
+    return 0
+
+
 # Init
 init(database, db_path)
