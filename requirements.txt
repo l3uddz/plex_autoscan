@@ -1,4 +1,4 @@
-Flask==0.11.1
-psutil==5.2.2
-requests==2.10.0
-peewee==2.10.1
+Flask ~= 0.12.2
+psutil ~= 5.4.0
+requests ~= 2.18.4
+peewee ~= 2.10.1

@@ -1,8 +1,6 @@
 #!/usr/bin/env python2.7
 import json
 import logging
-import os
-import sys
 import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process, Lock, Manager
@@ -20,22 +18,31 @@ import utils
 # INIT
 ############################################################
 
+
+# Get parsed command line arguments
+cmd_args = config.parse_args()
+
 # Logging
 logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(process)5d]: %(message)s')
 rootLogger = logging.getLogger()
+rootLogger.setLevel(config.get_setting(cmd_args, 'loglevel'))
 
+# Console logger
 consoleHandler = logging.StreamHandler()
-consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
-fileHandler = RotatingFileHandler(utils.get_logfile_path(), maxBytes=1024 * 1024 * 5, backupCount=5)
-fileHandler.setLevel(logging.DEBUG)
+# File logger
+fileHandler = RotatingFileHandler(
+    config.get_setting(cmd_args, 'logfile'),
+    maxBytes=1024 * 1024 * 5,
+    backupCount=5
+)
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 
+# Scan logger
 logger = rootLogger.getChild("AUTOSCAN")
-logger.setLevel(logging.DEBUG)
 
 # Multiprocessing
 scan_lock = Lock()
@@ -43,11 +50,7 @@ mngr = Manager()
 resleep_paths = mngr.list()
 
 # Config
-docker = False
-for item in sys.argv:
-    if item == 'docker':
-        docker = True
-config = config.load(docker)
+config = config.load(cmd_args)
 
 
 ############################################################
@@ -77,6 +80,7 @@ def queue_processor():
 ############################################################
 # FUNCS
 ############################################################
+
 
 def start_scan(path, scan_for, scan_type):
     section = utils.get_plex_section(config, path)
@@ -165,7 +169,7 @@ def client_pushed():
         start_scan(final_path, 'sonarr', data['EventType'])
     elif 'series' and 'episodeFile' in data:
         # new sonarr webhook
-        path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
+        path = path.join(data['series']['path'], data['episodeFile']['relativePath'])
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(config, path)
@@ -182,19 +186,20 @@ def client_pushed():
 ############################################################
 
 if __name__ == "__main__":
-    if len(sys.argv) <= 1:
-        logger.error("You must pass an argument, sections or server...")
-        sys.exit(0)
+    if cmd_args['cmd'] == 'sections':
+        plex.show_sections(config)
+
+    elif cmd_args['cmd'] == 'server':
+        if config['SERVER_USE_SQLITE']:
+            start_queue_reloader()
+
+        logger.info("Starting server: http://%s:%d/%s",
+                    config['SERVER_IP'],
+                    config['SERVER_PORT'],
+                    config['SERVER_PASS']
+                    )
+        app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, use_reloader=False)
+        logger.info("Server stopped")
+
     else:
-        if sys.argv[1].lower() == 'sections':
-            plex.show_sections(config)
-        elif sys.argv[1].lower() == 'server':
-            if config['SERVER_USE_SQLITE']:
-                start_queue_reloader()
-            logger.info("Starting server: http://%s:%d/%s", config['SERVER_IP'], config['SERVER_PORT'],
-                        config['SERVER_PASS'])
-            app.run(host=config['SERVER_IP'], port=config['SERVER_PORT'], debug=False, threaded=True,
-                    use_reloader=False)
-            logger.info("Server stopped")
-        else:
-            logger.error("You must pass an argument of either sections or server...")
+        logger.error("Unknown command...")
