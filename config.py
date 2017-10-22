@@ -73,8 +73,8 @@ def upgrade(config_path, cfg):
 
     # Only rewrite config file if new fields added
     if len(fields):
-        build(cfg)
-        logger.info("Upgraded config, added %d new field(s): %r", len(fields), fields)
+        logger.warn("Upgraded config, added %d new field(s): %r", len(fields), fields)
+        build(config_path, cfg)
 
     # Update in-memory config with environment settings
     cfg.update(fields_env)
