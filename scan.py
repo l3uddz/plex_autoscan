@@ -9,6 +9,7 @@ from multiprocessing import Process, Lock, Manager
 from flask import Flask
 from flask import abort
 from flask import request
+from peewee import Model, SqliteDatabase, CharField, IntegerField
 
 import config
 import db
@@ -57,8 +58,25 @@ resleep_paths = mngr.list()
 # Config
 config = config.load(cmd_args)
 
-# Database
-db.init()
+# Database schema and connection
+db_path = config.get_setting(cmd_args, 'queuefile')
+database = SqliteDatabase(db_path, threadlocals=True)
+
+
+class BaseQueueModel(Model):
+    class Meta:
+        database = database
+
+
+class QueueItemModel(BaseQueueModel):
+    scan_path = CharField(max_length=256, unique=True, null=False)
+    scan_for = CharField(max_length=64, null=False)
+    scan_section = IntegerField(null=False)
+    scan_type = CharField(max_length=64, null=False)
+
+
+# Init db
+db.init(database, db_path)
 
 
 ############################################################

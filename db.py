@@ -1,41 +1,20 @@
 import logging
 import os
 
-from peewee import Model, SqliteDatabase, CharField, IntegerField, DeleteQuery
+from peewee import DeleteQuery
 
-import config
+from scan import QueueItemModel
 
 logger = logging.getLogger("DB")
 
-# Init
 
-# Get parsed command line arguments
-cmd_args = config.parse_args()
-
-# Init DB
-db_path = config.get_setting(cmd_args, 'queuefile')
-db = SqliteDatabase(db_path, threadlocals=True)
-
-
-class BaseQueueModel(Model):
-    class Meta:
-        database = db
-
-
-class QueueItemModel(BaseQueueModel):
-    scan_path = CharField(max_length=256, unique=True, null=False)
-    scan_for = CharField(max_length=64, null=False)
-    scan_section = IntegerField(null=False)
-    scan_type = CharField(max_length=64, null=False)
-
-
-def create_database(db_path):
+def create_database(db, db_path):
     if not os.path.exists(db_path):
         db.create_tables([QueueItemModel])
         logger.info("Created database tables")
 
 
-def connect():
+def connect(db):
     if not db.is_closed():
         return False
     return db.connect()
@@ -100,7 +79,7 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
 
 
 # Create database
-def init():
+def init(db, db_path):
     if not os.path.exists(db_path):
-        create_database(db_path)
-    connect()
+        create_database(db, db_path)
+    connect(db)
