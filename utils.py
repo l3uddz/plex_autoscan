@@ -4,7 +4,6 @@ import time
 import psutil
 
 logger = logging.getLogger("UTILS")
-logger.setLevel(logging.DEBUG)
 
 
 def get_plex_section(config, path):
