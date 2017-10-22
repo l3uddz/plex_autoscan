@@ -7,12 +7,11 @@ try:
     from shlex import quote as cmd_quote
 except ImportError:
     from pipes import quote as cmd_quote
-import requests
 
+import requests
 import utils
 
 logger = logging.getLogger("PLEX")
-logger.setLevel(logging.DEBUG)
 
 
 def scan(config, lock, path, scan_for, section, scan_type):
