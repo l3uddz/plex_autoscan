@@ -7,8 +7,14 @@ import config
 
 logger = logging.getLogger("DB")
 
+# Init
+
+# Get parsed command line arguments
+cmd_args = config.parse_args()
+
 # Init DB
-db = None
+db_path = config.get_setting(cmd_args, 'queuefile')
+db = SqliteDatabase(db_path, threadlocals=True)
 
 
 class BaseQueueModel(Model):
@@ -96,12 +102,6 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
 
 # Create database
 def init():
-    global db
-
-    cmd_args = config.parse_args()
-    db_path = config.get_setting(cmd_args, 'queuefile')
-    db = SqliteDatabase(db_path, threadlocals=True)
-
     if not os.path.exists(db_path):
         create_database(db_path)
     connect()
