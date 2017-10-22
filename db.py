@@ -1,15 +1,21 @@
 import logging
 import os
-import sys
 
 from peewee import Model, SqliteDatabase, CharField, IntegerField, DeleteQuery
+
+import config
 
 logging.getLogger("peewee").setLevel(logging.ERROR)
 logger = logging.getLogger("DB")
 logger.setLevel(logging.INFO)
 
+# Init
+
+# Get parsed command line arguments
+cmd_args = config.parse_args()
+
 # Init DB
-db_path = os.path.join(os.path.dirname(sys.argv[0]), 'queue.db')
+db_path = config.get_setting(cmd_args, 'queuefile')
 db = SqliteDatabase(db_path, threadlocals=True)
 
 
@@ -31,7 +37,7 @@ def create_database():
         logger.info("Created database tables")
 
 
-def connet():
+def connect():
     if not db.is_closed():
         logger.error("Already connected to database...")
         return False
@@ -99,4 +105,4 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
 # Create database
 if not os.path.exists(db_path):
     create_database()
-connet()
+connect()

@@ -74,6 +74,11 @@ settings = {
         'argv': '--loglevel',
         'env': 'PLEX_AUTOSCAN_LOGLEVEL',
         'default': 'INFO'
+    },
+    'queuefile': {
+        'argv': '--queuefile',
+        'env': 'PLEX_AUTOSCAN_QUEUEFILE',
+        'default': os.path.join(os.path.dirname(sys.argv[0]), 'queue.db')
     }
 }
 
@@ -179,6 +184,13 @@ def parse_args():
                         nargs='?',
                         const=None,
                         help='Log file location (default: %s)' % settings['logfile']['default']
+                        )
+
+    # Queue file
+    parser.add_argument(settings['queuefile']['argv'],
+                        nargs='?',
+                        const=None,
+                        help='Queue file location (default: %s)' % settings['queuefile']['default']
                         )
 
     # Logging level
