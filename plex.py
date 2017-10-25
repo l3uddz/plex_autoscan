@@ -105,6 +105,12 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
 
+        # run external command if supplied
+        if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
+            logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
+            utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
+            logger.info("Finished running external command")
+
         # begin scan
         logger.info("Starting Plex Scanner")
         logger.debug(final_cmd)
