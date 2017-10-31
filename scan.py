@@ -80,7 +80,7 @@ def queue_processor():
             items += 1
             time.sleep(2)
         logger.info("Restored %d scan requests from database", items)
-    except:
+    except Exception:
         logger.exception("Exception while processing scan requests from database: ")
     return
 

@@ -188,7 +188,7 @@ def analyze_item(config, scan_path):
             logger.info("Analyze request was completed successfully")
         else:
             logger.error("Unexpected response status_code for analyze request: %d", resp.status_code)
-    except:
+    except Exception:
         logger.exception("Exception sending analyze request for library item %d: ", metadata_item_id)
     return
 
