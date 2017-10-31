@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import sys
 import time
 from logging.handlers import RotatingFileHandler
 from multiprocessing import Process, Lock, Manager
@@ -22,12 +23,13 @@ logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.INFO)
 
-# Console logger
+# Decrease modules logging
 logging.getLogger('requests').setLevel(logging.ERROR)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger("peewee").setLevel(logging.ERROR)
 
-consoleHandler = logging.StreamHandler()
+# Console logger, log to stdout instead of stderr
+consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
 
@@ -64,6 +66,7 @@ import utils
 ############################################################
 # QUEUE PROCESSOR
 ############################################################
+
 
 def queue_processor():
     logger.info("Starting queue processor in 10 seconds")
