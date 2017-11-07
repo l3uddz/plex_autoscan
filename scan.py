@@ -63,6 +63,7 @@ import db
 import plex
 import utils
 
+
 ############################################################
 # QUEUE PROCESSOR
 ############################################################
@@ -172,6 +173,13 @@ def client_pushed():
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
                     data['Movie']['FilePath'], data['EventType'])
         final_path = utils.map_pushed_path(conf.configs, data['Movie']['FilePath'])
+        start_scan(final_path, 'radarr', data['EventType'])
+    elif 'movie' in data:
+        # new radarr webhook
+        path = os.path.join(data['movie']['folderPath'], data['movieFile']['relativePath'])
+        logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr, path,
+                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+        final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'radarr', data['EventType'])
     elif 'Series' in data:
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['Series']['Path'],

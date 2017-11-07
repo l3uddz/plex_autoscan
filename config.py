@@ -7,6 +7,7 @@ import uuid
 
 logger = logging.getLogger("CONFIG")
 
+
 class Singleton(type):
     _instances = {}
 
@@ -15,6 +16,7 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
 
         return cls._instances[cls]
+
 
 class Config(object):
     __metaclass__ = Singleton
@@ -67,6 +69,7 @@ class Config(object):
         ],
         'SERVER_USE_SQLITE': False,
         'DOCKER_NAME': 'plex',
+        'RUN_COMMAND_BEFORE_SCAN': '',
         'USE_DOCKER': False,
         'USE_SUDO': True
     }
@@ -102,7 +105,6 @@ class Config(object):
         # Configs
         self.configs = None
 
-
     def upgrade(self, cfg):
         fields = []
         fields_env = {}
@@ -128,7 +130,6 @@ class Config(object):
 
         return cfg
 
-
     def load(self):
         if not os.path.exists(self.settings['config']):
             logger.warn("No config file found, creating default config.")
@@ -140,7 +141,6 @@ class Config(object):
 
         self.configs = cfg
 
-
     def save(self, cfg):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=4, sort_keys=True)
@@ -151,7 +151,6 @@ class Config(object):
         )
 
         exit(0)
-
 
     def get_settings(self):
         setts = {}
