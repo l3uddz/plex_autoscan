@@ -98,6 +98,8 @@ def start_scan(path, scan_for, scan_type):
     section = utils.get_plex_section(conf.configs, path)
     if section <= 0:
         return False
+    else:
+        logger.debug("Using section id: %d for '%s'", section, path)
 
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
@@ -180,7 +182,7 @@ def client_pushed():
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
-        start_scan(final_path, 'radarr', data['EventType'])
+        start_scan(final_path, 'radarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
     elif 'Series' in data:
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['Series']['Path'],
                     data['EventType'])
