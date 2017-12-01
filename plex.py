@@ -202,10 +202,27 @@ def analyze_item(config, scan_path):
 def get_file_metadata_id(config, file_path):
     # query db to locate media_item_id
     result = None
+    media_item_row = None
+
     try:
         conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
         c = conn.cursor()
-        media_item_id = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()[1]
+        for x in range(5):
+            media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
+            if media_item_row:
+                logger.info("Found row in media_parts where file = '%s' after %d/5 tries!", file_path, x + 1)
+                break
+            else:
+                logger.error("Could not locate record in media_parts where file = '%s', %d/5 attempts...",
+                             file_path, x + 1)
+                time.sleep(10)
+
+        if not media_item_row:
+            logger.error("Could not locate record in media_parts where file = '%s' after 5 tries...", file_path)
+            conn.close()
+            return None
+
+        media_item_id = media_item_row[1]
         # query db to find metadata_item_id
         if int(media_item_id):
             metadata_item_id = c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
