@@ -219,6 +219,7 @@ def get_file_metadata_id(config, file_path):
 
         if not media_item_row:
             logger.error("Could not locate record in media_parts where file = '%s' after 5 tries...", file_path)
+            conn.close()
             return None
 
         media_item_id = media_item_row[1]
