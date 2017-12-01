@@ -210,11 +210,11 @@ def get_file_metadata_id(config, file_path):
         for x in range(5):
             media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
             if media_item_row:
-                logger.info("Found row in media_parts where file = '%s' after %d/5 tries!", file_path, x)
+                logger.info("Found row in media_parts where file = '%s' after %d/5 tries!", file_path, x + 1)
                 break
             else:
                 logger.error("Could not locate record in media_parts where file = '%s', %d/5 attempts...",
-                             file_path, x)
+                             file_path, x + 1)
                 time.sleep(10)
 
         if not media_item_row:
