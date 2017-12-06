@@ -93,7 +93,7 @@ def remove_item_from_list(item, from_list):
 
 def get_priority(config, scan_path):
     try:
-        for priority, paths in config['SEVER_SCAN_PRIORITIES'].items():
+        for priority, paths in config['SERVER_SCAN_PRIORITIES'].items():
             for path in paths:
                 if path.lower() in scan_path.lower():
                     logger.debug("Using priority %d for path '%s'", priority, scan_path)

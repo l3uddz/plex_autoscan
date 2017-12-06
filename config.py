@@ -68,7 +68,7 @@ class Config(object):
             'Thumbs.db'
         ],
         'SERVER_USE_SQLITE': False,
-        'SEVER_SCAN_PRIORITIES': {
+        'SERVER_SCAN_PRIORITIES': {
             0: [
                 '/TV/'
             ],
