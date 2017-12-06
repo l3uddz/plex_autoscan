@@ -96,8 +96,8 @@ def get_priority(config, scan_path):
         for priority, paths in config['SERVER_SCAN_PRIORITIES'].items():
             for path in paths:
                 if path.lower() in scan_path.lower():
-                    logger.debug("Using priority %d for path '%s'", priority, scan_path)
-                    return priority
+                    logger.debug("Using priority %d for path '%s'", int(priority), scan_path)
+                    return int(priority)
         logger.debug("Using default priority 0 for path '%s'", scan_path)
     except Exception:
         logger.exception("Exception determining priority to use for '%s': ", scan_path)
