@@ -194,12 +194,16 @@ def analyze_item(config, scan_path):
 
     # send analyze request to server
     try:
-        resp = requests.put("%s/library/metadata/%d/analyze?X-Plex-Token=%s" % (
-            config['PLEX_LOCAL_URL'], metadata_item_id, config['PLEX_TOKEN']), timeout=600)
-        if resp.status_code == 200:
-            logger.info("Analyze request was completed successfully")
-        else:
-            logger.error("Unexpected response status_code for analyze request: %d", resp.status_code)
+        for x in range(5):
+            resp = requests.put("%s/library/metadata/%d/analyze?X-Plex-Token=%s" % (
+                config['PLEX_LOCAL_URL'], metadata_item_id, config['PLEX_TOKEN']), timeout=600)
+            if resp.status_code == 200:
+                logger.info("Analyze request was completed successfully after %d/5 tries!", x + 1)
+                break
+            else:
+                logger.error("Unexpected response status_code for analyze request: %d, %d/5 attempts...",
+                             resp.status_code, x + 1)
+                time.sleep(10)
     except:
         logger.exception("Exception sending analyze request for library item %d: ", metadata_item_id)
     return
