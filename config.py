@@ -68,6 +68,17 @@ class Config(object):
             'Thumbs.db'
         ],
         'SERVER_USE_SQLITE': False,
+        'SEVER_SCAN_PRIORITIES': {
+            0: [
+                '/TV/'
+            ],
+            1: [
+                '/Movies/'
+            ],
+            2: [
+                '/Music/'
+            ]
+        },
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
         'USE_DOCKER': False,

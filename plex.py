@@ -85,8 +85,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             final_cmd = cmd
 
     # invoke plex scanner
-    logger.debug("Waiting for turn in the scan request backlog...")
-    with lock:
+    priority = utils.get_priority(config, scan_path)
+    logger.debug("Waiting for turn in the scan request backlog with priority: %d", priority)
+
+    lock.acquire(priority)
+    try:
         logger.info("Scan request is now being processed")
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
@@ -149,7 +152,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
-
+    except Exception:
+        logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)
+    finally:
+        lock.release()
     return
 
 
