@@ -44,6 +44,7 @@ class Thread:
         thread.start()
         if track:
             self.threads.append(thread)
+        return thread
 
     def join(self):
         for thread in copy.copy(self.threads):
