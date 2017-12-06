@@ -70,10 +70,10 @@ class Config(object):
         'SERVER_USE_SQLITE': False,
         'SERVER_SCAN_PRIORITIES': {
             0: [
-                '/TV/'
+                '/Movies/'
             ],
             1: [
-                '/Movies/'
+                '/TV/'
             ],
             2: [
                 '/Music/'
@@ -154,7 +154,7 @@ class Config(object):
 
     def save(self, cfg):
         with open(self.settings['config'], 'w') as fp:
-            json.dump(cfg, fp, indent=4, sort_keys=True)
+            json.dump(cfg, fp, indent=2, sort_keys=True)
 
         logger.warn(
             "Please configure/review config before running again: %r",
