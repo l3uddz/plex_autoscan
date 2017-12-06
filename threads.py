@@ -41,6 +41,7 @@ class Thread:
 
     def start(self, target, name=None, args=None, track=False):
         thread = threading.Thread(target=target, name=name, args=args if args else [])
+        thread.daemon = True
         thread.start()
         if track:
             self.threads.append(thread)
