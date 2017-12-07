@@ -207,6 +207,7 @@ def analyze_item(config, scan_path):
         except Exception:
             logger.exception("Exception sending analyze request for library item %d, %d/5 attempts: ",
                              metadata_item_id, x + 1)
+            time.sleep(10)
     return
 
 
