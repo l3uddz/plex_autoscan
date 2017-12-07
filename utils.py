@@ -41,7 +41,8 @@ def is_process_running(process_name):
                 return True, process
 
         return False, None
-
+    except psutil.ZombieProcess:
+        return False, None
     except Exception:
         logger.exception("Exception checking for process: '%s': ", process_name)
         return False, None
