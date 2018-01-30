@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import time
+
 import psutil
 
 logger = logging.getLogger("UTILS")
@@ -40,7 +41,8 @@ def is_process_running(process_name):
                 return True, process
 
         return False, None
-
+    except psutil.ZombieProcess:
+        return False, None
     except Exception:
         logger.exception("Exception checking for process: '%s': ", process_name)
         return False, None
@@ -88,3 +90,16 @@ def remove_item_from_list(item, from_list):
     while item in from_list:
         from_list.pop(from_list.index(item))
     return
+
+
+def get_priority(config, scan_path):
+    try:
+        for priority, paths in config['SERVER_SCAN_PRIORITIES'].items():
+            for path in paths:
+                if path.lower() in scan_path.lower():
+                    logger.debug("Using priority %d for path '%s'", int(priority), scan_path)
+                    return int(priority)
+        logger.debug("Using default priority 0 for path '%s'", scan_path)
+    except Exception:
+        logger.exception("Exception determining priority to use for '%s': ", scan_path)
+    return 0

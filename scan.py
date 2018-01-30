@@ -5,7 +5,6 @@ import os
 import sys
 import time
 from logging.handlers import RotatingFileHandler
-from multiprocessing import Process, Lock, Manager
 
 from flask import Flask
 from flask import abort
@@ -13,13 +12,14 @@ from flask import request
 
 # Get config
 import config
+import threads
 
 ############################################################
 # INIT
 ############################################################
 
 # Logging
-logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(process)5d]: %(message)s')
+logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(thread)5d]: %(message)s')
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.INFO)
 
@@ -54,9 +54,9 @@ conf.load()
 logger = rootLogger.getChild("AUTOSCAN")
 
 # Multiprocessing
-scan_lock = Lock()
-mngr = Manager()
-resleep_paths = mngr.list()
+thread = threads.Thread()
+scan_lock = threads.PriorityLock()
+resleep_paths = []
 
 # local imports
 import db
@@ -77,10 +77,9 @@ def queue_processor():
         db_scan_requests = db.get_all_items()
         items = 0
         for db_item in db_scan_requests:
-            scan_process = Process(target=plex.scan, args=(
-                conf.configs, scan_lock, db_item['scan_path'], db_item['scan_for'], db_item['scan_section'],
-                db_item['scan_type'], resleep_paths))
-            scan_process.start()
+            thread.start(plex.scan, args=[conf.configs, scan_lock, db_item['scan_path'], db_item['scan_for'],
+                                          db_item['scan_section'],
+                                          db_item['scan_type'], resleep_paths])
             items += 1
             time.sleep(2)
         logger.info("Restored %d scan requests from database", items)
@@ -110,15 +109,13 @@ def start_scan(path, scan_for, scan_type):
                 "Already processing '%s' from same folder, aborting adding an extra scan request to the queue", db_file)
             resleep_paths.append(db_file)
             return False
-    scan_process = Process(target=plex.scan,
-                           args=(conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths))
-    scan_process.start()
+
+    thread.start(plex.scan, args=[conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths])
     return True
 
 
 def start_queue_reloader():
-    queue_process = Process(target=queue_processor, args=())
-    queue_process.start()
+    thread.start(queue_processor)
     return True
 
 
@@ -221,6 +218,5 @@ if __name__ == "__main__":
                     )
         app.run(host=conf.configs['SERVER_IP'], port=conf.configs['SERVER_PORT'], debug=False, use_reloader=False)
         logger.info("Server stopped")
-
     else:
         logger.error("Unknown command...")
