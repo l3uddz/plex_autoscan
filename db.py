@@ -49,7 +49,7 @@ def get_next_item():
     item = None
     try:
         item = QueueItemModel.get()
-    except:
+    except Exception:
         # logger.exception("Exception getting first item to scan: ")
         pass
     return item
@@ -76,7 +76,7 @@ def get_all_items():
                           'scan_for': item.scan_for,
                           'scan_type': item.scan_type,
                           'scan_section': item.scan_section})
-    except:
+    except Exception:
         logger.exception("Exception getting all items from database: ")
         return None
     return items
@@ -85,7 +85,7 @@ def get_all_items():
 def remove_item(scan_path):
     try:
         return DeleteQuery(QueueItemModel).where(QueueItemModel.scan_path == scan_path).execute()
-    except:
+    except Exception:
         logger.exception("Exception deleting %r from database: ", scan_path)
         return False
 
@@ -97,7 +97,7 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
                                      scan_type=scan_type)
     except AttributeError as ex:
         return item
-    except:
+    except Exception:
         pass
         # logger.exception("Exception adding %r to database: ", scan_path)
     return item
@@ -106,7 +106,7 @@ def add_item(scan_path, scan_for, scan_section, scan_type):
 def queued_count():
     try:
         return QueueItemModel.select().count()
-    except:
+    except Exception:
         logger.exception("Exception retrieving queued count: ")
     return 0
 
