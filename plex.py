@@ -67,7 +67,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
 
     # build plex scanner command
     if os.name == 'nt':
-        final_cmd = '""%s" --scan --refresh --section %s --directory "%s""' \
+        final_cmd = '"%s" --scan --refresh --section %s --directory "%s"' \
                     % (config['PLEX_SCANNER'], str(section), scan_path)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
