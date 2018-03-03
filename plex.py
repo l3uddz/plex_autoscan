@@ -36,7 +36,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             break
 
     # check file exists
-    if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'manual':
+    if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'lidarr' or scan_for == 'manual':
         checks = 0
         check_path = utils.map_pushed_path_file_exists(config, path)
         while True:

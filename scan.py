@@ -192,6 +192,13 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'sonarr_dev', "Upgrade" if data['isUpgrade'] else data['eventType'])
+    elif 'artist' in data and 'trackFile' in data:
+        # lidarr webhook
+        path = os.path.join(data['artist']['path'], data['trackFile']['relativePath'])
+        logger.info("Client %r scan request for album track: '%s', event: '%s'", request.remote_addr, path,
+                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+        final_path = utils.map_pushed_path(conf.configs, path)
+        start_scan(final_path, 'lidarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
