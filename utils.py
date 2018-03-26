@@ -1,6 +1,14 @@
 import logging
+import os
 import subprocess
 import time
+
+import requests
+
+try:
+    from urlparse import urljoin
+except ImportError:
+    from urllib.parse import urljoin
 
 import psutil
 
@@ -103,3 +111,49 @@ def get_priority(config, scan_path):
     except Exception:
         logger.exception("Exception determining priority to use for '%s': ", scan_path)
     return 0
+
+
+def rclone_rc_clear_cache(config, scan_path):
+    try:
+        rclone_rc_url = urljoin(config['RCLONE_RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
+
+        cache_clear_path = scan_path.replace(config['RCLONE_RC_CACHE_EXPIRE']['MOUNT_FOLDER'], '').lstrip(os.path.sep)
+        logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
+
+        while True:
+            last_clear_path = cache_clear_path
+            cache_clear_path = os.path.dirname(cache_clear_path)
+            if cache_clear_path == last_clear_path:
+                # is the last path we tried to clear, the same as this path, if so, abort
+                logger.error("Aborting rclone cache clear for '%s' due to directory level exhaustion, last level: '%s'",
+                             scan_path, last_clear_path)
+                return False
+            else:
+                last_clear_path = cache_clear_path
+
+            # send cache clear request
+            logger.info("Sending rclone cache clear to %s for: '%s'", rclone_rc_url, cache_clear_path)
+            try:
+                resp = requests.post(rclone_rc_url, json={'remote': cache_clear_path}, timeout=120)
+                if 'json' in resp.headers['Content-Type']:
+                    data = resp.json()
+                    if 'error' in data:
+                        logger.info("Failed to clear rclone cache for '%s': %s", cache_clear_path, data['error'])
+                        continue
+                    elif ('status' in data and 'message' in data) and data['status'] == 'ok':
+                        logger.info("Successfully cleared rclone cache for '%s'", cache_clear_path)
+                        return True
+
+                # abort on unexpected response (no json response, no error/status & message in returned json
+                logger.error("Unexpected rclone cache clear response from %s while trying to clear '%s': %s",
+                             rclone_rc_url, cache_clear_path, resp.text)
+                break
+
+            except Exception:
+                logger.exception("Exception sending rclone cache clear to %s for '%s': ", rclone_rc_url,
+                                 cache_clear_path)
+                break
+
+    except Exception:
+        logger.exception("Exception clearing rclone directory cache for '%s': ", scan_path)
+    return False

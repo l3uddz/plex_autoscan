@@ -79,6 +79,11 @@ class Config(object):
                 '/Music/'
             ]
         },
+        'RCLONE_RC_CACHE_EXPIRE': {
+            'ENABLED': False,
+            'MOUNT_FOLDER': '/mnt/rclone',
+            'RC_URL': 'http://localhost:5572'
+        },
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
         'USE_DOCKER': False,
