@@ -132,10 +132,10 @@ def rclone_rc_clear_cache(config, scan_path):
                 last_clear_path = cache_clear_path
 
             # send cache clear request
-            logger.info("Sending rclone cache clear to %s for: '%s'", rclone_rc_url, cache_clear_path)
+            logger.info("Sending rclone cache clear for: '%s'", cache_clear_path)
             try:
                 resp = requests.post(rclone_rc_url, json={'remote': cache_clear_path}, timeout=120)
-                if 'json' in resp.headers['Content-Type']:
+                if '{' in resp.text and '}' in resp.text:
                     data = resp.json()
                     if 'error' in data:
                         logger.info("Failed to clear rclone cache for '%s': %s", cache_clear_path, data['error'])
