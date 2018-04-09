@@ -267,16 +267,21 @@ def empty_trash(config, section):
     if len(config['PLEX_EMPTY_TRASH_CONTROL_FILES']):
         logger.info("Control file(s) exist!")
 
-    try:
-        resp = requests.put('%s/library/sections/%s/emptyTrash?X-Plex-Token=%s' % (
-            config['PLEX_LOCAL_URL'], section, config['PLEX_TOKEN']), data=None)
-        if resp.status_code == 200:
-            logger.info("Trash cleared for section %s", section)
-        else:
-            logger.error("Unexpected response status_code for empty trash request: %d", resp.status_code)
-
-    except Exception as ex:
-        logger.exception("Exception while sending empty trash request: ")
+    for x in range(5):
+        try:
+            resp = requests.put('%s/library/sections/%s/emptyTrash?X-Plex-Token=%s' % (
+                config['PLEX_LOCAL_URL'], section, config['PLEX_TOKEN']), data=None, timeout=30)
+            if resp.status_code == 200:
+                logger.info("Trash cleared for section %s after %d/5 tries!", section, x + 1)
+                break
+            else:
+                logger.error("Unexpected response status_code for empty trash request: %d, %d/5 attempts...",
+                             resp.status_code, x + 1)
+                time.sleep(10)
+        except Exception as ex:
+            logger.exception("Exception sending empty trash for section %s, %d/5 attempts: ", section, x + 1)
+            time.sleep(10)
+            
     return
 
 
