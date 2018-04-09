@@ -45,7 +45,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
         checks += 1
         if os.path.exists(check_path):
             logger.info("File '%s' exists on check %d of %d.", check_path, checks, config['SERVER_MAX_FILE_CHECKS'])
-            scan_path = os.path.dirname(path).strip()
+            scan_path = os.path.dirname(path).strip() if not scan_path_is_directory else path.strip()
             break
         elif checks >= config['SERVER_MAX_FILE_CHECKS']:
             logger.warning("File '%s' exhausted all available checks, aborting scan request.", check_path)
