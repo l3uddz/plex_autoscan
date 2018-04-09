@@ -171,34 +171,38 @@ def client_pushed():
     elif 'series' in data and 'eventType' in data and data['eventType'] == 'Rename' and 'path' in data['series']:
         # sonarr Rename webhook
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['series']['path'],
-                    data['eventType'])
+                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, data['series']['path'])
-        start_scan(final_path, 'Sonarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+        start_scan(final_path, 'Sonarr',
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
     elif 'movie' in data and 'movieFile' in data and 'folderPath' in data['movie'] and \
-            'relativePath' in data['movieFile']:
+            'relativePath' in data['movieFile'] and 'eventType' in data:
         # radarr download/upgrade webhook
         path = os.path.join(data['movie']['folderPath'], data['movieFile']['relativePath'])
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr, path,
-                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
-        start_scan(final_path, 'Radarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+        start_scan(final_path, 'Radarr',
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
-    elif 'series' in data and 'episodeFile' in data:
+    elif 'series' in data and 'episodeFile' in data and 'eventType' in data:
         # sonarr download/upgrade webhook
         path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
-                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
-        start_scan(final_path, 'Sonarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+        start_scan(final_path, 'Sonarr',
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
-    elif 'artist' in data and 'trackFile' in data:
+    elif 'artist' in data and 'trackFile' in data and 'eventType' in data:
         # lidarr download/upgrade webhook
         path = os.path.join(data['artist']['path'], data['trackFile']['relativePath'])
         logger.info("Client %r scan request for album track: '%s', event: '%s'", request.remote_addr, path,
-                    "Upgrade" if data['isUpgrade'] else data['eventType'])
+                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
-        start_scan(final_path, 'Lidarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+        start_scan(final_path, 'Lidarr',
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
