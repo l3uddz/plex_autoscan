@@ -170,7 +170,8 @@ def client_pushed():
 
     elif 'series' in data and 'eventType' in data and data['eventType'] == 'Rename' and 'path' in data['series']:
         # sonarr Rename webhook
-        logger.info("Client %r scan request for series: '%s', event: '%s'", data['series']['path'], data['eventType'])
+        logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, data['series']['path'],
+                    data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, data['series']['path'])
         start_scan(final_path, 'Sonarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
 
@@ -182,6 +183,7 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'Radarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+
     elif 'series' in data and 'episodeFile' in data:
         # sonarr download/upgrade webhook
         path = os.path.join(data['series']['path'], data['episodeFile']['relativePath'])
@@ -189,6 +191,7 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'Sonarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+
     elif 'artist' in data and 'trackFile' in data:
         # lidarr download/upgrade webhook
         path = os.path.join(data['artist']['path'], data['trackFile']['relativePath'])
@@ -196,6 +199,7 @@ def client_pushed():
                     "Upgrade" if data['isUpgrade'] else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
         start_scan(final_path, 'Lidarr', "Upgrade" if data['isUpgrade'] else data['eventType'])
+
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
         abort(400)
