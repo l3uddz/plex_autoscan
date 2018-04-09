@@ -62,7 +62,6 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                         checks,
                         config['SERVER_MAX_FILE_CHECKS'])
             time.sleep(60)
-
             # send rclone cache clear if enabled
             if config['RCLONE_RC_CACHE_EXPIRE']['ENABLED']:
                 utils.rclone_rc_clear_cache(config, check_path)
