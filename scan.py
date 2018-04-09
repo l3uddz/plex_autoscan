@@ -176,6 +176,15 @@ def client_pushed():
         start_scan(final_path, 'Sonarr',
                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
+    elif 'movie' in data and 'eventType' in data and data['eventType'] == 'Rename' and 'folderPath' in data['movie']:
+        # radarr Rename webhook
+        logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr,
+                    data['movie']['folderPath'],
+                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+        final_path = utils.map_pushed_path(conf.configs, data['movie']['folderPath'])
+        start_scan(final_path, 'Radarr',
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+
     elif 'movie' in data and 'movieFile' in data and 'folderPath' in data['movie'] and \
             'relativePath' in data['movieFile'] and 'eventType' in data:
         # radarr download/upgrade webhook
