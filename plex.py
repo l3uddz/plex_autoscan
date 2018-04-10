@@ -235,8 +235,8 @@ def get_file_metadata_id(config, file_path):
 
     try:
         with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            conn.row_factory = sqlite3.Row
             with closing(conn.cursor()) as c:
-                conn.row_factory = sqlite3.Row
                 for x in range(5):
                     media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
                     if media_item_row:
