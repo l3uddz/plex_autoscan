@@ -255,7 +255,7 @@ def get_file_metadata_id(config, file_path):
                 # query db to find metadata_item_id
                 if int(media_item_id):
                     metadata_item_id = \
-                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()['media_item_id']
+                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()['metadata_item_id']
                     if int(metadata_item_id):
                         result = int(metadata_item_id)
                         logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
