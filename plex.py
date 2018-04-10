@@ -22,10 +22,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     # sleep for delay
     while True:
         if config['SERVER_SCAN_DELAY']:
-            logger.info("Scan request for '%s', sleeping for %d seconds...", path, config['SERVER_SCAN_DELAY'])
+            logger.info("Scan request from %s for '%s', sleeping for %d seconds...", scan_for, path,
+                        config['SERVER_SCAN_DELAY'])
             time.sleep(config['SERVER_SCAN_DELAY'])
         else:
-            logger.info("Scan request for '%s'", path)
+            logger.info("Scan request from %s for '%s'", scan_for, path)
 
         # check if root scan folder for
         if path in resleep_paths:
@@ -36,38 +37,34 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             break
 
     # check file exists
-    if scan_for == 'radarr' or scan_for == 'sonarr_dev' or scan_for == 'lidarr' or scan_for == 'manual':
-        checks = 0
-        check_path = utils.map_pushed_path_file_exists(config, path)
-        while True:
-            checks += 1
-            if os.path.exists(check_path):
-                logger.info("File '%s' exists on check %d of %d.", check_path, checks, config['SERVER_MAX_FILE_CHECKS'])
-                scan_path = os.path.dirname(path).strip()
-                break
-            elif checks >= config['SERVER_MAX_FILE_CHECKS']:
-                logger.warning("File '%s' exhausted all available checks, aborting scan request.", check_path)
-                # remove item from database if sqlite is enabled
-                if config['SERVER_USE_SQLITE']:
-                    if db.remove_item(path):
-                        logger.info("Removed '%s' from database", path)
-                        time.sleep(1)
-                    else:
-                        logger.error("Failed removing '%s' from database", path)
-                return
-            else:
-                logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", check_path,
-                            checks,
-                            config['SERVER_MAX_FILE_CHECKS'])
-                time.sleep(60)
+    checks = 0
+    check_path = utils.map_pushed_path_file_exists(config, path)
+    scan_path_is_directory = os.path.isdir(check_path)
 
-                # send rclone cache clear if enabled
-                if config['RCLONE_RC_CACHE_EXPIRE']['ENABLED']:
-                    utils.rclone_rc_clear_cache(config, check_path)
-
-    else:
-        # old sonarr doesnt pass the sonarr_episodefile_path in webhook, so we cannot check until this is corrected.
-        scan_path = path.strip()
+    while True:
+        checks += 1
+        if os.path.exists(check_path):
+            logger.info("File '%s' exists on check %d of %d.", check_path, checks, config['SERVER_MAX_FILE_CHECKS'])
+            scan_path = os.path.dirname(path).strip() if not scan_path_is_directory else path.strip()
+            break
+        elif checks >= config['SERVER_MAX_FILE_CHECKS']:
+            logger.warning("File '%s' exhausted all available checks, aborting scan request.", check_path)
+            # remove item from database if sqlite is enabled
+            if config['SERVER_USE_SQLITE']:
+                if db.remove_item(path):
+                    logger.info("Removed '%s' from database", path)
+                    time.sleep(1)
+                else:
+                    logger.error("Failed removing '%s' from database", path)
+            return
+        else:
+            logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", check_path,
+                        checks,
+                        config['SERVER_MAX_FILE_CHECKS'])
+            time.sleep(60)
+            # send rclone cache clear if enabled
+            if config['RCLONE_RC_CACHE_EXPIRE']['ENABLED']:
+                utils.rclone_rc_clear_cache(config, check_path)
 
     # build plex scanner command
     if os.name == 'nt':
@@ -152,10 +149,12 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                 empty_trash(config, str(section))
 
         # analyze movie/season
-        if config['PLEX_ANALYZE_FILE'] and config['PLEX_TOKEN'] and config['PLEX_LOCAL_URL']:
+        if config['PLEX_ANALYZE_FILE'] and config['PLEX_TOKEN'] and config['PLEX_LOCAL_URL'] and \
+                not scan_path_is_directory:
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
+
     except Exception:
         logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)
     finally:
@@ -281,7 +280,7 @@ def empty_trash(config, section):
         except Exception as ex:
             logger.exception("Exception sending empty trash for section %s, %d/5 attempts: ", section, x + 1)
             time.sleep(10)
-            
+
     return
 
 
