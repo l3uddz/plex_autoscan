@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 import time
+from contextlib import closing
 
 import db
 
@@ -220,38 +221,40 @@ def get_file_metadata_id(config, file_path):
     media_item_row = None
 
     try:
-        conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
-        c = conn.cursor()
-        for x in range(5):
-            media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
-            if media_item_row:
-                logger.info("Found row in media_parts where file = '%s' after %d/5 tries!", file_path, x + 1)
-                break
-            else:
-                logger.error("Could not locate record in media_parts where file = '%s', %d/5 attempts...",
-                             file_path, x + 1)
-                time.sleep(10)
 
-        if not media_item_row:
-            logger.error("Could not locate record in media_parts where file = '%s' after 5 tries...", file_path)
-            conn.close()
-            return None
+        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            with closing(conn.cursor()) as c:
+                for x in range(5):
+                    media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
+                    if media_item_row:
+                        logger.info("Found row in media_parts where file = '%s' after %d/5 tries!", file_path, x + 1)
+                        break
+                    else:
+                        logger.error("Could not locate record in media_parts where file = '%s', %d/5 attempts...",
+                                     file_path, x + 1)
+                        time.sleep(10)
 
-        media_item_id = media_item_row[1]
-        # query db to find metadata_item_id
-        if int(media_item_id):
-            metadata_item_id = c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
-            if int(metadata_item_id):
-                # check for parent_id in metadata_items
-                parent_id = c.execute("SELECT * FROM metadata_items WHERE id=?", (int(metadata_item_id),)).fetchone()[2]
-                if parent_id:
-                    result = int(parent_id)
-                    logger.debug("Found parent_id for '%s': %d", file_path, result)
-                else:
-                    result = int(metadata_item_id)
-                    logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
+                if not media_item_row:
+                    logger.error("Could not locate record in media_parts where file = '%s' after 5 tries...", file_path)
+                    return None
 
-        conn.close()
+                media_item_id = media_item_row[1]
+                # query db to find metadata_item_id
+                if int(media_item_id):
+                    metadata_item_id = \
+                    c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[
+                        3]
+                    if int(metadata_item_id):
+                        # check for parent_id in metadata_items
+                        parent_id = \
+                            c.execute("SELECT * FROM metadata_items WHERE id=?", (int(metadata_item_id),)).fetchone()[2]
+                        if parent_id:
+                            result = int(parent_id)
+                            logger.debug("Found parent_id for '%s': %d", file_path, result)
+                        else:
+                            result = int(metadata_item_id)
+                            logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
+
     except Exception as ex:
         logger.exception("Exception finding metadata_item_id for '%s': ", file_path)
     return result
@@ -286,12 +289,15 @@ def empty_trash(config, section):
 
 def get_deleted_count(config):
     try:
-        conn = sqlite3.connect(config['PLEX_DATABASE_PATH'])
-        c = conn.cursor()
-        deleted_metadata = c.execute('SELECT count(*) FROM metadata_items WHERE deleted_at IS NOT NULL').fetchone()[0]
-        deleted_media_parts = c.execute('SELECT count(*) FROM media_parts WHERE deleted_at IS NOT NULL').fetchone()[0]
-        conn.close()
+        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            with closing(conn.cursor()) as c:
+                deleted_metadata = \
+                    c.execute('SELECT count(*) FROM metadata_items WHERE deleted_at IS NOT NULL').fetchone()[0]
+                deleted_media_parts = \
+                    c.execute('SELECT count(*) FROM media_parts WHERE deleted_at IS NOT NULL').fetchone()[0]
+
         return int(deleted_metadata) + int(deleted_media_parts)
+
     except Exception as ex:
         logger.exception("Exception retrieving deleted item count from database: ")
         return -1
