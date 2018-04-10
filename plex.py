@@ -241,8 +241,7 @@ def get_file_metadata_id(config, file_path):
                 # query db to find metadata_item_id
                 if int(media_item_id):
                     metadata_item_id = \
-                    c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[
-                        3]
+                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
                     if int(metadata_item_id):
                         # check for parent_id in metadata_items
                         parent_id = \
