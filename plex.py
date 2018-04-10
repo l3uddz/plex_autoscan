@@ -283,7 +283,6 @@ def empty_trash(config, section):
         except Exception as ex:
             logger.exception("Exception sending empty trash for section %s, %d/5 attempts: ", section, x + 1)
             time.sleep(10)
-
     return
 
 
@@ -300,4 +299,4 @@ def get_deleted_count(config):
 
     except Exception as ex:
         logger.exception("Exception retrieving deleted item count from database: ")
-        return -1
+    return -1
