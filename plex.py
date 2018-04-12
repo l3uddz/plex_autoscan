@@ -258,7 +258,7 @@ def get_file_metadata_id(config, file_path):
                         # query db to find parent_id of metadata_item_id
                         parent_id = \
                             c.execute("SELECT * FROM metadata_items WHERE id=?",
-                                      (int(metadata_item_id),)).fetchone()['parent_id']
+                                      (result,)).fetchone()['parent_id']
                         if parent_id:
                             result = int(parent_id)
                             logger.debug("Found parent_id for '%s': %d", file_path, result)
