@@ -225,7 +225,6 @@ def analyze_item(config, scan_path):
     logger.debug(final_cmd)
     utils.run_command(final_cmd.encode("utf-8"))
     logger.info("Finished %s analysis of %s!", 'deep' if config['PLEX_DEEP_ANALYZE'] else 'basic', scan_path)
-    return
 
 
 def get_file_metadata_id(config, file_path):
