@@ -215,12 +215,12 @@ def analyze_item(config, scan_path):
             final_cmd = cmd
 
     # begin analysis
-    logger.info("Starting %s analysis of '%s'",
-                'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', scan_path)
+    logger.info("Starting %s analysis of metadata_item: %d",
+                'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
     logger.debug(final_cmd)
     utils.run_command(final_cmd.encode("utf-8"))
-    logger.info("Finished %s analysis of '%s'!",
-                'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', scan_path)
+    logger.info("Finished %s analysis of metadata_item: %d!",
+                'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
 
 
 def get_file_metadata_id(config, file_path):
