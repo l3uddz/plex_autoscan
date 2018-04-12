@@ -150,7 +150,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                 empty_trash(config, str(section))
 
         # analyze movie/episode
-        if config['PLEX_ANALYZE_FILE'] and not scan_path_is_directory:
+        if config['PLEX_ANALYZE_FILE_TYPE'].lower() != 'off' and not scan_path_is_directory:
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
@@ -196,21 +196,15 @@ def analyze_item(config, scan_path):
         logger.info("Sending analyze request for library item: %d", metadata_item_id)
 
     # build plex analyze command
+    analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'analyze'
     if os.name == 'nt':
-        if config['PLEX_DEEP_ANALYZE']:
-            final_cmd = '"%s" --analyze-deeply --item %d' \
-                        % (config['PLEX_SCANNER'], metadata_item_id)
-        else:
-            final_cmd = '"%s" --analyze --item %d' \
-                        % (config['PLEX_SCANNER'], metadata_item_id)
+        final_cmd = '"%s" --%s --item %d' % (config['PLEX_SCANNER'], analyze_type, metadata_item_id)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
         if not config['USE_DOCKER']:
             cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
-        if config['PLEX_DEEP_ANALYZE']:
-            cmd += config['PLEX_SCANNER'] + ' --analyze-deeply --item ' + str(metadata_item_id)
-        else:
-            cmd += config['PLEX_SCANNER'] + ' --analyze --item ' + str(metadata_item_id)
+
+        cmd += config['PLEX_SCANNER'] + ' --' + analyze_type + ' --item ' + str(metadata_item_id)
 
         if config['USE_DOCKER']:
             final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
@@ -221,10 +215,12 @@ def analyze_item(config, scan_path):
             final_cmd = cmd
 
     # begin analysis
-    logger.info("Starting %s analysis of %s", 'deep' if config['PLEX_DEEP_ANALYZE'] else 'basic', scan_path)
+    logger.info("Starting %s analysis of '%s'", 'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic',
+                scan_path)
     logger.debug(final_cmd)
     utils.run_command(final_cmd.encode("utf-8"))
-    logger.info("Finished %s analysis of %s!", 'deep' if config['PLEX_DEEP_ANALYZE'] else 'basic', scan_path)
+    logger.info("Finished %s analysis of '%s'!", 'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic',
+                scan_path)
 
 
 def get_file_metadata_id(config, file_path):
@@ -254,7 +250,8 @@ def get_file_metadata_id(config, file_path):
                 # query db to find metadata_item_id
                 if int(media_item_id):
                     metadata_item_id = \
-                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()['metadata_item_id']
+                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[
+                            'metadata_item_id']
                     if int(metadata_item_id):
                         result = int(metadata_item_id)
                         logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
