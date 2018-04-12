@@ -255,6 +255,13 @@ def get_file_metadata_id(config, file_path):
                     if int(metadata_item_id):
                         result = int(metadata_item_id)
                         logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
+                        # query db to find parent_id of metadata_item_id
+                        parent_id = \
+                            c.execute("SELECT * FROM metadata_items WHERE id=?",
+                                      (int(metadata_item_id),)).fetchone()['parent_id']
+                        if parent_id:
+                            result = int(parent_id)
+                            logger.debug("Found parent_id for '%s': %d", file_path, result)
 
     except Exception as ex:
         logger.exception("Exception finding metadata_item_id for '%s': ", file_path)
