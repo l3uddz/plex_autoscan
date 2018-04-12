@@ -192,8 +192,6 @@ def analyze_item(config, scan_path):
     if not metadata_item_id:
         logger.info("Aborting analyze of '%s' because could not find a metadata_item_id for it", scan_path)
         return
-    else:
-        logger.info("Sending analyze request for library item: %d", metadata_item_id)
 
     # build plex analyze command
     analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'analyze'
