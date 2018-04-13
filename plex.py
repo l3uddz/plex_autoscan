@@ -264,8 +264,7 @@ def get_file_metadata_ids(config, file_path):
                                 # could not find parent_id of this item, likely its a movie...
                                 # lets just return the metadata_item_id
                                 return [int(metadata_item_id)]
-                            else:
-                                logger.debug("Found parent_id for '%s': %d", file_path, int(parent_id))
+                            logger.debug("Found parent_id for '%s': %d", file_path, int(parent_id))
 
                             # if mode is basic, single parent_id is enough
                             if config['PLEX_ANALYZE_TYPE'].lower() == 'basic':
