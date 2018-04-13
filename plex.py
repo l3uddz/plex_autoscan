@@ -150,7 +150,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                 empty_trash(config, str(section))
 
         # analyze movie/episode
-        if config['PLEX_ANALYZE_FILE_TYPE'].lower() != 'off' and not scan_path_is_directory:
+        if config['PLEX_ANALYZE_TYPE'].lower() != 'off' and not scan_path_is_directory:
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
@@ -195,7 +195,7 @@ def analyze_item(config, scan_path):
 
     for metadata_item_id in metadata_item_ids:
         # build plex analyze command
-        analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'analyze'
+        analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'analyze'
         if os.name == 'nt':
             final_cmd = '"%s" --%s --item %d' % (config['PLEX_SCANNER'], analyze_type, metadata_item_id)
         else:
@@ -215,13 +215,13 @@ def analyze_item(config, scan_path):
 
         # begin analysis
         logger.info("Starting %s analysis of metadata_item: %d",
-                    'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+                    'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished %s analysis of metadata_item: %d!",
-                    'deep' if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+                    'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
         time.sleep(5)
-        
+
 
 def get_file_metadata_ids(config, file_path):
     results = []
@@ -268,7 +268,7 @@ def get_file_metadata_ids(config, file_path):
                                 logger.debug("Found parent_id for '%s': %d", file_path, int(parent_id))
 
                             # if mode is basic, single parent_id is enough
-                            if config['PLEX_ANALYZE_FILE_TYPE'].lower() == 'basic':
+                            if config['PLEX_ANALYZE_TYPE'].lower() == 'basic':
                                 return [int(parent_id)]
 
                             # lets find all metadata_item_id's with this parent_id for use with deep analyze

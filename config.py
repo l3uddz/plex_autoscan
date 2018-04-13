@@ -44,7 +44,7 @@ class Config(object):
         ],
         'PLEX_EMPTY_TRASH_ZERO_DELETED': False,
         'PLEX_WAIT_FOR_EXTERNAL_SCANNERS': True,
-        'PLEX_ANALYZE_FILE_TYPE': 'basic',
+        'PLEX_ANALYZE_TYPE': 'basic',
         'PLEX_ANALYZE_DIRECTORY': True,
         'PLEX_TOKEN': '',
         'SERVER_IP': '0.0.0.0',
