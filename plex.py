@@ -192,8 +192,8 @@ def analyze_item(config, scan_path):
     if metadata_item_ids is None or not len(metadata_item_ids):
         logger.info("Aborting analyze of '%s' because could not find any metadata_item_id for it", scan_path)
         return
-
     metadata_item_id = ','.join(str(x) for x in metadata_item_ids)
+
     # build plex analyze command
     analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'analyze'
     if os.name == 'nt':
@@ -219,7 +219,6 @@ def analyze_item(config, scan_path):
     utils.run_command(final_cmd.encode("utf-8"))
     logger.info("Finished %s analysis of metadata_item(s): %s!",
                 'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
-    time.sleep(5)
 
 
 def get_file_metadata_ids(config, file_path):
