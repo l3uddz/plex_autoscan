@@ -193,34 +193,33 @@ def analyze_item(config, scan_path):
         logger.info("Aborting analyze of '%s' because could not find any metadata_item_id for it", scan_path)
         return
 
-    for metadata_item_id in metadata_item_ids:
-        # build plex analyze command
-        analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'analyze'
-        if os.name == 'nt':
-            final_cmd = '"%s" --%s --item %d' % (config['PLEX_SCANNER'], analyze_type, metadata_item_id)
+    metadata_item_id = ','.join(str(x) for x in metadata_item_ids)
+    # build plex analyze command
+    analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'analyze'
+    if os.name == 'nt':
+        final_cmd = '"%s" --%s --item %s' % (config['PLEX_SCANNER'], analyze_type, metadata_item_id)
+    else:
+        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
+        if not config['USE_DOCKER']:
+            cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
+        cmd += config['PLEX_SCANNER'] + ' --' + analyze_type + ' --item ' + metadata_item_id
+
+        if config['USE_DOCKER']:
+            final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
+                        (cmd_quote(config['PLEX_USER']), cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
+        elif config['USE_SUDO']:
+            final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
         else:
-            cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
-            if not config['USE_DOCKER']:
-                cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
+            final_cmd = cmd
 
-            cmd += config['PLEX_SCANNER'] + ' --' + analyze_type + ' --item ' + str(metadata_item_id)
-
-            if config['USE_DOCKER']:
-                final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
-                            (cmd_quote(config['PLEX_USER']), cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
-            elif config['USE_SUDO']:
-                final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
-            else:
-                final_cmd = cmd
-
-        # begin analysis
-        logger.info("Starting %s analysis of metadata_item: %d",
-                    'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
-        logger.debug(final_cmd)
-        utils.run_command(final_cmd.encode("utf-8"))
-        logger.info("Finished %s analysis of metadata_item: %d!",
-                    'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
-        time.sleep(5)
+    # begin analysis
+    logger.info("Starting %s analysis of metadata_item(s): %s",
+                'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+    logger.debug(final_cmd)
+    utils.run_command(final_cmd.encode("utf-8"))
+    logger.info("Finished %s analysis of metadata_item(s): %s!",
+                'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+    time.sleep(5)
 
 
 def get_file_metadata_ids(config, file_path):
