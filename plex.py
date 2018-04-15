@@ -149,9 +149,8 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                 logger.info("Emptying trash to clear %d deleted items", deleted_items)
                 empty_trash(config, str(section))
 
-        # analyze movie/season
-        if config['PLEX_ANALYZE_FILE'] and config['PLEX_TOKEN'] and config['PLEX_LOCAL_URL'] and \
-                not scan_path_is_directory:
+        # analyze movie/episode
+        if config['PLEX_ANALYZE_TYPE'].lower() != 'off' and not scan_path_is_directory:
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
@@ -189,40 +188,48 @@ def analyze_item(config, scan_path):
         logger.info("Could not analyze '%s' because plex database could not be found?", scan_path)
         return
     # get files metadata_item_id
-    metadata_item_id = get_file_metadata_id(config, scan_path)
-    if not metadata_item_id:
-        logger.info("Aborting analyze of '%s' because could not find a metadata_item_id for it", scan_path)
+    metadata_item_ids = get_file_metadata_ids(config, scan_path)
+    if metadata_item_ids is None or not len(metadata_item_ids):
+        logger.info("Aborting analyze of '%s' because could not find any metadata_item_id for it", scan_path)
         return
+    metadata_item_id = ','.join(str(x) for x in metadata_item_ids)
+
+    # build plex analyze command
+    analyze_type = 'analyze-deeply' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'analyze'
+    if os.name == 'nt':
+        final_cmd = '"%s" --%s --item %s' % (config['PLEX_SCANNER'], analyze_type, metadata_item_id)
     else:
-        logger.info("Sending analyze request for library item: %d", metadata_item_id)
+        cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
+        if not config['USE_DOCKER']:
+            cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
+        cmd += config['PLEX_SCANNER'] + ' --' + analyze_type + ' --item ' + metadata_item_id
 
-    # send analyze request to server
-    for x in range(5):
-        try:
-            resp = requests.put("%s/library/metadata/%d/analyze?X-Plex-Token=%s" % (
-                config['PLEX_LOCAL_URL'], metadata_item_id, config['PLEX_TOKEN']), timeout=600)
-            if resp.status_code == 200:
-                logger.info("Analyze request was completed successfully after %d/5 tries!", x + 1)
-                break
-            else:
-                logger.error("Unexpected response status_code for analyze request: %d, %d/5 attempts...",
-                             resp.status_code, x + 1)
-                time.sleep(10)
-        except Exception:
-            logger.exception("Exception sending analyze request for library item %d, %d/5 attempts: ",
-                             metadata_item_id, x + 1)
-            time.sleep(10)
-    return
+        if config['USE_DOCKER']:
+            final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
+                        (cmd_quote(config['PLEX_USER']), cmd_quote(config['DOCKER_NAME']), cmd_quote(cmd))
+        elif config['USE_SUDO']:
+            final_cmd = 'sudo -u %s bash -c %s' % (config['PLEX_USER'], cmd_quote(cmd))
+        else:
+            final_cmd = cmd
+
+    # begin analysis
+    logger.info("Starting %s analysis of metadata_item(s): %s",
+                'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+    logger.debug(final_cmd)
+    utils.run_command(final_cmd.encode("utf-8"))
+    logger.info("Finished %s analysis of metadata_item(s): %s!",
+                'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
 
 
-def get_file_metadata_id(config, file_path):
-    # query db to locate media_item_id
-    result = None
+def get_file_metadata_ids(config, file_path):
+    results = []
     media_item_row = None
 
     try:
         with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            conn.row_factory = sqlite3.Row
             with closing(conn.cursor()) as c:
+                # query media_parts to retrieve media_item_row for this file
                 for x in range(5):
                     media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
                     if media_item_row:
@@ -237,25 +244,50 @@ def get_file_metadata_id(config, file_path):
                     logger.error("Could not locate record in media_parts where file = '%s' after 5 tries...", file_path)
                     return None
 
-                media_item_id = media_item_row[1]
-                # query db to find metadata_item_id
-                if int(media_item_id):
+                media_item_id = media_item_row['media_item_id']
+                if media_item_id and int(media_item_id):
+                    # query db to find metadata_item_id
                     metadata_item_id = \
-                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[3]
-                    if int(metadata_item_id):
-                        # check for parent_id in metadata_items
-                        parent_id = \
-                            c.execute("SELECT * FROM metadata_items WHERE id=?", (int(metadata_item_id),)).fetchone()[2]
-                        if parent_id:
-                            result = int(parent_id)
-                            logger.debug("Found parent_id for '%s': %d", file_path, result)
+                        c.execute("SELECT * FROM media_items WHERE id=?", (int(media_item_id),)).fetchone()[
+                            'metadata_item_id']
+                    if metadata_item_id and int(metadata_item_id):
+                        logger.debug("Found metadata_item_id for '%s': %d", file_path, int(metadata_item_id))
+
+                        # query db to find parent_id of metadata_item_id
+                        if config['PLEX_ANALYZE_DIRECTORY']:
+                            parent_id = \
+                                c.execute("SELECT * FROM metadata_items WHERE id=?",
+                                          (int(metadata_item_id),)).fetchone()['parent_id']
+                            if not parent_id or not int(parent_id):
+                                # could not find parent_id of this item, likely its a movie...
+                                # lets just return the metadata_item_id
+                                return [int(metadata_item_id)]
+                            logger.debug("Found parent_id for '%s': %d", file_path, int(parent_id))
+
+                            # if mode is basic, single parent_id is enough
+                            if config['PLEX_ANALYZE_TYPE'].lower() == 'basic':
+                                return [int(parent_id)]
+
+                            # lets find all metadata_item_id's with this parent_id for use with deep analyze
+                            metadata_items = c.execute("SELECT * FROM metadata_items WHERE parent_id=?",
+                                                       (int(parent_id),)).fetchall()
+                            if not metadata_items:
+                                # could not find any results, lets just return metadata_item_id
+                                return [int(metadata_item_id)]
+
+                            for row in metadata_items:
+                                if row['id'] and int(row['id']) and int(row['id']) not in results:
+                                    results.append(int(row['id']))
+
+                            logger.debug("Found media_item_id's for '%s': %s", file_path, results)
+                            logger.info("Found %d media_item_id's to deep analyze for: '%s'", len(results), file_path)
                         else:
-                            result = int(metadata_item_id)
-                            logger.debug("Found metadata_item_id for '%s': %d", file_path, result)
+                            # user had PLEX_ANALYZE_DIRECTORY as False - lets just scan the single metadata_item_id
+                            results.append(int(metadata_item_id))
 
     except Exception as ex:
         logger.exception("Exception finding metadata_item_id for '%s': ", file_path)
-    return result
+    return results
 
 
 def empty_trash(config, section):

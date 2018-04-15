@@ -60,7 +60,7 @@ def wait_running_process(process_name):
     try:
         running, process = is_process_running(process_name)
         while running and process:
-            logger.debug("'%s' is running, pid: %d, cmdline: %r. Checking again in 60 seconds...", process.name(),
+            logger.info("'%s' is running, pid: %d, cmdline: %r. Checking again in 60 seconds...", process.name(),
                          process.pid, process.cmdline())
             time.sleep(60)
             running, process = is_process_running(process_name)
