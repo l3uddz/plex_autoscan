@@ -82,6 +82,15 @@ def get_all_items():
     return items
 
 
+def get_queue_count():
+    count = 0
+    try:
+        count = QueueItemModel.select().count()
+    except Exception:
+        logger.exception("Exception getting queued item count from database: ")
+    return count
+
+
 def remove_item(scan_path):
     try:
         return DeleteQuery(QueueItemModel).where(QueueItemModel.scan_path == scan_path).execute()
