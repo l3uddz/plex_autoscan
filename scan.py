@@ -8,6 +8,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from flask import abort
+from flask import jsonify
 from flask import request
 
 # Get config
@@ -125,6 +126,43 @@ def start_queue_reloader():
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+
+
+@app.route("/api/%s" % conf.configs['SERVER_PASS'], methods=['GET', 'POST'])
+def api_call():
+    data = {}
+    try:
+        if request.content_type == 'application/json':
+            data = request.get_json(silent=True)
+        elif request.method == 'POST':
+            data = request.form.to_dict()
+        else:
+            data = request.args.to_dict()
+
+        # verify cmd was supplied
+        if 'cmd' not in data:
+            logger.error("Unknown %s API call from %r", request.method, request.remote_addr)
+            return jsonify({'error': 'No cmd parameter was supplied'})
+        else:
+            logger.info("Client %s API call from %r, type: %s", request.method, request.remote_addr, data['cmd'])
+
+        # process cmds
+        cmd = data['cmd'].lower()
+        if cmd == 'queue_count':
+            # queue count
+            if not conf.configs['SERVER_USE_SQLITE']:
+                # return error if SQLITE db is not enabled
+                return jsonify({'error': 'SERVER_USE_SQLITE must be enabled'})
+            return jsonify({'queue_count': db.get_queue_count()})
+
+        else:
+            # unknown cmd
+            return jsonify({'error': 'Unknown cmd: %s' % cmd})
+
+    except Exception:
+        logger.exception("Exception parsing %s API call from %r: ", request.method, request.remote_addr)
+
+    return jsonify({'error': 'Unexpected error occurred, check logs...'})
 
 
 @app.route("/%s" % conf.configs['SERVER_PASS'], methods=['GET'])
