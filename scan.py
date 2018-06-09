@@ -170,7 +170,7 @@ def process_google_changes(changes):
 
     # remove files that are not of an allowed extension type
     for file_path in copy(file_paths):
-        if not utils.allowed_scan_extension(file_path, conf.configs['GDRIVE']['ALLOWED_EXTENSIONS']):
+        if not utils.allowed_scan_extension(file_path, conf.configs['GDRIVE']['SCAN_EXTENSIONS']):
             # this file did not have an allowed extension, remove it
             file_paths.remove(file_path)
 
