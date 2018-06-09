@@ -1,10 +1,10 @@
+import json
 import logging
 import os
-import subprocess
-import time
-import json
-import sys
 import sqlite3
+import subprocess
+import sys
+import time
 from contextlib import closing
 
 import requests
@@ -183,7 +183,7 @@ def dump_json(file_path, obj, processing=True):
     return
 
 
-def file_name_exists_in_databases(file_path, plex_db_path, autoscan_queue_path):
+def file_name_exists_in_plex_database(file_path, plex_db_path):
     file_name = os.path.basename(file_path)
     try:
         if plex_db_path and os.path.exists(plex_db_path):
@@ -197,19 +197,8 @@ def file_name_exists_in_databases(file_path, plex_db_path, autoscan_queue_path):
                         logger.debug("'%s' was found in the plex media_parts table", file_name)
                         return True
 
-        if autoscan_queue_path and os.path.exists(autoscan_queue_path):
-            # check if file exists in autoscan queue file
-            with sqlite3.connect(autoscan_queue_path) as conn:
-                conn.row_factory = sqlite3.Row
-                with closing(conn.cursor()) as c:
-                    found_item = c.execute("SELECT * FROM queueitemmodel WHERE scan_path LIKE ?",
-                                           ('%' + file_name,)).fetchone()
-                    if found_item:
-                        logger.debug("'%s' was found in the autoscan queueitemmodel table", file_name)
-                        return True
-
     except Exception:
-        logger.exception("Exception checking if '%s' exists in plex / autoscan queue databases: ", file_name)
+        logger.exception("Exception checking if '%s' exists in the plex database: ", file_name)
     return False
 
 

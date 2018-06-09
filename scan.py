@@ -5,7 +5,6 @@ import os
 import sys
 import time
 from copy import copy
-
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
@@ -174,17 +173,15 @@ def process_google_changes(changes):
             # this file did not have an allowed extension, remove it
             file_paths.remove(file_path)
 
-    # remove files that already exist in the plex/autoscan queue databases
+    # remove files that already exist in the plex database
     for file_path in copy(file_paths):
-        if utils.file_name_exists_in_databases(file_path, conf.configs['PLEX_DATABASE_PATH'],
-                                               conf.settings['queuefile'] if conf.configs['SERVER_USE_SQLITE']
-                                               else None):
-            # the file existed in the plex / autoscan queue database, lets not process this file
+        if utils.file_name_exists_in_plex_database(file_path, conf.configs['PLEX_DATABASE_PATH']):
+            # the file existed in the plex database, lets not process this file
             file_paths.remove(file_path)
 
     # process the file_paths list
     if len(file_paths):
-        logger.debug("Processing file changes from google: %s", file_paths)
+        logger.info("Proceeding with scan of %d file(s) from Google Drive changes: %s", len(file_paths), file_paths)
 
     # loop each file, remapping and starting a scan thread
     for file_path in file_paths:
