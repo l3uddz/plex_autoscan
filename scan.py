@@ -444,6 +444,9 @@ if __name__ == "__main__":
             start_queue_reloader()
 
         if conf.configs['GDRIVE']['ENABLED']:
+            if not os.path.exists(conf.settings['tokenfile']):
+                logger.error("You must authorize your Google Drive account with the authorize option...")
+                exit(1)
             start_google_monitor()
 
         logger.info("Starting server: http://%s:%d/%s",
