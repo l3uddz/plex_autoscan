@@ -88,7 +88,17 @@ class Config(object):
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
         'USE_DOCKER': False,
-        'USE_SUDO': True
+        'USE_SUDO': True,
+        'GDRIVE': {
+            'CLIENT_ID': '',
+            'CLIENT_SECRET': '',
+            'POLL_INTERVAL': 60,
+            'ENABLED': False,
+            'SCAN_EXTENSIONS': ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif', 'gifv', 'mng', 'avi',
+                                 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mp4', 'm4p', 'm4v',
+                                 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp', '3g2', 'mxf',
+                                 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b']
+        }
     }
 
     base_settings = {
@@ -111,6 +121,16 @@ class Config(object):
             'argv': '--queuefile',
             'env': 'PLEX_AUTOSCAN_QUEUEFILE',
             'default': os.path.join(os.path.dirname(sys.argv[0]), 'queue.db')
+        },
+        'tokenfile': {
+            'argv': '--tokenfile',
+            'env': 'PLEX_AUTOSCAN_TOKENFILE',
+            'default': os.path.join(os.path.dirname(sys.argv[0]), 'token.json')
+        },
+        'cachefile': {
+            'argv': '--cachefile',
+            'env': 'PLEX_AUTOSCAN_CACHEFILE',
+            'default': os.path.join(os.path.dirname(sys.argv[0]), 'cache.json')
         }
     }
 
@@ -215,10 +235,11 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server'),
+                            choices=('sections', 'server', 'authorize'),
                             help=(
-                                '"sections": prints plex sections\n'
-                                '"server": starts the application'
+                                '"sections": prints plex sections\n',
+                                '"server": starts the application\n',
+                                '"authorize": authorize against a google account'
                             )
                             )
 
@@ -241,6 +262,18 @@ class Config(object):
                             nargs='?',
                             const=None,
                             help='Queue file location (default: %s)' % self.base_settings['queuefile']['default']
+                            )
+
+        # Token file
+        parser.add_argument(self.base_settings['tokenfile']['argv'],
+                            choices=('WARN', 'INFO', 'DEBUG'),
+                            help='Google token file location (default: %s)' % self.base_settings['tokenfile']['default']
+                            )
+
+        # Cache file
+        parser.add_argument(self.base_settings['cachefile']['argv'],
+                            choices=('WARN', 'INFO', 'DEBUG'),
+                            help='Google cache file location (default: %s)' % self.base_settings['cachefile']['default']
                             )
 
         # Logging level

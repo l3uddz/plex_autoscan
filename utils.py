@@ -2,6 +2,10 @@ import logging
 import os
 import subprocess
 import time
+import json
+import sys
+import sqlite3
+from contextlib import closing
 
 import requests
 
@@ -61,7 +65,7 @@ def wait_running_process(process_name):
         running, process = is_process_running(process_name)
         while running and process:
             logger.info("'%s' is running, pid: %d, cmdline: %r. Checking again in 60 seconds...", process.name(),
-                         process.pid, process.cmdline())
+                        process.pid, process.cmdline())
             time.sleep(60)
             running, process = is_process_running(process_name)
 
@@ -156,4 +160,64 @@ def rclone_rc_clear_cache(config, scan_path):
 
     except Exception:
         logger.exception("Exception clearing rclone directory cache for '%s': ", scan_path)
+    return False
+
+
+def load_json(file_path):
+    if os.path.sep not in file_path:
+        file_path = os.path.join(os.path.dirname(sys.argv[0]), file_path)
+
+    with open(file_path, 'r') as fp:
+        return json.load(fp)
+
+
+def dump_json(file_path, obj, processing=True):
+    if os.path.sep not in file_path:
+        file_path = os.path.join(os.path.dirname(sys.argv[0]), file_path)
+
+    with open(file_path, 'w') as fp:
+        if processing:
+            json.dump(obj, fp, indent=2, sort_keys=True)
+        else:
+            json.dump(obj, fp)
+    return
+
+
+def file_name_exists_in_databases(file_path, plex_db_path, autoscan_queue_path):
+    file_name = os.path.basename(file_path)
+    try:
+        if plex_db_path and os.path.exists(plex_db_path):
+            logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
+            # check if file exists in plex
+            with sqlite3.connect(plex_db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                with closing(conn.cursor()) as c:
+                    found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)).fetchone()
+                    if found_item:
+                        logger.debug("'%s' was found in the plex media_parts table", file_name)
+                        return True
+
+        if autoscan_queue_path and os.path.exists(autoscan_queue_path):
+            # check if file exists in autoscan queue file
+            with sqlite3.connect(autoscan_queue_path) as conn:
+                conn.row_factory = sqlite3.Row
+                with closing(conn.cursor()) as c:
+                    found_item = c.execute("SELECT * FROM queueitemmodel WHERE scan_path LIKE ?",
+                                           ('%' + file_name,)).fetchone()
+                    if found_item:
+                        logger.debug("'%s' was found in the autoscan queueitemmodel table", file_name)
+                        return True
+
+    except Exception:
+        logger.exception("Exception checking if '%s' exists in plex / autoscan queue databases: ", file_name)
+    return False
+
+
+def allowed_scan_extension(file_path, extensions):
+    check_path = file_path.lower()
+    for ext in extensions:
+        if check_path.endswith(ext):
+            logger.debug("'%s' had allowed extension: %s", file_path, ext)
+            return True
+    logger.debug("'%s' did not have an allowed extension", file_path)
     return False
