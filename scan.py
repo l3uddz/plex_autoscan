@@ -196,6 +196,9 @@ def process_google_changes(changes):
 def thread_google_monitor():
     global google
 
+    logger.info("Starting Google Drive changes monitor in 30 seconds...")
+    time.sleep(30)
+
     # load access tokens
     google = Gdrive(conf.configs, conf.settings['tokenfile'], conf.settings['cachefile'])
     if not google.first_run():
