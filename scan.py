@@ -177,7 +177,8 @@ def process_google_changes(changes):
     # remove files that already exist in the plex/autoscan queue databases
     for file_path in copy(file_paths):
         if utils.file_name_exists_in_databases(file_path, conf.configs['PLEX_DATABASE_PATH'],
-                                               conf.settings['queuefile'] if conf.settings['queuefile'] else None):
+                                               conf.settings['queuefile'] if conf.configs['SERVER_USE_SQLITE']
+                                               else None):
             # the file existed in the plex / autoscan queue database, lets not process this file
             file_paths.remove(file_path)
 
