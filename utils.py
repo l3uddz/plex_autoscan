@@ -205,7 +205,7 @@ def file_name_exists_in_plex_database(file_path, plex_db_path):
 def allowed_scan_extension(file_path, extensions):
     check_path = file_path.lower()
     for ext in extensions:
-        if check_path.endswith(ext):
+        if check_path.endswith(ext.lower()):
             logger.debug("'%s' had allowed extension: %s", file_path, ext)
             return True
     logger.debug("'%s' did not have an allowed extension", file_path)
