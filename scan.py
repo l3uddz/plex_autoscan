@@ -168,25 +168,37 @@ def process_google_changes(changes):
     google.dump_cache()
 
     # remove files that are not of an allowed extension type
+    removed_rejected_extensions = 0
     for file_path in copy(file_paths):
         if not utils.allowed_scan_extension(file_path, conf.configs['GDRIVE']['SCAN_EXTENSIONS']):
             # this file did not have an allowed extension, remove it
             file_paths.remove(file_path)
+            removed_rejected_extensions += 1
+
+    if removed_rejected_extensions:
+        logger.info("Rejected %d files from Google Drive changes for disallowed file extensions",
+                    removed_rejected_extensions)
 
     # remove files that already exist in the plex database
+    removed_rejected_exists = 0
     for file_path in copy(file_paths):
         if utils.file_name_exists_in_plex_database(file_path, conf.configs['PLEX_DATABASE_PATH']):
             # the file existed in the plex database, lets not process this file
             file_paths.remove(file_path)
+            removed_rejected_exists += 1
+
+    if removed_rejected_exists:
+        logger.info("Rejected %d files from Google Drive changes for already being in Plex!",
+                    removed_rejected_exists)
 
     # process the file_paths list
     if len(file_paths):
         logger.info("Proceeding with scan of %d file(s) from Google Drive changes: %s", len(file_paths), file_paths)
 
-    # loop each file, remapping and starting a scan thread
-    for file_path in file_paths:
-        final_path = utils.map_pushed_path(conf.configs, file_path)
-        start_scan(final_path, 'Google Drive', 'Download')
+        # loop each file, remapping and starting a scan thread
+        for file_path in file_paths:
+            final_path = utils.map_pushed_path(conf.configs, file_path)
+            start_scan(final_path, 'Google Drive', 'Download')
 
     return True
 
