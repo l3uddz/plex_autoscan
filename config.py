@@ -237,8 +237,8 @@ class Config(object):
         parser.add_argument('cmd',
                             choices=('sections', 'server', 'authorize'),
                             help=(
-                                '"sections": prints plex sections\n',
-                                '"server": starts the application\n',
+                                '"sections": prints plex sections\n'
+                                '"server": starts the application\n'
                                 '"authorize": authorize against a google account'
                             )
                             )
