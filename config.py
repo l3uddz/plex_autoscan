@@ -97,7 +97,7 @@ class Config(object):
         'cachefile': {
             'argv': '--cachefile',
             'env': 'PLEX_AUTOSCAN_CACHEFILE',
-            'default': os.path.join(os.path.dirname(sys.argv[0]), 'cache.json')
+            'default': os.path.join(os.path.dirname(sys.argv[0]), 'cache.db')
         }
     }
 

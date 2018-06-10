@@ -30,6 +30,7 @@ logging.getLogger('requests').setLevel(logging.ERROR)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('peewee').setLevel(logging.ERROR)
 logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
+logging.getLogger('sqlitedict').setLevel(logging.ERROR)
 
 # Console logger, log to stdout instead of stderr
 consoleHandler = logging.StreamHandler(sys.stdout)

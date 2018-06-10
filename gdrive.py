@@ -2,6 +2,7 @@ import logging
 import os
 from urllib import urlencode
 
+from sqlitedict import SqliteDict
 import backoff
 import requests
 
@@ -33,12 +34,7 @@ class Gdrive:
             self.token = utils.load_json(self.token_path)
 
         # cache file
-        if not os.path.exists(self.cache_path):
-            # cache.json does not exist, lets create it
-            self.cache = {}
-            self.dump_cache()
-        else:
-            self.cache = utils.load_json(self.cache_path)
+        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False)
 
         return True
 
@@ -209,7 +205,7 @@ class Gdrive:
         return
 
     def dump_cache(self):
-        utils.dump_json(self.cache_path, self.cache, False)
+        self.cache.commit()
         return
 
     ############################################################
