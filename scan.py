@@ -143,9 +143,6 @@ def process_google_changes(changes):
     for change in changes:
         logger.debug("Processing Google change: %s", change)
         if 'file' in change and 'fileId' in change:
-            # we always want to add changes to the cache so renames etc can be reflected inside the cache
-            google.add_item_to_cache(change['fileId'], change['file']['name'], change['file']['parents'])
-
             # dont consider trashed/removed events for processing
             if ('trashed' in change['file'] and change['file']['trashed']) or (
                     'removed' in change and change['removed']):
@@ -153,6 +150,9 @@ def process_google_changes(changes):
                 if google.remove_item_from_cache(change['fileId']):
                     logger.info("Removed %r from cache: %s", change['fileId'], change['file']['name'])
                 continue
+
+            # we always want to add changes to the cache so renames etc can be reflected inside the cache
+            google.add_item_to_cache(change['fileId'], change['file']['name'], change['file']['parents'])
 
             # dont process folder events
             if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:

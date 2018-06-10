@@ -1,9 +1,11 @@
 import logging
-import utils
-import backoff
-from urllib import urlencode
-import requests
 import os
+from urllib import urlencode
+
+import backoff
+import requests
+
+import utils
 
 logger = logging.getLogger("GDRIVE")
 
@@ -164,7 +166,6 @@ class Gdrive:
                 # we know this is a new item fetched from the api, because the cache does not store this field
                 self.add_item_to_cache(obj['id'], obj['name'], [] if 'parents' not in obj else obj['parents'])
                 new_cache_entries += 1
-                logger.info("Added %r to cache: %s", obj['id'], obj['name'])
 
             if path.strip() == '':
                 path = obj['name']
@@ -192,6 +193,8 @@ class Gdrive:
 
     # cache
     def add_item_to_cache(self, item_id, item_name, item_parents):
+        if item_id not in self.cache:
+            logger.info("Added %s to cache: %s", item_id, item_name)
         self.cache[item_id] = {'name': item_name, 'parents': item_parents}
         return
 
