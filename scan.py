@@ -149,7 +149,7 @@ def process_google_changes(changes):
                     'removed' in change and change['removed']):
                 # remove item from cache
                 if google.remove_item_from_cache(change['fileId']):
-                    logger.info("Removed %r from cache: %s", change['fileId'], change['file']['name'])
+                    logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
                 continue
 
             # we always want to add changes to the cache so renames etc can be reflected inside the cache
