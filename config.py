@@ -266,13 +266,15 @@ class Config(object):
 
         # Token file
         parser.add_argument(self.base_settings['tokenfile']['argv'],
-                            choices=('WARN', 'INFO', 'DEBUG'),
+                            nargs='?',
+                            const=None,
                             help='Google token file location (default: %s)' % self.base_settings['tokenfile']['default']
                             )
 
         # Cache file
         parser.add_argument(self.base_settings['cachefile']['argv'],
-                            choices=('WARN', 'INFO', 'DEBUG'),
+                            nargs='?',
+                            const=None,
                             help='Google cache file location (default: %s)' % self.base_settings['cachefile']['default']
                             )
 
