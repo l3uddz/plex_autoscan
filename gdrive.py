@@ -35,9 +35,7 @@ class Gdrive:
             self.token = utils.load_json(self.token_path)
 
         # cache file
-        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False, encode=json.dumps,
-                                decode=json.loads)
-
+        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False)
         return True
 
     def authorize_url(self):
@@ -154,40 +152,44 @@ class Gdrive:
         file_paths = []
         added_to_cache = 0
 
-        def get_item_paths(obj_id, path, paths, new_cache_entries):
-            success, obj = self.get_id_metadata(obj_id)
-            if not success:
+        try:
+            def get_item_paths(obj_id, path, paths, new_cache_entries):
+                success, obj = self.get_id_metadata(obj_id)
+                if not success:
+                    return new_cache_entries
+
+                # add item object to cache if we know its not from cache
+                if 'mimeType' in obj:
+                    # we know this is a new item fetched from the api, because the cache does not store this field
+                    self.add_item_to_cache(obj['id'], obj['name'], [] if 'parents' not in obj else obj['parents'])
+                    new_cache_entries += 1
+
+                if path.strip() == '':
+                    path = obj['name']
+                else:
+                    path = os.path.join(obj['name'], path)
+
+                if 'parents' in obj and obj['parents']:
+                    for parent in obj['parents']:
+                        new_cache_entries += get_item_paths(parent, path, paths, new_cache_entries)
+
+                if (not obj or 'parents' not in obj or not obj['parents']) and len(path):
+                    paths.append(path)
+                    return new_cache_entries
                 return new_cache_entries
 
-            # add item object to cache if we know its not from cache
-            if 'mimeType' in obj:
-                # we know this is a new item fetched from the api, because the cache does not store this field
-                self.add_item_to_cache(obj['id'], obj['name'], [] if 'parents' not in obj else obj['parents'])
-                new_cache_entries += 1
+            added_to_cache += get_item_paths(item_id, '', file_paths, added_to_cache)
+            if added_to_cache:
+                logger.debug("Dumping cache due to new entries!")
+                self.dump_cache()
 
-            if path.strip() == '':
-                path = obj['name']
+            if len(file_paths):
+                return True, file_paths
             else:
-                path = os.path.join(obj['name'], path)
-
-            if 'parents' in obj and obj['parents']:
-                for parent in obj['parents']:
-                    new_cache_entries += get_item_paths(parent, path, paths, new_cache_entries)
-
-            if (not obj or 'parents' not in obj or not obj['parents']) and len(path):
-                paths.append(path)
-                return new_cache_entries
-            return new_cache_entries
-
-        added_to_cache += get_item_paths(item_id, '', file_paths, added_to_cache)
-        if added_to_cache:
-            logger.debug("Dumping cache due to new entries!")
-            self.dump_cache()
-
-        if len(file_paths):
-            return True, file_paths
-        else:
-            return False, file_paths
+                return False, file_paths
+        except Exception:
+            logger.exception("Exception retrieving filepaths for '%s'", item_id)
+        return False, []
 
     # cache
     def add_item_to_cache(self, item_id, item_name, item_parents):
