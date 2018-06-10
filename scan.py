@@ -150,8 +150,8 @@ def process_google_changes(changes):
             if ('trashed' in change['file'] and change['file']['trashed']) or (
                     'removed' in change and change['removed']):
                 # remove item from cache
-                google.remove_item_from_cache(change['fileId'])
-                logger.info("Removed %r from cache: %s", change['fileId'], change['file']['name'])
+                if google.remove_item_from_cache(change['fileId']):
+                    logger.info("Removed %r from cache: %s", change['fileId'], change['file']['name'])
                 continue
 
             # dont process folder events

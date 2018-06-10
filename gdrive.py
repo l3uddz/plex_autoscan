@@ -196,8 +196,9 @@ class Gdrive:
         return
 
     def remove_item_from_cache(self, item_id):
-        self.cache.pop(item_id, None)
-        return
+        if self.cache.pop(item_id, None):
+            return True
+        return False
 
     # dump jsons
     def dump_token(self):
