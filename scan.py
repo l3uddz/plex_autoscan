@@ -177,14 +177,14 @@ def process_google_changes(changes):
             removed_rejected_extensions += 1
 
     if removed_rejected_extensions:
-        logger.info("Ignoring %d file(s) from Google Drive changes for disallowed file extensions",
+        logger.info("Ignored %d file(s) from Google Drive changes for disallowed file extensions",
                     removed_rejected_extensions)
 
     # remove files that already exist in the plex database
     removed_rejected_exists = utils.remove_files_exist_in_plex_database(file_paths, conf.configs['PLEX_DATABASE_PATH'])
 
     if removed_rejected_exists:
-        logger.info("Ignoring %d file(s) from Google Drive changes for already being in Plex!",
+        logger.info("Ignored %d file(s) from Google Drive changes for already being in Plex!",
                     removed_rejected_exists)
 
     # process the file_paths list
