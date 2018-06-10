@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 from contextlib import closing
+from copy import copy
 
 import requests
 
@@ -183,23 +184,27 @@ def dump_json(file_path, obj, processing=True):
     return
 
 
-def file_name_exists_in_plex_database(file_path, plex_db_path):
-    file_name = os.path.basename(file_path)
+def remove_files_exist_in_plex_database(file_paths, plex_db_path):
+    removed_items = 0
     try:
         if plex_db_path and os.path.exists(plex_db_path):
-            logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
-            # check if file exists in plex
             with sqlite3.connect(plex_db_path) as conn:
                 conn.row_factory = sqlite3.Row
                 with closing(conn.cursor()) as c:
-                    found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)).fetchone()
-                    if found_item:
-                        logger.debug("'%s' was found in the plex media_parts table", file_name)
-                        return True
+                    for file_path in copy(file_paths):
+                        # check if file exists in plex
+                        file_name = os.path.basename(file_path)
+                        logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
+                        found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
+                            .fetchone()
+                        if found_item:
+                            logger.debug("'%s' was found in the plex media_parts table", file_name)
+                            file_paths.remove(file_path)
+                            removed_items += 1
 
     except Exception:
-        logger.exception("Exception checking if '%s' exists in the plex database: ", file_name)
-    return False
+        logger.exception("Exception checking if %s exists in the plex database: ", file_paths)
+    return removed_items
 
 
 def allowed_scan_extension(file_path, extensions):
