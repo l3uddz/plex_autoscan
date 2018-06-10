@@ -1,10 +1,11 @@
+import json
 import logging
 import os
 from urllib import urlencode
 
-from sqlitedict import SqliteDict
 import backoff
 import requests
+from sqlitedict import SqliteDict
 
 import utils
 
@@ -34,7 +35,8 @@ class Gdrive:
             self.token = utils.load_json(self.token_path)
 
         # cache file
-        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False)
+        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False, encode=json.dumps,
+                                decode=json.loads)
 
         return True
 
