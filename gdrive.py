@@ -72,7 +72,7 @@ class Gdrive:
             return False
 
     def refresh_access_token(self):
-        logger.info("Renewing access token...")
+        logger.debug("Renewing access token...")
         payload = {
             'refresh_token': self.token['refresh_token'],
             'client_id': self.cfg['GDRIVE']['CLIENT_ID'],
