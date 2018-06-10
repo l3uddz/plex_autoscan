@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import uuid
+from copy import copy
 
 logger = logging.getLogger("CONFIG")
 
@@ -23,14 +24,7 @@ class Config(object):
 
     base_config = {
         'PLEX_USER': 'plex',
-        'PLEX_SECTION_PATH_MAPPINGS': {
-            '1': [
-                '/Movies/'
-            ],
-            '2': [
-                '/TV/'
-            ]
-        },
+        'PLEX_SECTION_PATH_MAPPINGS': {},
         'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
         'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
         'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
@@ -39,9 +33,7 @@ class Config(object):
         'PLEX_LOCAL_URL': 'http://localhost:32400',
         'PLEX_EMPTY_TRASH': False,
         'PLEX_EMPTY_TRASH_MAX_FILES': 100,
-        'PLEX_EMPTY_TRASH_CONTROL_FILES': [
-            '/mnt/unionfs/mounted.bin'
-        ],
+        'PLEX_EMPTY_TRASH_CONTROL_FILES': [],
         'PLEX_EMPTY_TRASH_ZERO_DELETED': False,
         'PLEX_WAIT_FOR_EXTERNAL_SCANNERS': True,
         'PLEX_ANALYZE_TYPE': 'basic',
@@ -50,36 +42,14 @@ class Config(object):
         'SERVER_IP': '0.0.0.0',
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
-        'SERVER_PATH_MAPPINGS': {
-            '/mnt/unionfs': [
-                '/home/seed/media/fused'
-            ]
-        },
+        'SERVER_PATH_MAPPINGS': {},
         'SERVER_SCAN_DELAY': 5,
         'SERVER_MAX_FILE_CHECKS': 10,
-        'SERVER_FILE_EXIST_PATH_MAPPINGS': {
-            '/home/thompsons/plexdrive': [
-                '/data'
-            ]
-        },
+        'SERVER_FILE_EXIST_PATH_MAPPINGS': {},
         'SERVER_ALLOW_MANUAL_SCAN': False,
-        'SERVER_IGNORE_LIST': [
-            '/.grab/',
-            '.DS_Store',
-            'Thumbs.db'
-        ],
+        'SERVER_IGNORE_LIST': [],
         'SERVER_USE_SQLITE': False,
-        'SERVER_SCAN_PRIORITIES': {
-            0: [
-                '/Movies/'
-            ],
-            1: [
-                '/TV/'
-            ],
-            2: [
-                '/Music/'
-            ]
-        },
+        'SERVER_SCAN_PRIORITIES': {},
         'RCLONE_RC_CACHE_EXPIRE': {
             'ENABLED': False,
             'MOUNT_FOLDER': '/mnt/rclone',
@@ -94,10 +64,7 @@ class Config(object):
             'CLIENT_SECRET': '',
             'POLL_INTERVAL': 60,
             'ENABLED': False,
-            'SCAN_EXTENSIONS': ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif', 'gifv', 'mng', 'avi',
-                                 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mp4', 'm4p', 'm4v',
-                                 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp', '3g2', 'mxf',
-                                 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b', 'mp3', 'flac']
+            'SCAN_EXTENSIONS': []
         }
     }
 
@@ -142,39 +109,124 @@ class Config(object):
         # Configs
         self.configs = None
 
-    def upgrade(self, cfg):
-        fields = []
+    @property
+    def default_config(self):
+        cfg = copy(self.base_config)
+
+        # add example scan priorities
+        cfg['SERVER_SCAN_PRIORITIES'] = {
+            "0": [
+                '/Movies/'
+            ],
+            "1": [
+                '/TV/'
+            ],
+            "2": [
+                '/Music/'
+            ]
+        }
+
+        # add example section path mappings
+        cfg['PLEX_SECTION_PATH_MAPPINGS'] = {
+            '1': [
+                '/Movies/'
+            ],
+            '2': [
+                '/TV/'
+            ]
+        }
+
+        # add example file trash control files
+        cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ['/mnt/unionfs/mounted.bin']
+
+        # add example server path mappings
+        cfg['SERVER_PATH_MAPPINGS'] = {
+            '/mnt/unionfs': [
+                '/home/seed/media/fused'
+            ]
+        }
+
+        # add example file exist path mappings
+        cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
+            '/home/thompsons/plexdrive': [
+                '/data'
+            ]
+        }
+        # add example server ignore list
+        cfg['SERVER_IGNORE_LIST'] = ['/.grab/', '.DS_Store', 'Thumbs.db']
+
+        # add example scan extensions to gdrive
+        cfg['GDRIVE']['SCAN_EXTENSIONS'] = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif', 'gifv', 'mng',
+                                            'avi', 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mp4', 'm4p',
+                                            'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp',
+                                            '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b', 'mp3', 'flac']
+
+        return cfg
+
+    def __inner_upgrade(self, settings1, settings2, key=None, overwrite=False):
+        sub_upgraded = False
+        merged = copy(settings2)
+
+        if isinstance(settings1, dict):
+            for k, v in settings1.items():
+                # missing k
+                if k not in settings2:
+                    merged[k] = v
+                    sub_upgraded = True
+                    if not key:
+                        logger.info("Added %r config option: %s", str(k), str(v))
+                    else:
+                        logger.info("Added %r to config option %r: %s", str(k), str(key), str(v))
+                    continue
+
+                # iterate children
+                if isinstance(v, dict) or isinstance(v, list):
+                    merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
+                                                                  overwrite=overwrite)
+                    sub_upgraded = did_upgrade if did_upgrade else sub_upgraded
+                elif settings1[k] != settings2[k] and overwrite:
+                    merged = settings1
+                    sub_upgraded = True
+        elif isinstance(settings1, list) and key:
+            for v in settings1:
+                if v not in settings2:
+                    merged.append(v)
+                    sub_upgraded = True
+                    logger.info("Added to config option %r: %s", str(key), str(v))
+                    continue
+
+        return merged, sub_upgraded
+
+    def upgrade_settings(self, currents):
         fields_env = {}
 
-        # ENV gets priority: ENV < config.json
+        # ENV gets priority: ENV > config.json
         for name, data in self.base_config.items():
-            if name not in cfg:
-                cfg[name] = data
-                fields.append(name)
-
             if name in os.environ:
                 # Use JSON decoder to get same behaviour as config file
                 fields_env[name] = json.JSONDecoder().decode(os.environ[name])
                 logger.info("Using ENV setting %s=%s", name, fields_env[name])
 
-        # Only rewrite config file if new fields added
-        if len(fields):
-            logger.warn("Upgraded config, added %d new field(s): %r", len(fields), fields)
-            self.save(cfg)
-
         # Update in-memory config with environment settings
-        cfg.update(fields_env)
+        currents.update(fields_env)
 
-        return cfg
+        # Do inner upgrade
+        upgraded_settings, upgraded = self.__inner_upgrade(self.base_config, currents)
+        return upgraded_settings, upgraded
 
     def load(self):
         if not os.path.exists(self.settings['config']):
             logger.warn("No config file found, creating default config.")
-            self.save(self.base_config)
+            self.save(self.default_config)
 
         cfg = {}
         with open(self.settings['config'], 'r') as fp:
-            cfg = self.upgrade(json.load(fp))
+            cfg, upgraded = self.upgrade_settings(json.load(fp))
+
+            # Save config if upgraded
+            if upgraded:
+                self.save(cfg)
+                exit(0)
 
         self.configs = cfg
 
