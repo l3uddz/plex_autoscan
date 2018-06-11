@@ -189,7 +189,7 @@ class Gdrive:
                 return False, file_paths
 
         except Exception:
-            logger.exception("Exception retrieving filepaths for '%s'", item_id)
+            logger.exception("Exception retrieving filepaths for '%s': ", item_id)
 
         return False, []
 
