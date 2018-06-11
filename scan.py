@@ -223,7 +223,6 @@ def thread_google_monitor():
             else:
                 logger.info("Retrieved starting Google Drive changes page token: %s", google.token['page_token'])
                 time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
-                continue
 
         # get page changes
         changes = []
