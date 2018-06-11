@@ -213,50 +213,56 @@ def thread_google_monitor():
     else:
         logger.info("Google Drive access tokens were successfully loaded")
 
-    logger.info("Google Drive changes monitor started")
-    while True:
-        if not google.token['page_token']:
-            # we have no page_token, likely this is first run, lets retrieve a starting page token
-            if not google.get_changes_first_page_token():
-                logger.error("Failed to retrieve starting Google Drive changes page token...")
-                return
-            else:
-                logger.info("Retrieved starting Google Drive changes page token: %s", google.token['page_token'])
-                time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
+    try:
 
-        # get page changes
-        changes = []
+        logger.info("Google Drive changes monitor started")
         while True:
-            success, page = google.get_changes()
-            if not success:
-                logger.error("Failed to retrieve Google Drive changes for page: %s, aborting...",
-                             str(google.token['page_token']))
-                return
-            else:
-                # successfully retrieved some changes
-                if 'changes' in page:
-                    changes.extend(page['changes'])
-
-                # page logic
-                if page is not None and 'nextPageToken' in page:
-                    # there are more pages to retrieve
-                    logger.debug("There are more Google Drive changes pages to retrieve, retrieving next page...")
-                    continue
-                elif page is not None and 'newStartPageToken' in page:
-                    # there are no more pages to retrieve
-                    break
-                else:
-                    logger.error("There was an unexpected outcome when polling Google Drive for changes, "
-                                 "aborting future polls...")
+            if not google.token['page_token']:
+                # we have no page_token, likely this is first run, lets retrieve a starting page token
+                if not google.get_changes_first_page_token():
+                    logger.error("Failed to retrieve starting Google Drive changes page token...")
                     return
+                else:
+                    logger.info("Retrieved starting Google Drive changes page token: %s", google.token['page_token'])
+                    time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
 
-        # process changes
-        if len(changes):
-            logger.info("There's %d Google Drive change(s) to process", len(changes))
-            process_google_changes(changes)
+            # get page changes
+            changes = []
+            while True:
+                success, page = google.get_changes()
+                if not success:
+                    logger.error("Failed to retrieve Google Drive changes for page: %s, aborting...",
+                                 str(google.token['page_token']))
+                    return
+                else:
+                    # successfully retrieved some changes
+                    if 'changes' in page:
+                        changes.extend(page['changes'])
 
-        # sleep before polling for changes again
-        time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
+                    # page logic
+                    if page is not None and 'nextPageToken' in page:
+                        # there are more pages to retrieve
+                        logger.debug("There are more Google Drive changes pages to retrieve, retrieving next page...")
+                        continue
+                    elif page is not None and 'newStartPageToken' in page:
+                        # there are no more pages to retrieve
+                        break
+                    else:
+                        logger.error("There was an unexpected outcome when polling Google Drive for changes, "
+                                     "aborting future polls...")
+                        return
+
+            # process changes
+            if len(changes):
+                logger.info("There's %d Google Drive change(s) to process", len(changes))
+                process_google_changes(changes)
+
+            # sleep before polling for changes again
+            time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
+
+    except Exception:
+        logger.exception("Exception occurred while monitoring Google Drive for changes, page = %s: ",
+                         google.token['page_token'])
 
 
 ############################################################
