@@ -47,6 +47,15 @@ def map_pushed_path_file_exists(config, path):
     return path
 
 
+def map_file_exists_path_for_rclone(config, path):
+    for mapped_path, mappings in config['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
+        for mapping in mappings:
+            if mapping in path:
+                logger.debug("Mapping file check path '%s' to '%s' for rclone cache clear", mapping, mapped_path)
+                return path.replace(mapping, mapped_path)
+    return path
+
+
 def is_process_running(process_name):
     try:
         for process in psutil.process_iter():
@@ -122,13 +131,13 @@ def rclone_rc_clear_cache(config, scan_path):
     try:
         rclone_rc_url = urljoin(config['RCLONE_RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
 
-        cache_clear_path = scan_path.replace(config['RCLONE_RC_CACHE_EXPIRE']['MOUNT_FOLDER'], '').lstrip(os.path.sep)
+        cache_clear_path = map_file_exists_path_for_rclone(scan_path).lstrip(os.path.sep)
         logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
 
         while True:
             last_clear_path = cache_clear_path
             cache_clear_path = os.path.dirname(cache_clear_path)
-            if cache_clear_path == last_clear_path:
+            if cache_clear_path == last_clear_path or not len(cache_clear_path):
                 # is the last path we tried to clear, the same as this path, if so, abort
                 logger.error("Aborting rclone cache clear for '%s' due to directory level exhaustion, last level: '%s'",
                              scan_path, last_clear_path)

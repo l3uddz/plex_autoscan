@@ -52,7 +52,8 @@ class Config(object):
         'SERVER_SCAN_PRIORITIES': {},
         'RCLONE_RC_CACHE_EXPIRE': {
             'ENABLED': False,
-            'MOUNT_FOLDER': '/mnt/rclone',
+            'FILE_EXISTS_TO_REMOTE_MAPPINGS': {
+            },
             'RC_URL': 'http://localhost:5572'
         },
         'DOCKER_NAME': 'plex',
@@ -160,6 +161,13 @@ class Config(object):
                                             'avi', 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mp4', 'm4p',
                                             'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp',
                                             '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b', 'mp3', 'flac', 'ts']
+
+        # add example rclone file exists to remote mappings
+        cfg['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+            'Media/': [
+                '/home/thompsons/plexdrive/Media'
+            ]
+        }
 
         return cfg
 
