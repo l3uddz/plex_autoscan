@@ -131,7 +131,7 @@ def rclone_rc_clear_cache(config, scan_path):
     try:
         rclone_rc_url = urljoin(config['RCLONE_RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
 
-        cache_clear_path = map_file_exists_path_for_rclone(scan_path).lstrip(os.path.sep)
+        cache_clear_path = map_file_exists_path_for_rclone(config, scan_path).lstrip(os.path.sep)
         logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
 
         while True:
