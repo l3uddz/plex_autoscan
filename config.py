@@ -50,6 +50,7 @@ class Config(object):
         'SERVER_IGNORE_LIST': [],
         'SERVER_USE_SQLITE': False,
         'SERVER_SCAN_PRIORITIES': {},
+        'SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION': False,
         'RCLONE_RC_CACHE_EXPIRE': {
             'ENABLED': False,
             'FILE_EXISTS_TO_REMOTE_MAPPINGS': {
