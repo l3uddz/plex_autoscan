@@ -250,7 +250,14 @@ class Gdrive:
                     'error': {'code': 401, 'message': 'Invalid request_type was supplied to _make_request'}}
 
             # response logic
-            data = resp.json()
+            try:
+                data = resp.json()
+            except ValueError:
+                logger.exception("Exception while decoding response from Google Drive for data:\n%s\nTraceback: ",
+                                 resp.text)
+                return False, resp, {
+                    'error': {'code': resp.status_code, 'message': 'Failed to json decode Google Drive response'}}
+
             if 'error' in data and 'code' in data['error'] and (
                     'message' in data['error'] and 'Invalid Credentials' in data['error']['message']):
                 # the token has expired.
