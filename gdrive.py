@@ -35,7 +35,8 @@ class Gdrive:
             self.token = utils.load_json(self.token_path)
 
         # cache file
-        self.cache = SqliteDict(self.cache_path, tablename='cache', autocommit=False)
+        self.cache = SqliteDict(self.cache_path, tablename='cache', encode=json.dumps, decode=json.loads,
+                                autocommit=False)
         return True
 
     def authorize_url(self):
