@@ -54,9 +54,9 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             # lets make scan path the folder instead for the final check
             logger.warning(
                 "File '%s' reached the penultimate file check, changing scan path to '%s', final check commences "
-                "in 60 seconds", check_path, os.path.dirname(scan_path))
+                "in 60 seconds", check_path, os.path.dirname(path))
             check_path = os.path.dirname(check_path).strip()
-            scan_path = os.path.dirname(scan_path)
+            scan_path = os.path.dirname(path)
             scan_path_is_directory = os.path.isdir(check_path)
             time.sleep(60)
             # send rclone cache clear if enabled
