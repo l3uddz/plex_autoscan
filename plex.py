@@ -46,7 +46,8 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
         checks += 1
         if os.path.exists(check_path):
             logger.info("File '%s' exists on check %d of %d.", check_path, checks, config['SERVER_MAX_FILE_CHECKS'])
-            scan_path = os.path.dirname(path).strip() if not scan_path_is_directory else path.strip()
+            if not scan_path or not len(scan_path):
+                scan_path = os.path.dirname(path).strip() if not scan_path_is_directory else path.strip()
             break
         elif not scan_path_is_directory and config['SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION'] and \
                 config['SERVER_MAX_FILE_CHECKS'] - checks == 1:
@@ -56,7 +57,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
                 "File '%s' reached the penultimate file check, changing scan path to '%s', final check commences "
                 "in 60 seconds", check_path, os.path.dirname(path))
             check_path = os.path.dirname(check_path).strip()
-            scan_path = os.path.dirname(path)
+            scan_path = os.path.dirname(path).strip()
             scan_path_is_directory = os.path.isdir(check_path)
             time.sleep(60)
             # send rclone cache clear if enabled
