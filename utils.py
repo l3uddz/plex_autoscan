@@ -1,7 +1,12 @@
+import json
 import logging
 import os
+import sqlite3
 import subprocess
+import sys
 import time
+from contextlib import closing
+from copy import copy
 
 import requests
 
@@ -42,6 +47,15 @@ def map_pushed_path_file_exists(config, path):
     return path
 
 
+def map_file_exists_path_for_rclone(config, path):
+    for mapped_path, mappings in config['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
+        for mapping in mappings:
+            if mapping in path:
+                logger.debug("Mapping file check path '%s' to '%s' for rclone cache clear", mapping, mapped_path)
+                return path.replace(mapping, mapped_path)
+    return path
+
+
 def is_process_running(process_name):
     try:
         for process in psutil.process_iter():
@@ -61,7 +75,7 @@ def wait_running_process(process_name):
         running, process = is_process_running(process_name)
         while running and process:
             logger.info("'%s' is running, pid: %d, cmdline: %r. Checking again in 60 seconds...", process.name(),
-                         process.pid, process.cmdline())
+                        process.pid, process.cmdline())
             time.sleep(60)
             running, process = is_process_running(process_name)
 
@@ -117,13 +131,13 @@ def rclone_rc_clear_cache(config, scan_path):
     try:
         rclone_rc_url = urljoin(config['RCLONE_RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
 
-        cache_clear_path = scan_path.replace(config['RCLONE_RC_CACHE_EXPIRE']['MOUNT_FOLDER'], '').lstrip(os.path.sep)
+        cache_clear_path = map_file_exists_path_for_rclone(config, scan_path).lstrip(os.path.sep)
         logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
 
         while True:
             last_clear_path = cache_clear_path
             cache_clear_path = os.path.dirname(cache_clear_path)
-            if cache_clear_path == last_clear_path:
+            if cache_clear_path == last_clear_path or not len(cache_clear_path):
                 # is the last path we tried to clear, the same as this path, if so, abort
                 logger.error("Aborting rclone cache clear for '%s' due to directory level exhaustion, last level: '%s'",
                              scan_path, last_clear_path)
@@ -156,4 +170,57 @@ def rclone_rc_clear_cache(config, scan_path):
 
     except Exception:
         logger.exception("Exception clearing rclone directory cache for '%s': ", scan_path)
+    return False
+
+
+def load_json(file_path):
+    if os.path.sep not in file_path:
+        file_path = os.path.join(os.path.dirname(sys.argv[0]), file_path)
+
+    with open(file_path, 'r') as fp:
+        return json.load(fp)
+
+
+def dump_json(file_path, obj, processing=True):
+    if os.path.sep not in file_path:
+        file_path = os.path.join(os.path.dirname(sys.argv[0]), file_path)
+
+    with open(file_path, 'w') as fp:
+        if processing:
+            json.dump(obj, fp, indent=2, sort_keys=True)
+        else:
+            json.dump(obj, fp)
+    return
+
+
+def remove_files_exist_in_plex_database(file_paths, plex_db_path):
+    removed_items = 0
+    try:
+        if plex_db_path and os.path.exists(plex_db_path):
+            with sqlite3.connect(plex_db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                with closing(conn.cursor()) as c:
+                    for file_path in copy(file_paths):
+                        # check if file exists in plex
+                        file_name = os.path.basename(file_path)
+                        logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
+                        found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
+                            .fetchone()
+                        if found_item:
+                            logger.debug("'%s' was found in the plex media_parts table", file_name)
+                            file_paths.remove(file_path)
+                            removed_items += 1
+
+    except Exception:
+        logger.exception("Exception checking if %s exists in the plex database: ", file_paths)
+    return removed_items
+
+
+def allowed_scan_extension(file_path, extensions):
+    check_path = file_path.lower()
+    for ext in extensions:
+        if check_path.endswith(ext.lower()):
+            logger.debug("'%s' had allowed extension: %s", file_path, ext)
+            return True
+    logger.debug("'%s' did not have an allowed extension", file_path)
     return False
