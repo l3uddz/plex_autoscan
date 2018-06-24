@@ -33,7 +33,7 @@ Plex Autoscan is a python script that assists in the importing of Sonarr, Radarr
 
 It does this by creating a webserver to accept webhook requests from these apps, and in turn, sends a scan request to Plex. Plex will then only scan the parent folder (i.e. season folder for TV shows, movie folder for movies, and album folders for music) of the media file (versus scanning the entire library folder).
 
-In addition to the above, Plex Autoscan can monitor Google Drive for changes. If the file is missing from the Plex database, it will add a new scan for it (see section below).
+In addition to the above, Plex Autoscan can monitor Google Drive for changes. If the file is missing from the Plex database, it will add a new scan for it (see section [below](README.md#google-drive-monitoring)).
 
 Plex Autoscan is installed on the same server as the Plex Media Server.
 
@@ -72,6 +72,7 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 # Configuration
 
+_Note: Changes to config file require a restart of the Plex Autoscan service: `sudo systemctl restart plex_autoscan.service`._
 
 ## Example
 
@@ -162,7 +163,7 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 
 ```json
-  "USE_SUDO": true
+"USE_SUDO": true
 ```
 
 `USE_SUDO` - Runs Plex Autoscan with sudo. If the user that runs your Plex Autoscan server is able to run the Plex Media Scanner CLI command without sudo, you can you can set this to `false`. Default is `true`.
@@ -176,13 +177,13 @@ Docker only options.
 _Note: Docker examples used below are based on the image by [plexinc/pms-docker](https://hub.docker.com/r/plexinc/pms-docker/), with `/config/` in the container path mapped to `/opt/plex/` on the host._
 
 ```json
-  "USE_DOCKER": true,
-  "DOCKER_NAME": "plex",
+"USE_DOCKER": true,
+"DOCKER_NAME": "plex",
 ```
 
 `USE_DOCKER` - Set to `true` when Plex is in a Docker container. Default is `false`.
 
-`DOCKER_NAME` - Name of the Plex docker container. Default is `""`.
+`DOCKER_NAME` - Name of the Plex docker container. Default is `"plex"`.
 
 
 ## Plex Media Server
@@ -193,8 +194,8 @@ Plex Media Server options.
 ### Plex Basics
 
 ```json
-  "PLEX_USER": "plex",
-  "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
+"PLEX_USER": "plex",
+"PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
 ```
 
 `PLEX_USER` - User account that Plex runs as.
@@ -214,13 +215,13 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 
 ```json
-  "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
+"PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
 
-  "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
+"PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
 
-  "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
+"PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
 
-  "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
+"PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
 ```
 
 `PLEX_LD_LIBRARY_PATH`
@@ -265,34 +266,34 @@ SECTION ID #: LIBRARY NAME
 
 Sample output:
 
-    ```shell
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --loglevel=INFO
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --cachefile=cache.db
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --tokenfile=token.json
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --queuefile=queue.db
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --logfile=plex_autoscan.log
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --config=config/config.json
-     2018-06-23 08:28:27,069 -     INFO -  AUTOSCAN [140425529542400]:
-            _                         _
-      _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
-     | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
-     | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
-     | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
-     |_|
+```
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --loglevel=INFO
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --cachefile=cache.db
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --tokenfile=token.json
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --queuefile=queue.db
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --logfile=plex_autoscan.log
+ 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --config=config/config.json
+ 2018-06-23 08:28:27,069 -     INFO -  AUTOSCAN [140425529542400]:
+        _                         _
+  _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
+ | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
+ | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
+ | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
+ |_|
 
-    #########################################################################
-    # Author:   l3uddz                                                      #
-    # URL:      https://github.com/l3uddz/plex_autoscan                     #
-    # --                                                                    #
-    # Part of the Cloudbox project: https://cloudbox.rocks                  #
-    #########################################################################
-    # GNU General Public License v3.0                                       #
-    #########################################################################
+#########################################################################
+# Author:   l3uddz                                                      #
+# URL:      https://github.com/l3uddz/plex_autoscan                     #
+# --                                                                    #
+# Part of the Cloudbox project: https://cloudbox.rocks                  #
+#########################################################################
+# GNU General Public License v3.0                                       #
+#########################################################################
 
-     2018-06-23 08:28:27,070 -     INFO -      PLEX [140425529542400]: Using Plex Scanner
-      1: Movies
-      2: TV
-    ```
+ 2018-06-23 08:28:27,070 -     INFO -      PLEX [140425529542400]: Using Plex Scanner
+  1: Movies
+  2: TV
+```
 
 ### Plex Section Mappings
 
@@ -302,11 +303,11 @@ Format:
 
 
 ```json
-  "PLEX_SECTION_PATH_MAPPINGS": {
-    "SECTION ID #": [
-      "/path/to/library/"
-    ]
-  },
+"PLEX_SECTION_PATH_MAPPINGS": {
+  "SECTION ID #": [
+    "/path/to/library/"
+  ]
+},
 ```
 
 For example, if a request is sent to scan a filepath with `/Movies/` in it, then to map it to Section ID 1, and to map filepath `/TV` to Section ID 2.
@@ -315,14 +316,14 @@ For example, if a request is sent to scan a filepath with `/Movies/` in it, then
 Example:
 
 ```json
-  "PLEX_SECTION_PATH_MAPPINGS": {
-    "1": [
-      "/Movies/"
-    ],
-    "2": [
-      "/TV/"
-    ]
-  },
+"PLEX_SECTION_PATH_MAPPINGS": {
+  "1": [
+    "/Movies/"
+  ],
+  "2": [
+    "/TV/"
+  ]
+},
 ```
 
 
@@ -331,20 +332,20 @@ If you have a complex library setup, you will need to specfiy the child paths as
 Example:
 
 ```json
-  "PLEX_SECTION_PATH_MAPPINGS": {
-    "1": [
-      "/Movies/Movies/"
-    ],
-    "2": [
-      "/Movies/Movies-4K/"
-    ],
-    "3": [
-      "/Movies/Movies-Foreign/"
-    ],
-    "4": [
-      "/TV/"
-    ]
-  },
+"PLEX_SECTION_PATH_MAPPINGS": {
+  "1": [
+    "/Movies/Movies/"
+  ],
+  "2": [
+    "/Movies/Movies-4K/"
+  ],
+  "3": [
+    "/Movies/Movies-Foreign/"
+  ],
+  "4": [
+    "/TV/"
+  ]
+},
 ```
 
 ### Plex Emptying Trash
@@ -355,14 +356,14 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 
 ```json
-  "PLEX_TOKEN": "abcdefghijkl",
-  "PLEX_LOCAL_URL": "http://localhost:32400",
-  "PLEX_EMPTY_TRASH": true,
-  "PLEX_EMPTY_TRASH_CONTROL_FILES": [
-    "/mnt/unionfs/mounted.bin"
-  ],
-  "PLEX_EMPTY_TRASH_MAX_FILES": 100,
-  "PLEX_EMPTY_TRASH_ZERO_DELETED": true,
+"PLEX_TOKEN": "abcdefghijkl",
+"PLEX_LOCAL_URL": "http://localhost:32400",
+"PLEX_EMPTY_TRASH": true,
+"PLEX_EMPTY_TRASH_CONTROL_FILES": [
+  "/mnt/unionfs/mounted.bin"
+],
+"PLEX_EMPTY_TRASH_MAX_FILES": 100,
+"PLEX_EMPTY_TRASH_ZERO_DELETED": true,
 ```
 
 `PLEX_TOKEN` - Plex Access Token.
@@ -392,10 +393,10 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 ### Basics
 
 ```json
-  "SERVER_IP": "0.0.0.0",
-  "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
-  "SERVER_PORT": 3468,
-  "SERVER_SCAN_DELAY": 180,
+"SERVER_IP": "0.0.0.0",
+"SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
+"SERVER_PORT": 3468,
+"SERVER_SCAN_DELAY": 180,
 ```
 
 `SERVER_IP` -  Server IP that Plex Autoscan will listen on. Default is `0.0.0.0`.
@@ -419,44 +420,47 @@ List of paths that will be remapped before being scanned by Plex.
 
 This is particularly useful when receiving scan requests, from a remote Sonarr/Radarr/Lidarr installation, that has different paths for the media.
 
-Standard Format:
+#### Native
+
+Format:
 ```json
-    "SERVER_PATH_MAPPINGS": {
-        "/path/on/local/host": [
-            "/path/on/sonarr/host"
-        ]
-    },
-```
-
-
-Standard Example:
-
-```json
-    "SERVER_PATH_MAPPINGS": {
-        "/mnt/unionfs": [
-            "/home/seed/media/fused"
-        ]
-    },
-```
-
-Docker Format:
-
-```json
-    "SERVER_PATH_MAPPINGS": {
-        "/path/from/plex/container": [
-            "/path/from/sonarr/container"
-        ]
-    },
-```
-
-Docker Example:
-
-```json
-  "SERVER_PATH_MAPPINGS": {
-    "/data/Movies/": [
-      "/movies/",
+"SERVER_PATH_MAPPINGS": {
+    "/path/on/local/host": [
+        "/path/on/sonarr/host"
     ]
-  }
+},
+```
+
+Example:
+
+```json
+"SERVER_PATH_MAPPINGS": {
+    "/mnt/unionfs": [
+        "/home/seed/media/fused"
+    ]
+},
+```
+
+#### Docker
+
+Format:
+
+```json
+"SERVER_PATH_MAPPINGS": {
+    "/path/from/plex/container": [
+        "/path/from/sonarr/container"
+    ]
+},
+```
+
+Example:
+
+```json
+"SERVER_PATH_MAPPINGS": {
+  "/data/Movies/": [
+    "/movies/",
+  ]
+}
 ```
 
 
@@ -470,8 +474,8 @@ After a `SERVER_SCAN_DELAY`, Plex Autoscan will check to see if file exists befo
 
 
 ```json
-  "SERVER_MAX_FILE_CHECKS": 10,
-  "SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
+"SERVER_MAX_FILE_CHECKS": 10,
+"SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
 ```
 
 `SERVER_MAX_FILE_CHECKS` -  The number specifies how many times this check will occur (with a minute delay in between), before giving up. If set to `0`, this check will not occur, and will Plex Autoscan will simply send the scan request after the `SERVER_SCAN_DELAY`. Default is `10`.
@@ -487,34 +491,34 @@ This is particularly useful when using Docker, since the folder being scanned by
 
 Format:
 ```json
-  "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-      "/actual/path/on/host": [
-          "/path/from/plex/container"
-      ]
-  },
+"SERVER_FILE_EXIST_PATH_MAPPINGS": {
+    "/actual/path/on/host": [
+        "/path/from/plex/container"
+    ]
+},
 ```
 
 
 Example:
 ```json
-  "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-      "/mnt/unionfs/media": [
-          "/data"
-      ]
-  },
+"SERVER_FILE_EXIST_PATH_MAPPINGS": {
+    "/mnt/unionfs/media": [
+        "/data"
+    ]
+},
 ```
 
 
 You can leave this empty if it is not required:
 ```json
-  "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-  },
+"SERVER_FILE_EXIST_PATH_MAPPINGS": {
+},
 ```
 
 ### Scan Queue Database
 
 ```json
-  "SERVER_USE_SQLITE": true,
+"SERVER_USE_SQLITE": true,
 ```
 
 Plex Autoscan can use an optionally use a database to store queue requests. The benefits to using this are 1) Queue will be restored on Plex Autoscan restart, and 2) Multiple requests to the same folder can be merged into a single folder scan.
@@ -531,20 +535,20 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 ### Misc
 
 ```json
-  "SERVER_ALLOW_MANUAL_SCAN": false,
-  "SERVER_IGNORE_LIST": [
-    "/.grab/",
-    ".DS_Store",
-    "Thumbs.db"
+"SERVER_ALLOW_MANUAL_SCAN": false,
+"SERVER_IGNORE_LIST": [
+  "/.grab/",
+  ".DS_Store",
+  "Thumbs.db"
+],
+"SERVER_SCAN_PRIORITIES": {
+  "1": [
+    "/Movies/"
   ],
-  "SERVER_SCAN_PRIORITIES": {
-    "1": [
-      "/Movies/"
-    ],
-    "2": [
-      "/TV/"
-    ]
-  },
+  "2": [
+    "/TV/"
+  ]
+},
 ```
 
 
@@ -565,7 +569,7 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
     - Initiate a scan via curl:
 
       ```shell
-      curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (20166f533t In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86`
+      curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (2016)/Shut In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86`
       ```
 
 `SERVER_IGNORE_LIST` - List of paths or filenames to ignore when a requests is sent to Plex Autoscan manually (see above). Case senstive.
@@ -596,20 +600,20 @@ _Note: This feature is currently experimental. If any issues occur, such as it s
 
 
 ```json
-  "GDRIVE": {
-    "CLIENT_ID": "",
-    "CLIENT_SECRET": "",
-    "ENABLED": false,
-    "POLL_INTERVAL": 60,
-    "SCAN_EXTENSIONS":[
-      "webm","mkv","flv","vob","ogv","ogg","drc","gif",
-      "gifv","mng","avi","mov","qt","wmv","yuv","rm",
-      "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
-      "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
-      "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
-      "flac","ts"
-    ]
-  },
+"GDRIVE": {
+  "CLIENT_ID": "",
+  "CLIENT_SECRET": "",
+  "ENABLED": false,
+  "POLL_INTERVAL": 60,
+  "SCAN_EXTENSIONS":[
+    "webm","mkv","flv","vob","ogv","ogg","drc","gif",
+    "gifv","mng","avi","mov","qt","wmv","yuv","rm",
+    "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
+    "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
+    "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
+    "flac","ts"
+  ]
+},
 ```
 
 `ENABLED` - Enable or Disable Google Drive Monitoring. Requires one time authorization, see below.
@@ -629,9 +633,9 @@ To set this up:
 1. Edit `config.json `file, to enable the Google Drive monitoring and fill in your Google Drive API Client ID and Secret.
 
     ```json
-      "CLIENT_ID": "yourclientid",
-      "CLIENT_SECRET": "yourclientsecret",
-      "ENABLED": true,
+    "CLIENT_ID": "yourclientid",
+    "CLIENT_SECRET": "yourclientsecret",
+    "ENABLED": true,
     ```
 
 1. You will need to authorize Google Drive.
@@ -642,20 +646,20 @@ To set this up:
 
 1. Visit the link shown to get the authorization code and paste that in and hit `enter`.
 
-    ```shell
-     2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --loglevel=INFO
-     2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --cachefile=/opt/plex_autoscan/cache.db
-     2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --tokenfile=/opt/plex_autoscan/token.json
-     2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --queuefile=/opt/plex_autoscan/queue.db
-     2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --logfile=/opt/plex_autoscan/plex_autoscan.log
-     2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --config=/opt/plex_autoscan/config/config.json
-     2018-06-24 05:50:15,222 -     INFO -  AUTOSCAN [140446220769088]:
-            _                         _
-      _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
-     | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
-     | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
-     | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
-     |_|
+    ```
+    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --loglevel=INFO
+    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --cachefile=/opt/plex_autoscan/cache.db
+    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --tokenfile=/opt/plex_autoscan/token.json
+    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --queuefile=/opt/plex_autoscan/queue.db
+    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --logfile=/opt/plex_autoscan/plex_autoscan.log
+    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --config=/opt/plex_autoscan/config/config.json
+    2018-06-24 05:50:15,222 -     INFO -  AUTOSCAN [140446220769088]:
+          _                         _
+    _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
+    | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
+    | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
+    | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
+    |_|
 
     #########################################################################
     # Author:   l3uddz                                                      #
@@ -671,39 +675,38 @@ To set this up:
     ```
 1. When access token retrieval is successfull, you'll see this:
 
-    ```shell
-     2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
-     2018-06-24 05:57:58,509 -     INFO -    GDRIVE [140007964366656]: Retrieved first access token!
-     2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
-    [1]    13813 segmentation fault (core dumped)  /opt/plex_autoscan/scan.py authorize
-    ```
+   ```
+   2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
+   2018-06-24 05:57:58,509 -     INFO -    GDRIVE [140007964366656]: Retrieved first access token!
+   2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
+   [1]    13813 segmentation fault (core dumped)  /opt/plex_autoscan/scan.py authorize
+   ```
 
 1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`.
 
     For example, if you store your files under My Drive's Media folder, it would look like this:
 
     ```json
-      "SERVER_PATH_MAPPINGS": {
-        "/mnt/unionfs/Media/Movies/": [
-          "/home/seed/media/fused"
-          "My Drive/Media/Movies/"
-        ],
-      },
+    "SERVER_PATH_MAPPINGS": {
+      "/mnt/unionfs/Media/Movies/": [
+        "/home/seed/media/fused"
+        "My Drive/Media/Movies/"
+      ],
+    },
     ```
 
     For Plex in a docker container, this would look like this:
 
     ```json
-      "SERVER_PATH_MAPPINGS": {
-        "/data/Movies/": [
-          "/movies/",
-          "/mnt/unionfs/Media/Movies/",
-          "My Drive/Media/Movies/"
-        ]
-      }
+    "SERVER_PATH_MAPPINGS": {
+      "/data/Movies/": [
+        "/movies/",
+        "My Drive/Media/Movies/"
+      ]
+    }
     ```
 
-
+1. Google Drive Monitoring is now setup.
 
 ---
 
@@ -714,11 +717,11 @@ For users of Rclone cache mounts.
 
 
 ```json
-  "RCLONE_RC_CACHE_EXPIRE": {
-    "ENABLED": false,
-    "MOUNT_FOLDER": "/mnt/rclone",
-    "RC_URL": "http://localhost:5572"
-  },
+"RCLONE_RC_CACHE_EXPIRE": {
+  "ENABLED": false,
+  "MOUNT_FOLDER": "/mnt/rclone",
+  "RC_URL": "http://localhost:5572"
+},
 ```
 
 
