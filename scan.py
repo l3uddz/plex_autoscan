@@ -427,6 +427,7 @@ if __name__ == "__main__":
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
+        exit(0)
 
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GDRIVE']['ENABLED']:
@@ -439,6 +440,7 @@ if __name__ == "__main__":
                 exit(1)
             else:
                 logger.info("Access tokens were successfully retrieved!")
+                exit(0)
 
     elif conf.args['cmd'] == 'server':
         if conf.configs['SERVER_USE_SQLITE']:
@@ -457,5 +459,7 @@ if __name__ == "__main__":
                     )
         app.run(host=conf.configs['SERVER_IP'], port=conf.configs['SERVER_PORT'], debug=False, use_reloader=False)
         logger.info("Server stopped")
+        exit(0)
     else:
         logger.error("Unknown command...")
+        exit(1)
