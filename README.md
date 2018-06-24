@@ -49,25 +49,25 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `cd /opt`
 
-1. `sudo git clone https://github.com/l3uddz/Plex Autoscan`
+1. `sudo git clone https://github.com/l3uddz/plex_autoscan`
 
-1. `sudo chown -R user:group Plex Autoscan` - Run `id` to find your user / group.
+1. `sudo chown -R user:group plex_autoscan` - Run `id` to find your user / group.
 
-1. `cd Plex Autoscan`
+1. `cd plex_autoscan`
 
 1. `sudo python -m pip install -r requirements.txt`
 
 1. `python scan.py` - Run once to generate a default config.json file.
 
-1. `/opt/Plex Autoscan/config/config.json` - Configure settings (do this before moving on).
+1. `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
 
-1. `sudo cp /opt/Plex Autoscan/system/Plex Autoscan.service /etc/systemd/system/`
+1. `sudo cp /opt/plex_autoscan/system/plex_autoscan.service /etc/systemd/system/`
 
 1. `sudo systemctl daemon-reload`
 
-1. `sudo systemctl enable Plex Autoscan.service`
+1. `sudo systemctl enable plex_autoscan.service`
 
-1. `sudo systemctl start Plex Autoscan.service`
+1. `sudo systemctl start plex_autoscan.service`
 
 
 # Configuration
@@ -270,7 +270,7 @@ Sample output:
      2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --cachefile=cache.db
      2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --tokenfile=token.json
      2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --queuefile=queue.db
-     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --logfile=Plex Autoscan.log
+     2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --logfile=plex_autoscan.log
      2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --config=config/config.json
      2018-06-23 08:28:27,069 -     INFO -  AUTOSCAN [140425529542400]:
             _                         _
@@ -282,7 +282,7 @@ Sample output:
 
     #########################################################################
     # Author:   l3uddz                                                      #
-    # URL:      https://github.com/l3uddz/Plex Autoscan                     #
+    # URL:      https://github.com/l3uddz/plex_autoscan                     #
     # --                                                                    #
     # Part of the Cloudbox project: https://cloudbox.rocks                  #
     #########################################################################
@@ -367,7 +367,7 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `PLEX_TOKEN` - Plex Access Token.
 
-  - Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/Plex Autoscan/scripts/plex_token.sh`, or
+  - Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/plex_autoscan/scripts/plex_token.sh`, or
 
   - Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
 
