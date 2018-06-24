@@ -43,7 +43,7 @@ class Config(object):
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
         'SERVER_PATH_MAPPINGS': {},
-        'SERVER_SCAN_DELAY': 5,
+        'SERVER_SCAN_DELAY': 180,
         'SERVER_MAX_FILE_CHECKS': 10,
         'SERVER_FILE_EXIST_PATH_MAPPINGS': {},
         'SERVER_ALLOW_MANUAL_SCAN': False,
