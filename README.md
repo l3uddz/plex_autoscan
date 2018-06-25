@@ -463,7 +463,7 @@ Format:
 
 ```json
 "SERVER_PATH_MAPPINGS": {
-    "/path/from/plex/container": [
+    "/path/in/plex/container": [
         "/path/from/sonarr/container"
     ]
 },
