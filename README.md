@@ -594,7 +594,7 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
   - Format:
     ```json
     "SERVER_SCAN_PRIORITIES": {
-      "SECTION ID#": [
+      "PRIORITY LEVEL#": [
         "/path/to/library/in/Plex"
       ],
     },
