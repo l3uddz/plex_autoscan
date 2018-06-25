@@ -6,8 +6,7 @@
 [![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/plex_autoscan)
 
 ---
-
-<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
 
 - [Plex Autoscan](#plex-autoscan)
 - [Introduction](#introduction)
@@ -21,6 +20,10 @@
 	- [Plex Autoscan Server](#plex-autoscan-server)
 	- [Google Drive Monitoring](#google-drive-monitoring)
 	- [Rclone Remote Control](#rclone-remote-control)
+- [Setup](#setup)
+	- [Sonarr](#sonarr)
+	- [Radarr](#radarr)
+	- [Lidarr](#lidarr)
 
 <!-- /TOC -->
 
