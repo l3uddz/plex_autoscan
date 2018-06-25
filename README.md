@@ -36,7 +36,7 @@ Plex Autoscan is a python script that assists in the importing of Sonarr, Radarr
 
 It does this by creating a webserver to accept webhook requests from these apps, and in turn, sends a scan request to Plex. Plex will then only scan the parent folder (i.e. season folder for TV shows, movie folder for movies, and album folders for music) of the media file (versus scanning the entire library folder).
 
-In addition to the above, Plex Autoscan can monitor Google Drive for changes. If the file is missing from the Plex database, it will add a new scan for it (see section [below](README.md#google-drive-monitoring)).
+In addition to the above, Plex Autoscan can also monitor Google Drive for updates. When a new file is detected, it is checked against the Plex database and if this file is missing, a new scan request is sent to Plex (see section [below](README.md#google-drive-monitoring)).
 
 Plex Autoscan is installed on the same server as the Plex Media Server.
 
@@ -648,7 +648,7 @@ To set this up:
     "ENABLED": true,
     ```
 
-1. You will need to authorize Google Drive.
+1. Next, you will need to authorize Google Drive.
 
    ```shell
    scan.py authorize
