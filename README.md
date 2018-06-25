@@ -204,6 +204,8 @@ Plex Media Server options.
 ```json
 "PLEX_USER": "plex",
 "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
+"PLEX_ANALYZE_TYPE": "basic",
+"PLEX_ANALYZE_DIRECTORY": true,
 ```
 
 `PLEX_USER` - User account that Plex runs as.
@@ -215,6 +217,10 @@ Plex Media Server options.
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` - When set to `true`, wait for other Plex Media Scanner processes to finish, before launching a new one.
 
   - For hosts running a single Plex Docker instance, this can be left as `true`. For multiple Plex Docker instances on a host, set this as `false`.
+
+`PLEX_ANALYZE_TYPE` - How Plex will analyze the media files that are scanned. Options are `off`, `basic`, `deep`. `off` will disable analyzing. Default is `basic`.
+
+`PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all media files in the folder (e.g. Movie folder, Season folder), instead of just the newly added one. Default is `true`.
 
 
 ### Plex File Locations
