@@ -1,7 +1,7 @@
 # Plex Autoscan
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
 [![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord)](https://discord.io/cloudbox)
 [![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/plex_autoscan)
 
@@ -166,8 +166,13 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 "USE_SUDO": true
 ```
 
-`USE_SUDO` - Runs Plex Autoscan with sudo. If the user that runs your Plex Autoscan server is able to run the Plex Media Scanner CLI command without sudo, you can you can set this to `false`. Default is `true`.
+`USE_SUDO` - This option is typically used in conjunction with `PLEX_USER` (e.g. `sudo -u plex`).
 
+  - If the user that runs your Plex Autoscan server is able to run the Plex Media Scanner CLI command without sudo, or is installed with the same user account (e.g. `plex`), you can you can set this to `false`.
+
+  - The user that runs plex_autoscan needs to beable to sudo, without a password otherwise, it cannot execute the PLEX_SCANNER as `plex`. This can be disabled by config option USE_SUDO.
+
+ - Default is `true`.
 
 ## Docker
 
@@ -408,6 +413,8 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 `SERVER_PORT` - Port that Plex Autoscan will listen on.
 
 `SERVER_PASS` - Plex Autoscan password. Used to authenticate requests from Sonarr/Radarr/Lidarr. Default is a random 32 character string generated during config build.
+
+  - Your webhook URL will look like: http://ipaddress:3468/server_pass (or http://localhost:3468/server_pass if local only).
 
 `SERVER_SCAN_DELAY` - How long (in seconds) Plex Autoscan will wait before sending a scan request to Plex.
 
@@ -679,7 +686,6 @@ To set this up:
    2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
    2018-06-24 05:57:58,509 -     INFO -    GDRIVE [140007964366656]: Retrieved first access token!
    2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
-   [1]    13813 segmentation fault (core dumped)  /opt/plex_autoscan/scan.py authorize
    ```
 
 1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`.
@@ -732,3 +738,112 @@ When `RCLONE_RC_CACHE_EXPIRE` is enabled, if a file exist check fails, Plex Auto
 `MOUNT_FOLDER` - Path on the host where Rclone cache is mounted.
 
 `RC_URL` - URL and Port Rclone RC is set to.
+
+# Setup
+
+Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
+
+## Sonarr
+
+1. Sonarr -> "Settings" -> "Connect".
+
+1. Add a new "Webhook".
+
+1. Add the following:
+
+   1. Name: Plex Autoscan
+
+   1. On Grab: `No`
+
+   1. On Download: `Yes`
+
+   1. On Upgrade:  `Yes`
+
+   1. On Rename: `Yes`
+
+   1. Filter Series Tags: _Leave Blank_
+
+   1. URL: _Your Plex Autoscan Webhook URL_
+
+   1. Method:`POST`
+
+   1. Username: _Leave Blank_
+
+   1. Password: _Leave Blank_
+
+1. The settings will look like this:
+
+    ![Sonarr Plex Autoscan](https://i.imgur.com/F8L8R3a.png)
+
+1. Click "Save" to add Plex Autoscan.
+
+## Radarr
+
+1. Radarr -> "Settings" -> "Connect".
+
+1. Add a new "Webhook".
+
+1. Add the following:
+
+   1. Name: Plex Autoscan
+
+   1. On Grab: `No`
+
+   1. On Download: `Yes`
+
+   1. On Upgrade:  `Yes`
+
+   1. On Rename: `Yes`
+
+   1. Filter Movie Tags: _Leave Blank_
+
+   1. URL: _Your Plex Autoscan Webhook URL_
+
+   1. Method:`POST`
+
+   1. Username: _Leave Blank_
+
+   1. Password: _Leave Blank_
+
+1. The settings will look like this:
+
+    ![Radarr Plex Autoscan](https://i.imgur.com/jQJyvMA.png)
+
+1. Click "Save" to add Plex Autoscan.
+
+
+## Lidarr
+
+1. Lidarr -> "Settings" -> "Connect".
+
+1. Add a new "Webhook" Notification.
+
+1. Add the following:
+
+   1. Name: Plex Autoscan
+
+   1. On Grab: `No`
+
+   1. On Album Import: `No`
+
+   1. On Track Import: `Yes`
+
+   1. On Track Upgrade:  `Yes`
+
+   1. On Rename: `Yes`
+
+   1. Tags: _Leave Blank_
+
+   1. URL: _Your Plex Autoscan Webhook URL_
+
+   1. Method:`POST`
+
+   1. Username: _Leave Blank_
+
+   1. Password: _Leave Blank_
+
+1. The settings will look like this:
+
+    ![Radarr Plex Autoscan](https://i.imgur.com/43uZloh.png)
+
+1. Click "Save" to add Plex Autoscan.
