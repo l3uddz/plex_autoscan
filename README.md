@@ -96,7 +96,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
       "flac","ts"
     ]
   },
-  "PLEX_ANALYZE_DIRECTORY": false,
+  "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
   "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
@@ -220,7 +220,7 @@ Plex Media Server options.
 
 `PLEX_ANALYZE_TYPE` - How Plex will analyze the media files that are scanned. Options are `off`, `basic`, `deep`. `off` will disable analyzing. Default is `basic`.
 
-`PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all the media files in the folder (e.g. Movie folder, Season folder) vs just the newly added file. Default is `false`.
+`PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all the media files in the parent folder (e.g. movie folder, season folder) vs just the one media file. Default is `true`.
 
 
 ### Plex File Locations
