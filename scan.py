@@ -153,7 +153,8 @@ def process_google_changes(changes):
                 continue
 
             # we always want to add changes to the cache so renames etc can be reflected inside the cache
-            google.add_item_to_cache(change['fileId'], change['file']['name'], change['file']['parents'])
+            google.add_item_to_cache(change['fileId'], change['file']['name'],
+                                     [] if 'parents' not in change['file'] else change['file']['parents'])
 
             # dont process folder events
             if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
