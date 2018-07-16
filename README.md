@@ -8,7 +8,6 @@
 ---
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
 
-- [Plex Autoscan](#plex-autoscan)
 - [Introduction](#introduction)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -612,7 +611,10 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If match comes back negative, a scan request for the parent folder is added into the process queue. If that folder is in the process queue already, the duplicate request will be ignored.
 
-_Note: This feature is currently experimental. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via Github Issues. You can narrow searches down by looking for `EXCEPTION`._
+_Note 1: Google Drive Monitoring is not compatible with Teamdrive._
+
+_Note 2: Google Drive Monitoring is currently in beta status. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via GitHub Issues. You can narrow searches down by looking for `EXCEPTION`._
+
 
 
 ```json
