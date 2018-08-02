@@ -229,8 +229,27 @@ def thread_google_monitor():
 
             # get page changes
             changes = []
+            changes_attempts = 0
+
             while True:
-                success, page = google.get_changes()
+                try:
+                    success, page = google.get_changes()
+                    changes_attempts = 0
+                except Exception:
+                    changes_attempts += 1
+                    logger.exception(
+                        "Exception occurred while polling Google Drive for changes on page %s on attempt %d/12: ",
+                        str(google.token['page_token']), changes_attempts)
+
+                    if changes_attempts < 12:
+                        logger.warning("Sleeping for 5 minutes before trying to poll Google Drive for changes again...")
+                        time.sleep(60 * 5)
+                        continue
+                    else:
+                        logger.error("Failed to poll Google Drive changes after 12 consecutive attempts, "
+                                     "aborting...")
+                        return
+
                 if not success:
                     logger.error("Failed to retrieve Google Drive changes for page: %s, aborting...",
                                  str(google.token['page_token']))
@@ -262,7 +281,7 @@ def thread_google_monitor():
             time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
 
     except Exception:
-        logger.exception("Exception occurred while monitoring Google Drive for changes, page = %s: ",
+        logger.exception("Fatal Exception occurred while monitoring Google Drive for changes, page = %s: ",
                          google.token['page_token'])
 
 

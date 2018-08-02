@@ -8,7 +8,6 @@
 ---
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
 
-- [Plex Autoscan](#plex-autoscan)
 - [Introduction](#introduction)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -220,7 +219,7 @@ Plex Media Server options.
 
 `PLEX_ANALYZE_TYPE` - How Plex will analyze the media files that are scanned. Options are `off`, `basic`, `deep`. `off` will disable analyzing. Default is `basic`.
 
-`PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all the media files in the parent folder (e.g. movie folder, season folder) vs just the one media file. Default is `true`.
+`PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all the media files in the parent folder (e.g. movie folder, season folder) vs just the newly added file. Default is `true`.
 
 
 ### Plex File Locations
@@ -612,7 +611,10 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If match comes back negative, a scan request for the parent folder is added into the process queue. If that folder is in the process queue already, the duplicate request will be ignored.
 
-_Note: This feature is currently experimental. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via Github Issues. You can narrow searches down by looking for `EXCEPTION`._
+_Note 1: Google Drive Monitoring is not compatible with Teamdrive._
+
+_Note 2: Google Drive Monitoring is currently in beta status. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via GitHub Issues. You can narrow searches down by looking for `EXCEPTION`._
+
 
 
 ```json
