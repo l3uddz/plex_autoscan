@@ -138,6 +138,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   ],
   "SERVER_IP": "0.0.0.0",
   "SERVER_MAX_FILE_CHECKS": 10,
+  "SERVER_FILE_CHECK_DELAY": 60,
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
       "/mnt/unionfs": [
@@ -146,7 +147,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   },
   "SERVER_PORT": 3468,
   "SERVER_SCAN_DELAY": 180,
-  "SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
+  "SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": false,
   "SERVER_SCAN_PRIORITIES": {
     "1": [
       "/Movies/"
@@ -506,10 +507,13 @@ After a `SERVER_SCAN_DELAY`, Plex Autoscan will check to see if file exists befo
 
 ```json
 "SERVER_MAX_FILE_CHECKS": 10,
-"SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
+"SERVER_FILE_CHECK_DELAY": 60,
+"SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": false,
 ```
 
-`SERVER_MAX_FILE_CHECKS` -  The number specifies how many times this check will occur (with a minute delay in between), before giving up. If set to `0`, this check will not occur, and will Plex Autoscan will simply send the scan request after the `SERVER_SCAN_DELAY`. Default is `10`.
+`SERVER_MAX_FILE_CHECKS` -  The number specifies how many times this check will occur, before giving up. If set to `0`, this check will not occur, and Plex Autoscan will simply send the scan request after the `SERVER_SCAN_DELAY`. Default is `10`.
+
+`SERVER_FILE_CHECK_DELAY` - Delay in seconds between two file checks. Default is `60`.
 
 `SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION` - Plex Autoscan will scan the media folder when the file exist checks (as set above) are exhausted. Default is `false`.
 
