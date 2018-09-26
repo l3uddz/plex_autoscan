@@ -473,7 +473,7 @@ Example:
 ```json
 "SERVER_PATH_MAPPINGS": {
   "/data/Movies/": [
-    "/movies/",
+    "/movies/"
   ]
 }
 ```
@@ -481,6 +481,22 @@ Example:
 
 
 If the filepath that was reported to Plex Autoscan by Radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by Plex would be `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
+
+
+#### Multiple paths
+
+You can also have more than one folder paths pointing to a single one.
+
+Example:
+
+```json
+"SERVER_PATH_MAPPINGS": {
+  "/data/Movies/": [
+    "/media/movies/",
+    "/local/movies/"
+  ]
+}
+```
 
 
 ### Server File Checks
