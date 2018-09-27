@@ -299,7 +299,7 @@ Sample output:
 # Author:   l3uddz                                                      #
 # URL:      https://github.com/l3uddz/plex_autoscan                     #
 # --                                                                    #
-# Part of the Cloudbox project: https://cloudbox.rocks                  #
+# Part of the Cloudbox project: https://cloudbox.works                  #
 #########################################################################
 # GNU General Public License v3.0                                       #
 #########################################################################
@@ -703,7 +703,7 @@ To set this up:
     # Author:   l3uddz                                                      #
     # URL:      https://github.com/l3uddz/plex_autoscan                     #
     # --                                                                    #
-    # Part of the Cloudbox project: https://cloudbox.rocks                  #
+    # Part of the Cloudbox project: https://cloudbox.works                  #
     #########################################################################
     # GNU General Public License v3.0                                       #
     #########################################################################
