@@ -629,11 +629,10 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 
 As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It does this by utilizing a proactive cache (vs building a cache from start to end).
 
-Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If match comes back negative, a scan request for the parent folder is added into the process queue. If that folder is in the process queue already, the duplicate request will be ignored.
+Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note 1: Google Drive Monitoring is not compatible with Teamdrive._
+_Note: Google Drive Monitoring is not compatible with Teamdrive or encrypted files._
 
-_Note 2: Google Drive Monitoring is currently in beta status. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via GitHub Issues. You can narrow searches down by looking for `EXCEPTION`._
 
 
 
