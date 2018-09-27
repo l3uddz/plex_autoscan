@@ -179,7 +179,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 
 ## Docker
 
-Docker only options.
+Docker specific options.
 
 
 _Note: Docker examples used below are based on the image by [plexinc/pms-docker](https://hub.docker.com/r/plexinc/pms-docker/), with `/config/` in the container path mapped to `/opt/plex/` on the host._
@@ -210,9 +210,9 @@ Plex Media Server options.
 
 `PLEX_USER` - User account that Plex runs as.
 
-  - Native: `"plex"`
+  - Native Install: `"plex"`
 
-  - Docker: `"plex"` (user account within the container).
+  - Docker Install: `"plex"` (user account within the container).
 
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` - When set to `true`, wait for other Plex Media Scanner processes to finish, before launching a new one.
 
@@ -240,27 +240,27 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 `PLEX_LD_LIBRARY_PATH`
 
-  - Native: `"/usr/lib/plexmediaserver"`
+  - Native Install: `"/usr/lib/plexmediaserver"`
 
-  - Docker: `"/usr/lib/plexmediaserver"` (path within the container).
+  - Docker Install: `"/usr/lib/plexmediaserver"` (path within the container).
 
 `PLEX_SCANNER` - Location of Plex Media Scanner binary.
 
-  - Native: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
+  - Native Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
 
-  - Docker: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"` (path within the container).
+  - Docker Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"` (path within the container).
 
 `PLEX_SUPPORT_DIR` - Location of Plex "Application Support" path.
 
-  - Native: `"/var/lib/plexmediaserver/Library/Application\\ Support"`
+  - Native Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"`
 
-  - Docker: `"/var/lib/plexmediaserver/Library/Application\\ Support"` (path within the container).
+  - Docker Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"` (path within the container).
 
 `PLEX_DATABASE_PATH` - Location of Plex library database.
 
-  - Native: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
+  - Native Install: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
 
-  - Docker: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
+  - Docker Install: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
 
 
 
@@ -389,9 +389,9 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `PLEX_LOCAL_URL` - Local URL of the Plex Media Server.
 
-  - Native: `"http://localhost:32400"`
+  - Native Install: `"http://localhost:32400"`
 
-  - Docker: `"http://localhost:32400"` (open port)
+  - Docker Install: `"http://localhost:32400"` (open port)
 
 `PLEX_EMPTY_TRASH` - When set to `true`, empty trash of a section after a scan.
 
@@ -415,7 +415,7 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `SERVER_IP` -  Server IP that Plex Autoscan will listen on. Default is `0.0.0.0`.
 
-  - `0.0.0.0` - Allow remote access (e.g. Sonarr/Radarr/Lidarr running on another server).
+  - `0.0.0.0` - Allow remote access (e.g. Sonarr/Radarr/Lidarr running on another/remote server).
 
   - `127.0.0.1` - Local access only.
 
@@ -436,7 +436,7 @@ List of paths that will be remapped before being scanned by Plex.
 
 This is particularly useful when receiving scan requests, from a remote Sonarr/Radarr/Lidarr installation, that has different paths for the media.
 
-#### Native
+#### Native Install
 
 Format:
 ```json
@@ -457,7 +457,7 @@ Example:
 },
 ```
 
-#### Docker
+#### Docker Install
 
 Format:
 
@@ -565,7 +565,7 @@ Already processing '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5
 Scan request from Sonarr for '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv', sleeping for 180 seconds...
 ```
 
-The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan delay will reset to zero for another `180` seconds.
+The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan request will be delayed by another `180` seconds.
 
 ### Misc
 
@@ -632,9 +632,6 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
 _Note: Google Drive Monitoring is not compatible with Teamdrive or encrypted files._
-
-
-
 
 ```json
 "GDRIVE": {
