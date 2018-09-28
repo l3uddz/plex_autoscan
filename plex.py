@@ -128,7 +128,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
 
-        # run external command if supplied
+        # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
             logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
             utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
@@ -172,6 +172,12 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
+
+        # run external command after scan if supplied
+        if len(config['RUN_COMMAND_AFTER_SCAN']) > 2:
+            logger.info("Running external command: %r", config['RUN_COMMAND_AFTER_SCAN'])
+            utils.run_command(config['RUN_COMMAND_AFTER_SCAN'])
+            logger.info("Finished running external command")
 
     except Exception:
         logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)
