@@ -125,6 +125,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "RC_URL": "http://localhost:5572"
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
+  "RUN_COMMAND_AFTER_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
       "/mnt/unionfs/media": [
@@ -570,6 +571,8 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 ### Misc
 
 ```json
+"RUN_COMMAND_BEFORE_SCAN": "",
+"RUN_COMMAND_AFTER_SCAN": "",
 "SERVER_ALLOW_MANUAL_SCAN": false,
 "SERVER_IGNORE_LIST": [
   "/.grab/",
@@ -586,6 +589,10 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 },
 ```
 
+
+`RUN_COMMAND_BEFORE_SCAN` - If a command is supplied, it is executed before the Plex Media Scanner command.
+
+`RUN_COMMAND_AFTER_SCAN` - If a command is supplied, it is executed after the Plex Media Scanner, Empty Trash and Analyze commands.
 
 `SERVER_ALLOW_MANUAL_SCAN` - When enabled, allows GET requests to the webhook URL to allow manual scans on a specific filepath. Default is `false`.
 
