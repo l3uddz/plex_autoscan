@@ -67,7 +67,8 @@ class Config(object):
             'CLIENT_SECRET': '',
             'POLL_INTERVAL': 60,
             'ENABLED': False,
-            'SCAN_EXTENSIONS': []
+            'SCAN_EXTENSIONS': [],
+            'IGNORE_PATHS': []
         }
     }
 
