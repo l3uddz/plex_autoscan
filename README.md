@@ -673,7 +673,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 `IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths. 
 
-`TEAMDRIVE` - Enable monitoring of changes inside teamdrives. 
+`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives. 
 
 _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token; authorize, with this set to true._
 
