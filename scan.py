@@ -162,9 +162,25 @@ def process_google_changes(changes):
                 continue
 
             # get this files paths
-            success, item_paths = google.get_id_file_paths(change['fileId'])
+            success, item_paths = google.get_id_file_paths(change['fileId'],
+                                                           change['file']['teamDriveId'] if 'teamDriveId' in change[
+                                                               'file'] else None)
             if success and len(item_paths):
                 file_paths.extend(item_paths)
+        elif 'teamDrive' in change and 'teamDriveId' in change:
+            # this is a teamdrive change
+            # dont consider trashed/removed events for processing
+            if 'removed' in change and change['removed']:
+                # remove item from cache
+                if google.remove_item_from_cache(change['teamDriveId']):
+                    logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'],
+                                change['teamDrive']['name'] if 'name' in change['teamDrive'] else 'Unknown teamDrive')
+                continue
+
+            if 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
+                # we always want to add changes to the cache so renames etc can be reflected inside the cache
+                google.add_item_to_cache(change['teamDrive']['id'], change['teamDrive']['name'], [])
+                continue
 
     # always dump the cache after running changes
     google.dump_cache()

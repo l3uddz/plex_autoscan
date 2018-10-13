@@ -96,7 +96,8 @@ class Gdrive:
             return False
 
     def get_changes_first_page_token(self):
-        success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/changes/startPageToken')
+        success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/changes/startPageToken',
+                                                 params={'supportsTeamDrives': self.cfg['GDRIVE']['TEAMDRIVE']})
         if success and resp.status_code == 200:
             if 'startPageToken' not in data:
                 logger.error("Failed to retrieve startPageToken from returned startPageToken:\n%s", data)
@@ -111,10 +112,14 @@ class Gdrive:
     def get_changes(self):
         success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/changes',
                                                  params={'pageToken': self.token['page_token'], 'pageSize': 1000,
-                                                         'includeDeleted': True,
-                                                         'fields': 'changes(file(id,mimeType,name,parents,trashed,'
-                                                                   'md5Checksum,modifiedTime),fileId,removed),'
-                                                                   'newStartPageToken,nextPageToken'})
+                                                         'includeRemoved': True,
+                                                         'includeTeamDriveItems': self.cfg['GDRIVE'][
+                                                             'TEAMDRIVE'],
+                                                         'supportsTeamDrives': self.cfg['GDRIVE']['TEAMDRIVE'],
+                                                         'fields': 'changes(file(md5Checksum,mimeType,modifiedTime,'
+                                                                   'name,parents,teamDriveId,trashed),'
+                                                                   'fileId,removed,teamDrive(id,name),'
+                                                                   'teamDriveId),newStartPageToken,nextPageToken'})
         if success and resp.status_code == 200:
             # page token logic
             if data is not None and 'nextPageToken' in data:
@@ -132,32 +137,43 @@ class Gdrive:
             logger.error("Error getting page changes for page_token %r:\n%s", self.token['page_token'], data)
             return False, data
 
-    def get_id_metadata(self, item_id):
+    def get_id_metadata(self, item_id, teamdrive_id=None):
         # return cache from metadata if available
         cached_metadata = self._get_cached_metdata(item_id)
         if cached_metadata:
             return True, cached_metadata
 
-        # retrieve
-        success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/files/%s' % str(item_id),
-                                                 params={
-                                                     'fields': 'id,md5Checksum,mimeType,modifiedTime,name,parents,'
-                                                               'trashed'})
+        # does item_id match teamdrive_id?
+        if teamdrive_id is not None and item_id == teamdrive_id:
+            success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/teamdrives/%s' % str(item_id))
+            if success and resp.status_code == 200 and 'name' in data:
+                # we successfully retrieved this teamdrive info, lets place a mimeType key in the result
+                # so we know it needs to be cached
+                data['mimeType'] = 'application/vnd.google-apps.folder'
+        else:
+            # retrieve file metadata
+            success, resp, data = self._make_request('https://www.googleapis.com/drive/v3/files/%s' % str(item_id),
+                                                     params={
+                                                         'supportsTeamDrives': self.cfg['GDRIVE']['TEAMDRIVE'],
+                                                         'fields': 'id,md5Checksum,mimeType,modifiedTime,name,parents,'
+                                                                   'trashed,teamDriveId'})
         if success and resp.status_code == 200:
             return True, data
         else:
             logger.error("Error retrieving metadata for item %r:\n%s", item_id, data)
             return False, data
 
-    def get_id_file_paths(self, item_id):
+    def get_id_file_paths(self, item_id, teamdrive_id=None):
         file_paths = []
         added_to_cache = 0
 
         try:
-            def get_item_paths(obj_id, path, paths, new_cache_entries):
-                success, obj = self.get_id_metadata(obj_id)
+            def get_item_paths(obj_id, path, paths, new_cache_entries, teamdrive_id=None):
+                success, obj = self.get_id_metadata(obj_id, teamdrive_id)
                 if not success:
                     return new_cache_entries
+
+                teamdrive_id = teamdrive_id if 'teamDriveId' not in obj else obj['teamDriveId']
 
                 # add item object to cache if we know its not from cache
                 if 'mimeType' in obj:
@@ -172,14 +188,14 @@ class Gdrive:
 
                 if 'parents' in obj and obj['parents']:
                     for parent in obj['parents']:
-                        new_cache_entries += get_item_paths(parent, path, paths, new_cache_entries)
+                        new_cache_entries += get_item_paths(parent, path, paths, new_cache_entries, teamdrive_id)
 
                 if (not obj or 'parents' not in obj or not obj['parents']) and len(path):
                     paths.append(path)
                     return new_cache_entries
                 return new_cache_entries
 
-            added_to_cache += get_item_paths(item_id, '', file_paths, added_to_cache)
+            added_to_cache += get_item_paths(item_id, '', file_paths, added_to_cache, teamdrive_id)
             if added_to_cache:
                 logger.debug("Dumping cache due to new entries!")
                 self.dump_cache()
