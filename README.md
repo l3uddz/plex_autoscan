@@ -85,7 +85,9 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "CLIENT_ID": "",
     "CLIENT_SECRET": "",
     "ENABLED": false,
+    "TEAMDRIVE": false,
     "POLL_INTERVAL": 60,
+    "IGNORE_PATHS": [],
     "SCAN_EXTENSIONS":[
       "webm","mkv","flv","vob","ogv","ogg","drc","gif",
       "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -638,14 +640,16 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note: Google Drive Monitoring is not compatible with Teamdrive or encrypted files._
+_Note: Google Drive Monitoring is not compatible with encrypted files._
 
 ```json
 "GDRIVE": {
   "CLIENT_ID": "",
   "CLIENT_SECRET": "",
   "ENABLED": false,
+  "TEAMDRIVE": false,
   "POLL_INTERVAL": 60,
+  "IGNORE_PATHS": [],
   "SCAN_EXTENSIONS":[
     "webm","mkv","flv","vob","ogv","ogg","drc","gif",
     "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -666,6 +670,13 @@ _Note: Google Drive Monitoring is not compatible with Teamdrive or encrypted fil
 `POLL_INTERVAL` - How often to check for Google Drive changes (in seconds).
 
 `SCAN_EXTENSIONS` - File files to be monitored via their file extensions.
+
+`IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths. 
+
+`TEAMDRIVE` - Enable monitoring of changes inside teamdrives. 
+
+_Note: For the `TEAMDRIVE` setting to take effect, you must generate the token; authorize, with this set to true._
+
 
 ---
 
