@@ -881,3 +881,8 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
     ![Radarr Plex Autoscan](https://i.imgur.com/43uZloh.png)
 
 1. Click "Save" to add Plex Autoscan.
+
+
+***
+
+_If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
