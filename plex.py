@@ -55,11 +55,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             # lets make scan path the folder instead for the final check
             logger.warning(
                 "File '%s' reached the penultimate file check, changing scan path to '%s', final check commences "
-                "in 60 seconds", check_path, os.path.dirname(path))
+                "in %s seconds", check_path, os.path.dirname(path), config['SERVER_FILE_CHECK_DELAY'])
             check_path = os.path.dirname(check_path).strip()
             scan_path = os.path.dirname(path).strip()
             scan_path_is_directory = os.path.isdir(check_path)
-            time.sleep(60)
+            time.sleep(config['SERVER_FILE_CHECK_DELAY'])
             # send rclone cache clear if enabled
             if config['RCLONE_RC_CACHE_EXPIRE']['ENABLED']:
                 utils.rclone_rc_clear_cache(config, check_path)
@@ -76,10 +76,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             return
 
         else:
-            logger.info("File '%s' did not exist on check %d of %d, checking again in 60 seconds.", check_path,
+            logger.info("File '%s' did not exist on check %d of %d, checking again in %s seconds.", check_path,
                         checks,
-                        config['SERVER_MAX_FILE_CHECKS'])
-            time.sleep(60)
+                        config['SERVER_MAX_FILE_CHECKS'],
+                        config['SERVER_FILE_CHECK_DELAY'])
+            time.sleep(config['SERVER_FILE_CHECK_DELAY'])
             # send rclone cache clear if enabled
             if config['RCLONE_RC_CACHE_EXPIRE']['ENABLED']:
                 utils.rclone_rc_clear_cache(config, check_path)
@@ -127,7 +128,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
 
-        # run external command if supplied
+        # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
             logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
             utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
@@ -171,6 +172,12 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             logger.debug("Sleeping 10 seconds before sending analyze request")
             time.sleep(10)
             analyze_item(config, path)
+
+        # run external command after scan if supplied
+        if len(config['RUN_COMMAND_AFTER_SCAN']) > 2:
+            logger.info("Running external command: %r", config['RUN_COMMAND_AFTER_SCAN'])
+            utils.run_command(config['RUN_COMMAND_AFTER_SCAN'])
+            logger.info("Finished running external command")
 
     except Exception:
         logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)

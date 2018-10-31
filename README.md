@@ -59,7 +59,7 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `sudo python -m pip install -r requirements.txt`
 
-1. `python scan.py` - Run once to generate a default config.json file.
+1. `python scan.py sections` - Run once to generate a default config.json file.
 
 1. `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
 
@@ -85,7 +85,9 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "CLIENT_ID": "",
     "CLIENT_SECRET": "",
     "ENABLED": false,
+    "TEAMDRIVE": false,
     "POLL_INTERVAL": 60,
+    "IGNORE_PATHS": [],
     "SCAN_EXTENSIONS":[
       "webm","mkv","flv","vob","ogv","ogg","drc","gif",
       "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -125,6 +127,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "RC_URL": "http://localhost:5572"
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
+  "RUN_COMMAND_AFTER_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
       "/mnt/unionfs/media": [
@@ -138,6 +141,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   ],
   "SERVER_IP": "0.0.0.0",
   "SERVER_MAX_FILE_CHECKS": 10,
+  "SERVER_FILE_CHECK_DELAY": 60,
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
       "/mnt/unionfs": [
@@ -146,7 +150,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   },
   "SERVER_PORT": 3468,
   "SERVER_SCAN_DELAY": 180,
-  "SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
+  "SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": false,
   "SERVER_SCAN_PRIORITIES": {
     "1": [
       "/Movies/"
@@ -178,7 +182,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 
 ## Docker
 
-Docker only options.
+Docker specific options.
 
 
 _Note: Docker examples used below are based on the image by [plexinc/pms-docker](https://hub.docker.com/r/plexinc/pms-docker/), with `/config/` in the container path mapped to `/opt/plex/` on the host._
@@ -209,9 +213,9 @@ Plex Media Server options.
 
 `PLEX_USER` - User account that Plex runs as.
 
-  - Native: `"plex"`
+  - Native Install: `"plex"`
 
-  - Docker: `"plex"` (user account within the container).
+  - Docker Install: `"plex"` (user account within the container).
 
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` - When set to `true`, wait for other Plex Media Scanner processes to finish, before launching a new one.
 
@@ -239,27 +243,27 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 `PLEX_LD_LIBRARY_PATH`
 
-  - Native: `"/usr/lib/plexmediaserver"`
+  - Native Install: `"/usr/lib/plexmediaserver"`
 
-  - Docker: `"/usr/lib/plexmediaserver"` (path within the container).
+  - Docker Install: `"/usr/lib/plexmediaserver"` (path within the container).
 
 `PLEX_SCANNER` - Location of Plex Media Scanner binary.
 
-  - Native: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
+  - Native Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
 
-  - Docker: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"` (path within the container).
+  - Docker Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"` (path within the container).
 
 `PLEX_SUPPORT_DIR` - Location of Plex "Application Support" path.
 
-  - Native: `"/var/lib/plexmediaserver/Library/Application\\ Support"`
+  - Native Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"`
 
-  - Docker: `"/var/lib/plexmediaserver/Library/Application\\ Support"` (path within the container).
+  - Docker Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"` (path within the container).
 
 `PLEX_DATABASE_PATH` - Location of Plex library database.
 
-  - Native: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
+  - Native Install: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
 
-  - Docker: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
+  - Docker Install: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
 
 
 
@@ -298,7 +302,7 @@ Sample output:
 # Author:   l3uddz                                                      #
 # URL:      https://github.com/l3uddz/plex_autoscan                     #
 # --                                                                    #
-# Part of the Cloudbox project: https://cloudbox.rocks                  #
+# Part of the Cloudbox project: https://cloudbox.works                  #
 #########################################################################
 # GNU General Public License v3.0                                       #
 #########################################################################
@@ -388,9 +392,9 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `PLEX_LOCAL_URL` - Local URL of the Plex Media Server.
 
-  - Native: `"http://localhost:32400"`
+  - Native Install: `"http://localhost:32400"`
 
-  - Docker: `"http://localhost:32400"` (open port)
+  - Docker Install: `"http://localhost:32400"` (open port)
 
 `PLEX_EMPTY_TRASH` - When set to `true`, empty trash of a section after a scan.
 
@@ -414,7 +418,7 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `SERVER_IP` -  Server IP that Plex Autoscan will listen on. Default is `0.0.0.0`.
 
-  - `0.0.0.0` - Allow remote access (e.g. Sonarr/Radarr/Lidarr running on another server).
+  - `0.0.0.0` - Allow remote access (e.g. Sonarr/Radarr/Lidarr running on another/remote server).
 
   - `127.0.0.1` - Local access only.
 
@@ -435,7 +439,7 @@ List of paths that will be remapped before being scanned by Plex.
 
 This is particularly useful when receiving scan requests, from a remote Sonarr/Radarr/Lidarr installation, that has different paths for the media.
 
-#### Native
+#### Native Install
 
 Format:
 ```json
@@ -456,7 +460,7 @@ Example:
 },
 ```
 
-#### Docker
+#### Docker Install
 
 Format:
 
@@ -473,7 +477,7 @@ Example:
 ```json
 "SERVER_PATH_MAPPINGS": {
   "/data/Movies/": [
-    "/movies/",
+    "/movies/"
   ]
 }
 ```
@@ -483,6 +487,22 @@ Example:
 If the filepath that was reported to Plex Autoscan by Radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by Plex would be `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
 
 
+#### Multiple paths
+
+You can also have more than one folder paths pointing to a single one.
+
+Example:
+
+```json
+"SERVER_PATH_MAPPINGS": {
+  "/data/Movies/": [
+    "/media/movies/",
+    "/local/movies/"
+  ]
+}
+```
+
+
 ### Server File Checks
 
 After a `SERVER_SCAN_DELAY`, Plex Autoscan will check to see if file exists before sending a scan request to Plex.
@@ -490,10 +510,13 @@ After a `SERVER_SCAN_DELAY`, Plex Autoscan will check to see if file exists befo
 
 ```json
 "SERVER_MAX_FILE_CHECKS": 10,
-"SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": true,
+"SERVER_FILE_CHECK_DELAY": 60,
+"SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION": false,
 ```
 
-`SERVER_MAX_FILE_CHECKS` -  The number specifies how many times this check will occur (with a minute delay in between), before giving up. If set to `0`, this check will not occur, and will Plex Autoscan will simply send the scan request after the `SERVER_SCAN_DELAY`. Default is `10`.
+`SERVER_MAX_FILE_CHECKS` -  The number specifies how many times this check will occur, before giving up. If set to `0`, this check will not occur, and Plex Autoscan will simply send the scan request after the `SERVER_SCAN_DELAY`. Default is `10`.
+
+`SERVER_FILE_CHECK_DELAY` - Delay in seconds between two file checks. Default is `60`.
 
 `SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION` - Plex Autoscan will scan the media folder when the file exist checks (as set above) are exhausted. Default is `false`.
 
@@ -545,11 +568,13 @@ Already processing '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5
 Scan request from Sonarr for '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv', sleeping for 180 seconds...
 ```
 
-The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan delay will reset to zero for another `180` seconds.
+The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan request will be delayed by another `180` seconds.
 
 ### Misc
 
 ```json
+"RUN_COMMAND_BEFORE_SCAN": "",
+"RUN_COMMAND_AFTER_SCAN": "",
 "SERVER_ALLOW_MANUAL_SCAN": false,
 "SERVER_IGNORE_LIST": [
   "/.grab/",
@@ -566,6 +591,10 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 },
 ```
 
+
+`RUN_COMMAND_BEFORE_SCAN` - If a command is supplied, it is executed before the Plex Media Scanner command.
+
+`RUN_COMMAND_AFTER_SCAN` - If a command is supplied, it is executed after the Plex Media Scanner, Empty Trash and Analyze commands.
 
 `SERVER_ALLOW_MANUAL_SCAN` - When enabled, allows GET requests to the webhook URL to allow manual scans on a specific filepath. Default is `false`.
 
@@ -609,20 +638,18 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 
 As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It does this by utilizing a proactive cache (vs building a cache from start to end).
 
-Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If match comes back negative, a scan request for the parent folder is added into the process queue. If that folder is in the process queue already, the duplicate request will be ignored.
+Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note 1: Google Drive Monitoring is not compatible with Teamdrive._
-
-_Note 2: Google Drive Monitoring is currently in beta status. If any issues occur, such as it stops checking for changes due to an error, please submit the logs via GitHub Issues. You can narrow searches down by looking for `EXCEPTION`._
-
-
+_Note: Google Drive Monitoring is not compatible with encrypted files._
 
 ```json
 "GDRIVE": {
   "CLIENT_ID": "",
   "CLIENT_SECRET": "",
   "ENABLED": false,
+  "TEAMDRIVE": false,
   "POLL_INTERVAL": 60,
+  "IGNORE_PATHS": [],
   "SCAN_EXTENSIONS":[
     "webm","mkv","flv","vob","ogv","ogg","drc","gif",
     "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -643,6 +670,13 @@ _Note 2: Google Drive Monitoring is currently in beta status. If any issues occu
 `POLL_INTERVAL` - How often to check for Google Drive changes (in seconds).
 
 `SCAN_EXTENSIONS` - File files to be monitored via their file extensions.
+
+`IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths. 
+
+`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives. 
+
+_Note: For the `TEAMDRIVE` setting to take effect, you must generate the token; authorize, with this set to true._
+
 
 ---
 
@@ -683,7 +717,7 @@ To set this up:
     # Author:   l3uddz                                                      #
     # URL:      https://github.com/l3uddz/plex_autoscan                     #
     # --                                                                    #
-    # Part of the Cloudbox project: https://cloudbox.rocks                  #
+    # Part of the Cloudbox project: https://cloudbox.works                  #
     #########################################################################
     # GNU General Public License v3.0                                       #
     #########################################################################
@@ -858,3 +892,8 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
     ![Radarr Plex Autoscan](https://i.imgur.com/43uZloh.png)
 
 1. Click "Save" to add Plex Autoscan.
+
+
+***
+
+_If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._

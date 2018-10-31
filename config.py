@@ -45,6 +45,7 @@ class Config(object):
         'SERVER_PATH_MAPPINGS': {},
         'SERVER_SCAN_DELAY': 180,
         'SERVER_MAX_FILE_CHECKS': 10,
+        'SERVER_FILE_CHECK_DELAY': 60,
         'SERVER_FILE_EXIST_PATH_MAPPINGS': {},
         'SERVER_ALLOW_MANUAL_SCAN': False,
         'SERVER_IGNORE_LIST': [],
@@ -59,6 +60,7 @@ class Config(object):
         },
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
+        'RUN_COMMAND_AFTER_SCAN': '',
         'USE_DOCKER': False,
         'USE_SUDO': True,
         'GDRIVE': {
@@ -66,7 +68,9 @@ class Config(object):
             'CLIENT_SECRET': '',
             'POLL_INTERVAL': 60,
             'ENABLED': False,
-            'SCAN_EXTENSIONS': []
+            'TEAMDRIVE': False,
+            'SCAN_EXTENSIONS': [],
+            'IGNORE_PATHS': []
         }
     }
 
