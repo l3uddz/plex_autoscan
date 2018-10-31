@@ -897,3 +897,8 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
 ***
 
 _If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
+
+## Support on Beerpay
+Hey dude! Help me out for a couple of :beers:!
+
+[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/badge.svg?style=beer-square)](https://beerpay.io/l3uddz/plex_autoscan)  [![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/make-wish.svg?style=flat-square)](https://beerpay.io/l3uddz/plex_autoscan?focus=wish)
