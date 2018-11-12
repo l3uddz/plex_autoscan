@@ -671,11 +671,11 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 `SCAN_EXTENSIONS` - File files to be monitored via their file extensions.
 
-`IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths. 
+`IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths.
 
-`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives. 
+`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
 
-_Note: For the `TEAMDRIVE` setting to take effect, you must generate the token; authorize, with this set to true._
+_Note: For the `TEAMDRIVE` setting to take effect, you must generate the token and authorize, while this set to `true`._
 
 
 ---
@@ -733,29 +733,61 @@ To set this up:
    2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
    ```
 
-1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`.
+   _Note: Message stating `Segmentation fault` at the end can be ignored._
 
-    For example, if you store your files under My Drive's Media folder, it would look like this:
+1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counter part.
 
-    ```json
-    "SERVER_PATH_MAPPINGS": {
-      "/mnt/unionfs/Media/Movies/": [
-        "/home/seed/media/fused"
-        "My Drive/Media/Movies/"
-      ],
-    },
-    ```
+   i. Native install
 
-    For Plex in a docker container, this would look like this:
+      - Format:
 
-    ```json
-    "SERVER_PATH_MAPPINGS": {
-      "/data/Movies/": [
-        "/movies/",
-        "My Drive/Media/Movies/"
-      ]
-    }
-    ```
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+            "/path/on/local/host": [
+                "/path/on/sonarr/host/",
+                "path/on/google/drive/"
+            ]
+        },
+        ```
+
+        _Note: The Google Drive path does not start with a forward slash (` / `)._
+
+      - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`), the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/mnt/unionfs/Media/Movies/": [
+            "/home/seed/media/fused/"
+            "My Drive/Media/Movies/"
+          ],
+        },
+        ```
+
+   ii. Docker install
+
+      - Format:
+
+       ```json
+       "SERVER_PATH_MAPPINGS": {
+           "/path/in/plex/container": [
+              "/path/from/sonarr/container",
+              "path/on/google/drive/"
+           ]
+       },
+       ```
+
+        _Note: The Google Drive path does not start with a forward slash (` / `)._
+
+      - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
+
+       ```json
+       "SERVER_PATH_MAPPINGS": {
+         "/data/Movies/": [
+           "/movies/",
+           "My Drive/Media/Movies/"
+         ]
+       }
+       ```
 
 1. Google Drive Monitoring is now setup.
 
