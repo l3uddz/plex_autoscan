@@ -767,27 +767,27 @@ To set this up:
 
       - Format:
 
-       ```json
-       "SERVER_PATH_MAPPINGS": {
-           "/path/in/plex/container": [
-              "/path/from/sonarr/container",
-              "path/on/google/drive/"
-           ]
-       },
-       ```
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+            "/path/in/plex/container": [
+               "/path/from/sonarr/container",
+               "path/on/google/drive/"
+            ]
+        },
+        ```
 
         _Note: The Google Drive path does not start with a forward slash (` / `)._
 
       - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
-       ```json
-       "SERVER_PATH_MAPPINGS": {
-         "/data/Movies/": [
-           "/movies/",
-           "My Drive/Media/Movies/"
-         ]
-       }
-       ```
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/data/Movies/": [
+            "/movies/",
+            "My Drive/Media/Movies/"
+          ]
+        }
+        ```
 
 1. Google Drive Monitoring is now setup.
 
