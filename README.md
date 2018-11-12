@@ -130,8 +130,8 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "RUN_COMMAND_AFTER_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-      "/mnt/unionfs/media": [
-          "/data"
+      "/mnt/unionfs/media/": [
+          "/data/"
       ]
   },
   "SERVER_IGNORE_LIST": [
@@ -144,8 +144,8 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "SERVER_FILE_CHECK_DELAY": 60,
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
-      "/mnt/unionfs": [
-          "/home/seed/media/fused"
+      "/mnt/unionfs/": [
+          "/home/seed/media/fused/"
       ]
   },
   "SERVER_PORT": 3468,
@@ -442,20 +442,22 @@ This is particularly useful when receiving scan requests, from a remote Sonarr/R
 #### Native Install
 
 Format:
-```json
+```
 "SERVER_PATH_MAPPINGS": {
-    "/path/on/local/host": [
-        "/path/on/sonarr/host"
+    "/path/on/local/plex/host/": [  <--- Plex Library path
+        "/path/on/sonarr/host/" <--- Sonarr root path
     ]
 },
 ```
+
+_Note: This format is used regardless of whether Sonarr is on the same server as Plex or not._
 
 Example:
 
 ```json
 "SERVER_PATH_MAPPINGS": {
-    "/mnt/unionfs": [
-        "/home/seed/media/fused"
+    "/mnt/unionfs/": [
+        "/home/seed/media/fused/"
     ]
 },
 ```
@@ -466,8 +468,8 @@ Format:
 
 ```json
 "SERVER_PATH_MAPPINGS": {
-    "/path/in/plex/container": [
-        "/path/from/sonarr/container"
+    "/path/in/plex/container/": [
+        "/path/from/sonarr/container/"
     ]
 },
 ```
@@ -530,8 +532,8 @@ This is particularly useful when using Docker, since the folder being scanned by
 Format:
 ```json
 "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-    "/actual/path/on/host": [
-        "/path/from/plex/container"
+    "/actual/path/on/host/": [
+        "/path/from/plex/container/"
     ]
 },
 ```
@@ -540,8 +542,8 @@ Format:
 Example:
 ```json
 "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-    "/mnt/unionfs/media": [
-        "/data"
+    "/mnt/unionfs/media/": [
+        "/data/"
     ]
 },
 ```
@@ -750,7 +752,9 @@ To set this up:
         },
         ```
 
-        _Note: The Google Drive path does not start with a forward slash (` / `)._
+        _Note 1: The Google Drive path does not start with a forward slash (` / `) and will start with just `My Drive/`._
+
+        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. But since the API that Plex Autoscan uses is in English, they will use the `My Drive/../../` path as well._
 
       - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`), the server path mappings will look like this:
 
