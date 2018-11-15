@@ -363,12 +363,33 @@ def api_call():
 def manual_scan():
     if not conf.configs['SERVER_ALLOW_MANUAL_SCAN']:
         return abort(401)
-    page = '<html><body>' \
-           '<form action="" method="post"> Path to be scanned:<br>' \
-           '<input type="text" name="filepath" value=""> ' \
-           '<input type="hidden" name="eventType" value="Manual"> ' \
-           '<br><br><input type="submit" value="Submit"></form> ' \
-           '<p>Clicking submit will add this path to the scan backlog.</p></body></html>'
+    page = """<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <title>Plex Autoscan</title>
+            <meta charset="utf-8">
+            <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body>
+            <div class="container">
+                <div class="row justify-content-md-center">
+                    <div class="col-md-auto text-center" style="padding-top: 10px;">
+                        <h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+
+                        <h3 class="text-left" style="margin: 10px;">Path to scan</h3>
+                        <form action="" method="post">
+                            <div class="input-group mb-3" style="width: 600px;">
+                                <input class="form-control" type="text" name="filepath" value="" placeholder="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-label="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-describedby="btn-submit">
+                                <div class="input-group-append"><input class="btn btn-outline-secondary primary" type="submit" value="Submit" id="btn-submit"></div>
+                                <input type="hidden" name="eventType" value="Manual">
+                            </div>
+                        </form>
+                        <div class="alert alert-info" role="alert">Clicking <b>Submit</b> will add the path to the scan queue.</div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>"""
     return page, 200
 
 
@@ -396,9 +417,49 @@ def client_pushed():
                         ignore_match)
             return "Ignoring scan request because %s was matched from your SERVER_IGNORE_LIST" % ignore_match
         if start_scan(final_path, 'Manual', 'Manual'):
-            return "'%s' was added to scan backlog." % final_path
+            return """<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            	<title>Plex Autoscan</title>
+            	<meta charset="utf-8">
+            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body>
+            	<div class="container">
+            		<div class="row justify-content-md-center">
+            			<div class="col-md-auto text-center" style="padding-top: 10px;">
+            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+            				<h3 class="text-left" style="margin: 10px;">Success</h3>
+            				<div class="alert alert-info" role="alert">
+            					<code style="color: #000;">'{0}'</code> was added to scan queue.
+            				</div>
+            			</div>
+            		</div>
+            	</div>
+            </body>
+            </html>""".format(final_path)
         else:
-            return "Error adding '%s' to scan backlog." % data['filepath']
+            return """<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            	<title>Plex Autoscan</title>
+            	<meta charset="utf-8">
+            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body>
+            	<div class="container">
+            		<div class="row justify-content-md-center">
+            			<div class="col-md-auto text-center" style="padding-top: 10px;">
+            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+            				<h3 class="text-left" style="margin: 10px;">Error</h3>
+            				<div class="alert alert-danger" role="alert">
+            					<code style="color: #000;">'{0}'</code> has already been added to the scan queue.
+            				</div>
+            			</div>
+            		</div>
+            	</div>
+            </body>
+            </html>""".format(data['filepath'])
 
     elif 'series' in data and 'eventType' in data and data['eventType'] == 'Rename' and 'path' in data['series']:
         # sonarr Rename webhook
