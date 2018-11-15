@@ -537,6 +537,7 @@ if __name__ == "__main__":
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
+
         exit(0)
 
     elif conf.args['cmd'] == 'authorize':
@@ -553,6 +554,10 @@ if __name__ == "__main__":
                 exit(0)
 
     elif conf.args['cmd'] == 'server':
+        #Update with latest section mappings
+        newConf = plex.show_sections(conf.configs,updateConfig=True)
+        conf.save(newConf,exitOnSave=False)
+
         if conf.configs['SERVER_USE_SQLITE']:
             start_queue_reloader()
 
