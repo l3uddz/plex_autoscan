@@ -16,6 +16,11 @@ import utils
 
 logger = logging.getLogger("PLEX")
 
+def updateSectionMappings(conf):
+   #Update with latest section mappings
+   newConf = show_sections(conf.configs,updateConfig=True)
+   if(newConf is not None):
+        conf.save(newConf,exitOnSave=False)
 
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     scan_path = ""
