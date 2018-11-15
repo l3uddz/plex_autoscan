@@ -186,7 +186,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     return
 
 
-def show_sections(config):
+def show_sections(config,updateConfig=False):
     if os.name == 'nt':
         final_cmd = '""%s" --list"' % config['PLEX_SCANNER']
     else:
@@ -204,9 +204,24 @@ def show_sections(config):
             final_cmd = cmd
     logger.info("Using Plex Scanner")
     logger.debug(final_cmd)
-    os.system(final_cmd)
 
-
+    if(not updateConfig):
+          os.system(final_cmd)
+    else:
+          import subprocess
+          try:
+               output = subprocess.check_output(final_cmd,shell=True)
+               sections = {}
+               for line in output.split("\n"):
+                     if(line != ""):
+                          key,val = line.split(":")
+                          sections[key.rstrip().lstrip()] = val.rstrip('\r ').lstrip()
+               config['PLEX_SECTION_PATH_MAPPINGS'] = {}
+               for k,v in sections.items():
+                     config['PLEX_SECTION_PATH_MAPPINGS'][k] = ["{}".format(os.path.join(os.path.sep,v,''))]
+               return config  
+          except Exception as e:
+               logger.exception("Was unable to properly pull and parse section data from plex")               
 def analyze_item(config, scan_path):
     if not os.path.exists(config['PLEX_DATABASE_PATH']):
         logger.info("Could not analyze '%s' because plex database could not be found?", scan_path)
