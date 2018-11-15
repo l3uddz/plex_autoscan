@@ -102,6 +102,8 @@ def queue_processor():
 
 
 def start_scan(path, scan_for, scan_type):
+    #Update with latest section mappings
+    plex.updateSectionMappings(conf)
     section = utils.get_plex_section(conf.configs, path)
     if section <= 0:
         return False
@@ -555,10 +557,8 @@ if __name__ == "__main__":
 
     elif conf.args['cmd'] == 'server':
         #Update with latest section mappings
-        newConf = plex.show_sections(conf.configs,updateConfig=True)
-	if(newConf is not None):
-            conf.save(newConf,exitOnSave=False)
-
+        plex.updateSectionMappings(conf)
+        
         if conf.configs['SERVER_USE_SQLITE']:
             start_queue_reloader()
 
