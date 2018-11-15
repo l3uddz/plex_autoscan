@@ -556,7 +556,8 @@ if __name__ == "__main__":
     elif conf.args['cmd'] == 'server':
         #Update with latest section mappings
         newConf = plex.show_sections(conf.configs,updateConfig=True)
-        conf.save(newConf,exitOnSave=False)
+	if(newConf is not None):
+            conf.save(newConf,exitOnSave=False)
 
         if conf.configs['SERVER_USE_SQLITE']:
             start_queue_reloader()
