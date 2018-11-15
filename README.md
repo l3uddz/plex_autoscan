@@ -608,11 +608,11 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
 
     - Visit your webhook url in a browser (e.g. http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86), and fill in the path to scan.
 
-      ![](https://i.imgur.com/s92pdIR.png)
+      ![](https://i.imgur.com/KTrbShI.png)
 
       or
 
-    - Initiate a scan via curl:
+    - Initiate a scan via HTTP (e.g. curl):
 
       ```shell
       curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (2016)/Shut In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86`
