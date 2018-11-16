@@ -301,11 +301,12 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize'),
+                            choices=('sections', 'server', 'authorize','update_sections'),
                             help=(
                                 '"sections": prints plex sections\n'
                                 '"server": starts the application\n'
-                                '"authorize": authorize against a google account'
+                                '"authorize": authorize against a google account\n'
+                                '"update_sections": update section mappings in config\n'
                             )
                             )
 
