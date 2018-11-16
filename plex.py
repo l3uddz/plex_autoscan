@@ -17,11 +17,24 @@ import utils
 logger = logging.getLogger("PLEX")
 
 def updateSectionMappings(conf):
-   #Update with latest section mappings
-   newConf = show_sections(conf.configs,updateConfig=True)
-   if(newConf is not None):
-        conf.save(newConf,exitOnSave=False)
-
+   from xml.etree import ElementTree
+   try:
+           logger.info("Requesting section info from Plex...")
+	   resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
+			conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']),timeout=30)
+	   if(resp.status_code == 200):
+                logger.info("Request was successful")
+                logger.debug("Request response: %s",resp.text)
+		root = ElementTree.fromstring(resp.text) 
+		output = {}
+		for document in root.findall("Directory"):
+		     output[document.get('key')] = [k.get('path') for k in document.findall("Location")]        
+	        conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {} 
+		for k,v in output.items():
+		       conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
+		conf.save(conf.configs)
+   except Exception as e:
+           logger.exception("Issue encountered when attemping to dynamically update section mappings")
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     scan_path = ""
 
@@ -191,7 +204,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     return
 
 
-def show_sections(config,updateConfig=False):
+def show_sections(config):
     if os.name == 'nt':
         final_cmd = '""%s" --list"' % config['PLEX_SCANNER']
     else:
@@ -209,24 +222,8 @@ def show_sections(config,updateConfig=False):
             final_cmd = cmd
     logger.info("Using Plex Scanner")
     logger.debug(final_cmd)
+    os.system(final_cmd)
 
-    if(not updateConfig):
-          os.system(final_cmd)
-    else:
-          import subprocess
-          try:
-               output = subprocess.check_output(final_cmd,shell=True)
-               sections = {}
-               for line in output.split("\n"):
-                     if(line != ""):
-                          key,val = line.split(":")
-                          sections[key.rstrip().lstrip()] = val.rstrip('\r ').lstrip()
-               config['PLEX_SECTION_PATH_MAPPINGS'] = {}
-               for k,v in sections.items():
-                     config['PLEX_SECTION_PATH_MAPPINGS'][k] = ["{}".format(os.path.join(os.path.sep,v,''))]
-               return config  
-          except Exception as e:
-               logger.exception("Was unable to properly pull and parse section data from plex")               
 def analyze_item(config, scan_path):
     if not os.path.exists(config['PLEX_DATABASE_PATH']):
         logger.info("Could not analyze '%s' because plex database could not be found?", scan_path)
