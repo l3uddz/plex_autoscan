@@ -537,8 +537,10 @@ if __name__ == "__main__":
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
-        exit(0)
 
+        exit(0)
+    elif conf.args['cmd'] == 'update_sections':
+        plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GDRIVE']['ENABLED']:
             logger.error("You must enable the ENABLED setting in the GDRIVE config section...")
