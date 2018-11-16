@@ -379,7 +379,7 @@ def manual_scan():
                         <h3 class="text-left" style="margin: 10px;">Path to scan</h3>
                         <form action="" method="post">
                             <div class="input-group mb-3" style="width: 600px;">
-                                <input class="form-control" type="text" name="filepath" value="" required="required" pattern="[A-Za-z0-9]{1,20}" placeholder="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-label="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-describedby="btn-submit">
+                                <input class="form-control" type="text" name="filepath" value="" required="required" placeholder="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-label="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-describedby="btn-submit">
                                 <div class="input-group-append"><input class="btn btn-outline-secondary primary" type="submit" value="Submit" id="btn-submit"></div>
                                 <input type="hidden" name="eventType" value="Manual">
                             </div>
