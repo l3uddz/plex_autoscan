@@ -243,16 +243,17 @@ class Config(object):
 
         self.configs = cfg
 
-    def save(self, cfg):
+    def save(self, cfg,exitOnSave=True):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=2, sort_keys=True)
+	if exitOnSave:
+             logger.warn(
+                 "Please configure/review config before running again: %r",
+                 self.settings['config']
+             )
 
-        logger.warn(
-            "Please configure/review config before running again: %r",
-            self.settings['config']
-        )
-
-        exit(0)
+        if exitOnSave:
+            exit(0)
 
     def get_settings(self):
         setts = {}
@@ -300,11 +301,12 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize'),
+                            choices=('sections', 'server', 'authorize','update_sections'),
                             help=(
                                 '"sections": prints plex sections\n'
                                 '"server": starts the application\n'
-                                '"authorize": authorize against a google account'
+                                '"authorize": authorize against a google account\n'
+                                '"update_sections": update section mappings in config\n'
                             )
                             )
 

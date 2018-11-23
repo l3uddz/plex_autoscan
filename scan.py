@@ -379,7 +379,7 @@ def manual_scan():
                         <h3 class="text-left" style="margin: 10px;">Path to scan</h3>
                         <form action="" method="post">
                             <div class="input-group mb-3" style="width: 600px;">
-                                <input class="form-control" type="text" name="filepath" value="" placeholder="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-label="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-describedby="btn-submit">
+                                <input class="form-control" type="text" name="filepath" value="" required="required" placeholder="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-label="Path to scan e.g. /mnt/unionfs/Media/Movies/Movie Name (year)/" aria-describedby="btn-submit">
                                 <div class="input-group-append"><input class="btn btn-outline-secondary primary" type="submit" value="Submit" id="btn-submit"></div>
                                 <input type="hidden" name="eventType" value="Manual">
                             </div>
@@ -537,8 +537,10 @@ if __name__ == "__main__":
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
-        exit(0)
 
+        exit(0)
+    elif conf.args['cmd'] == 'update_sections':
+        plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GDRIVE']['ENABLED']:
             logger.error("You must enable the ENABLED setting in the GDRIVE config section...")
