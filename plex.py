@@ -28,7 +28,7 @@ def updateSectionMappings(conf):
 		root = ElementTree.fromstring(resp.text) 
 		output = {}
 		for document in root.findall("Directory"):
-		     output[document.get('key')] = [k.get('path') for k in document.findall("Location")]        
+		     output[document.get('key')] = [os.path.join(k.get('path'),'') for k in document.findall("Location")]        
 	        conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {} 
 		for k,v in output.items():
 		       conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
