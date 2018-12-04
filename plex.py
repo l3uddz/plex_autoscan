@@ -221,6 +221,9 @@ def show_sections(config):
         else:
             final_cmd = cmd
     logger.info("Using Plex Scanner")
+    print("\n")
+    print("Plex Sections:")
+    print("==============")
     logger.debug(final_cmd)
     os.system(final_cmd)
 
