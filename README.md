@@ -802,23 +802,43 @@ To set this up:
 
 ## Rclone Remote Control
 
-For users of Rclone cache mounts.
+_Note: This if for users of Rclone mounts using the "cache" backend._
 
+
+When `RCLONE_RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache clear request for that file's parent folder, on the Rclone remote, until the file check succeeds.
+
+For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mkv` doesn't exist locally, then a clear cache request will be sent to the remote for `A Good Movie (2000)` folder, on the Rclone remote. But if a file exist checks fails again, it will move to the parent folder and try to clear that (eg `Media`), and keep doing this until a file check exists comes back positive or checks count reaches `SERVER_MAX_FILE_CHECKS`.
 
 ```json
 "RCLONE_RC_CACHE_EXPIRE": {
   "ENABLED": false,
-  "MOUNT_FOLDER": "/mnt/rclone",
+  "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+    "Media": [
+      "/mnt/unionfs/Media"
+    ]
+  },
   "RC_URL": "http://localhost:5572"
 },
 ```
 
-
-When `RCLONE_RC_CACHE_EXPIRE` is enabled, if a file exist check fails, Plex Autoscan will keep sending an Rclone cache clear request for that files parent folder until the file check succeeds.
-
-  - For example, `/Media/Movies/Movie/Movie.mkv`, sends clear for `Movie` folder. But if a file exist checks fails (because it's not cached yet), so clears `Movies` folder again, and so on, until a file check exists comes back positive or checks count reaches `SERVER_MAX_FILE_CHECKS`.
+`RCLONE_RC_CACHE_EXPIRE` - enable cache clearing.
 
 `MOUNT_FOLDER` - Path on the host where Rclone cache is mounted.
+
+`FILE_EXISTS_TO_REMOTE_MAPPINGS` - maps local mount path to Rclone remote one. Used during file exists checks.
+
+- Format:
+
+  ```json
+  "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+    "folder_on_rclone_remote": [
+      "/path/to/locally/mounted/folder"
+    ]
+  },
+  ```
+
+
+
 
 `RC_URL` - URL and Port Rclone RC is set to.
 
