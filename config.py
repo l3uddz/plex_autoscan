@@ -70,7 +70,8 @@ class Config(object):
             'ENABLED': False,
             'TEAMDRIVE': False,
             'SCAN_EXTENSIONS': [],
-            'IGNORE_PATHS': []
+            'IGNORE_PATHS': [],
+            'ALLOW_PATHS': []
         }
     }
 
