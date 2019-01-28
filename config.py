@@ -71,7 +71,8 @@ class Config(object):
             'TEAMDRIVE': False,
             'SCAN_EXTENSIONS': [],
             'IGNORE_PATHS': [],
-            'ALLOW_PATHS': []
+            'ALLOW_PATHS': [],
+            'SHOW_CACHE_MESSAGES': True
         }
     }
 

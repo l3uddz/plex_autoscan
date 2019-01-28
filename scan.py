@@ -149,7 +149,8 @@ def process_google_changes(changes):
                     'removed' in change and change['removed']):
                 # remove item from cache
                 if google.remove_item_from_cache(change['fileId']):
-                    logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
+                    if conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
+                        logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
                 continue
 
             # we always want to add changes to the cache so renames etc can be reflected inside the cache
@@ -173,8 +174,10 @@ def process_google_changes(changes):
             if 'removed' in change and change['removed']:
                 # remove item from cache
                 if google.remove_item_from_cache(change['teamDriveId']):
-                    logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'],
-                                change['teamDrive']['name'] if 'name' in change['teamDrive'] else 'Unknown teamDrive')
+                    if conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
+                        logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'],
+                                    change['teamDrive']['name'] if 'name' in change[
+                                        'teamDrive'] else 'Unknown teamDrive')
                 continue
 
             if 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
