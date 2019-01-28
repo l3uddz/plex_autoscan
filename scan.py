@@ -190,11 +190,16 @@ def process_google_changes(changes):
     if 'ALLOW_PATHS' in conf.configs['GDRIVE'] and len(conf.configs['GDRIVE']['ALLOW_PATHS']):
         # use allow paths over the ignore paths
         for file_path in copy(file_paths):
+            allowed_path = False
             for allow_path in conf.configs['GDRIVE']['ALLOW_PATHS']:
-                if not file_path.lower().startswith(allow_path.lower()):
-                    # this file was not from an allow path, remove it
-                    file_paths.remove(file_path)
-                    removed_rejected_paths += 1
+                if file_path.lower().startswith(allow_path.lower()):
+                    allowed_path = True
+                    break
+
+            if not allowed_path:
+                # this file was not from an allow path, remove it
+                file_paths.remove(file_path)
+                removed_rejected_paths += 1
     else:
         # remove files that are in the ignore paths list
         for file_path in copy(file_paths):
