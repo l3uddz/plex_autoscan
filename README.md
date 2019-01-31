@@ -447,7 +447,7 @@ Format:
 ```
 "SERVER_PATH_MAPPINGS": {
     "/path/on/local/plex/host/": [  <--- Plex Library path
-        "/path/on/sonarr/host/" <--- Sonarr root path
+        "/path/on/sonarr/host/"  <--- Sonarr root path
     ]
 },
 ```
@@ -468,10 +468,10 @@ Example:
 
 Format:
 
-```json
+```
 "SERVER_PATH_MAPPINGS": {
-    "/path/in/plex/container/": [
-        "/path/from/sonarr/container/"
+    "/path/in/plex/container/": [  <--- Plex Library path
+        "/path/from/sonarr/container/"  <--- Sonarr root path
     ]
 },
 ```
