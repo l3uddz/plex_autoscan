@@ -99,7 +99,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
       "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
       "flac","ts"
     ],
-		"SHOW_CACHE_MESSAGES": false
+  "SHOW_CACHE_MESSAGES": false
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
@@ -656,7 +656,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
   "TEAMDRIVE": false,
   "POLL_INTERVAL": 60,
   "IGNORE_PATHS": [],
-	"ALLOW_PATHS": [],
+  "ALLOW_PATHS": [],
   "SCAN_EXTENSIONS":[
     "webm","mkv","flv","vob","ogv","ogg","drc","gif",
     "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -665,7 +665,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
     "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
     "flac","ts"
   ],
-	"SHOW_CACHE_MESSAGES": false
+  "SHOW_CACHE_MESSAGES": false
 },
 ```
 
@@ -700,7 +700,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
     ```json
     "IGNORE_PATHS": [
     	"shared_movies/foreign/",
-			"shared_movies/kids/"
+    	"shared_movies/kids/"
     ],
     ```
 
@@ -708,21 +708,21 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
   - Examples:
 	
-	  - My Drive:
+    - My Drive:
 	
-	    ```json
+      ```json
       "ALLOW_PATHS": [
-	      "My Drive/Media/"
+      	"My Drive/Media/"
       ],
-		  ```
+      ```
 
     - Teamdrive:
 	
-	    ```json
+      ```json
       "ALLOW_PATHS": [
-	      "shared_movies/Media/"
+      	"shared_movies/Media/"
       ],
-		  ```
+      ```
 				
 `TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
 
