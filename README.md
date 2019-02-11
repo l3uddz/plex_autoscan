@@ -90,7 +90,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "TEAMDRIVE": false,
     "POLL_INTERVAL": 60,
     "IGNORE_PATHS": [],
-		"ALLOW_PATHS": [],
+    "ALLOW_PATHS": [],
     "SCAN_EXTENSIONS":[
       "webm","mkv","flv","vob","ogv","ogg","drc","gif",
       "gifv","mng","avi","mov","qt","wmv","yuv","rm",
