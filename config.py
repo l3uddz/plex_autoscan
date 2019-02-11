@@ -72,7 +72,7 @@ class Config(object):
             'SCAN_EXTENSIONS': [],
             'IGNORE_PATHS': [],
             'ALLOW_PATHS': [],
-            'SHOW_CACHE_MESSAGES': True
+            'SHOW_CACHE_MESSAGES': False
         }
     }
 
@@ -149,15 +149,15 @@ class Config(object):
 
         # add example server path mappings
         cfg['SERVER_PATH_MAPPINGS'] = {
-            '/mnt/unionfs': [
-                '/home/seed/media/fused'
+            '/mnt/unionfs/': [
+                '/home/seed/media/fused/'
             ]
         }
 
         # add example file exist path mappings
         cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
-            '/home/thompsons/plexdrive': [
-                '/data'
+            '/home/thompsons/plexdrive/': [
+                '/data/'
             ]
         }
         # add example server ignore list
@@ -172,7 +172,7 @@ class Config(object):
         # add example rclone file exists to remote mappings
         cfg['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
             'Media/': [
-                '/home/thompsons/plexdrive/Media'
+                '/home/thompsons/plexdrive/Media/'
             ]
         }
 

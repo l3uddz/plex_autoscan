@@ -90,6 +90,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "TEAMDRIVE": false,
     "POLL_INTERVAL": 60,
     "IGNORE_PATHS": [],
+		"ALLOW_PATHS": [],
     "SCAN_EXTENSIONS":[
       "webm","mkv","flv","vob","ogv","ogg","drc","gif",
       "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -97,7 +98,8 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
       "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
       "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
       "flac","ts"
-    ]
+    ],
+		"SHOW_CACHE_MESSAGES": false
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
@@ -654,6 +656,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
   "TEAMDRIVE": false,
   "POLL_INTERVAL": 60,
   "IGNORE_PATHS": [],
+	"ALLOW_PATHS": [],
   "SCAN_EXTENSIONS":[
     "webm","mkv","flv","vob","ogv","ogg","drc","gif",
     "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -661,7 +664,8 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
     "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
     "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
     "flac","ts"
-  ]
+  ],
+	"SHOW_CACHE_MESSAGES": false
 },
 ```
 
@@ -677,10 +681,54 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 `IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths.
 
+
+- Examples:
+
+  - My Drive:
+
+    ```json
+    "IGNORE_PATHS": [
+    	"My Drive/Backups/",
+    	"My Drive/Crypt/",
+    	"My Drive/downloads/",
+    	"My Drive/home/"
+    ],
+    ```
+		
+  - Teamdrive:
+
+    ```json
+    "IGNORE_PATHS": [
+    	"shared_movies/foreign/",
+			"shared_movies/kids/"
+    ],
+    ```
+
+`ALLOW_PATHS` - List of paths to allow changes from. When this is filled in, `IGNORE_PATHS` field above is ignored.
+
+  - Examples:
+	
+	  - My Drive:
+	
+	    ```json
+      "ALLOW_PATHS": [
+	      "My Drive/Media/"
+      ],
+		  ```
+
+    - Teamdrive:
+	
+	    ```json
+      "ALLOW_PATHS": [
+	      "shared_movies/Media/"
+      ],
+		  ```
+				
 `TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
 
 _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token and authorize, while this set to `true`._
 
+`SHOW_CACHE_MESSAGES` - Show cache messages from Google Drive. Default is `false`.
 
 ---
 
@@ -754,9 +802,9 @@ To set this up:
         },
         ```
 
-        _Note 1: The Google Drive path does not start with a forward slash (` / `) and will start with just `My Drive/`._
+        _Note 1: The Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with `teamdrive_name/`._
 
-        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. But since the API that Plex Autoscan uses is in English, they will use the `My Drive/../../` path as well._
+        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
 
       - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`), the server path mappings will look like this:
 
@@ -768,29 +816,53 @@ To set this up:
           ],
         },
         ```
+				
+      - For example, if you store your files under a Google Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`), the server path mappings will look like this:
 
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/mnt/unionfs/Media/Movies/": [
+            "/home/seed/media/fused/"
+            "shared_movies/Media/Movies/"
+          ],
+        },
+	        ```
+					
    ii. Docker install
 
       - Format:
 
         ```json
         "SERVER_PATH_MAPPINGS": {
-            "/path/in/plex/container": [
-               "/path/from/sonarr/container",
+            "/path/in/plex/container/": [
+               "/path/from/sonarr/container/",
                "path/on/google/drive/"
             ]
         },
         ```
 
-        _Note: The Google Drive path does not start with a forward slash (` / `)._
+        _Note 1: The Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with_ `teamdrive_name/`.
 
-      - For example, if you store your files under My Drive's Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
+        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
+				
+      - For example, if you store your files under Google Drive's My Drive Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
         ```json
         "SERVER_PATH_MAPPINGS": {
           "/data/Movies/": [
             "/movies/",
             "My Drive/Media/Movies/"
+          ]
+        }
+        ```
+				
+      - For example, if you store your files under Google Drive's Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/data/Movies/": [
+            "/movies/",
+            "shared_movies/Media/Movies/"
           ]
         }
         ```
@@ -813,8 +885,8 @@ For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mk
 "RCLONE_RC_CACHE_EXPIRE": {
   "ENABLED": false,
   "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-    "Media": [
-      "/mnt/unionfs/Media"
+    "Media/": [
+      "/mnt/unionfs/Media/"
     ]
   },
   "RC_URL": "http://localhost:5572"
@@ -831,8 +903,8 @@ For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mk
 
   ```json
   "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-    "folder_on_rclone_remote": [
-      "/path/to/locally/mounted/folder"
+    "folder_on_rclone_remote/": [
+      "/path/to/locally/mounted/folder/"
     ]
   },
   ```

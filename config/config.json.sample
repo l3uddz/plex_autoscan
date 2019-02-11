@@ -7,6 +7,7 @@
     "TEAMDRIVE": false,
     "POLL_INTERVAL": 60,
     "IGNORE_PATHS": [],
+    "ALLOW_PATHS": [],
     "SCAN_EXTENSIONS":[
       "webm","mkv","flv","vob","ogv","ogg","drc","gif",
       "gifv","mng","avi","mov","qt","wmv","yuv","rm",
@@ -14,7 +15,8 @@
       "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
       "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
       "flac","ts"
-    ]
+    ],
+    "SHOW_CACHE_MESSAGES": false
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
@@ -44,7 +46,7 @@
     "ENABLED": false,
     "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
       "Media/": [
-          "/home/thompsons/plexdrive/Media"
+          "/home/thompsons/plexdrive/Media/"
       ]
     },
     "RC_URL": "http://localhost:5572"
@@ -52,8 +54,8 @@
   "RUN_COMMAND_BEFORE_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-      "/mnt/unionfs/media": [
-          "/data"
+      "/mnt/unionfs/media/": [
+          "/data/"
       ]
   },
   "SERVER_IGNORE_LIST": [
