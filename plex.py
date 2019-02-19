@@ -149,15 +149,15 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
 
-        # wait for plex to become responsive (if PLEX_CHECK_BEFORE_SCAN is enabled)
-        if 'PLEX_CHECK_BEFORE_SCAN' in config and config['PLEX_CHECK_BEFORE_SCAN']:
-            wait_plex_alive(config)
-
         # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
             logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
             utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
             logger.info("Finished running external command")
+
+        # wait for plex to become responsive (if PLEX_CHECK_BEFORE_SCAN is enabled)
+        if 'PLEX_CHECK_BEFORE_SCAN' in config and config['PLEX_CHECK_BEFORE_SCAN']:
+            wait_plex_alive(config)
 
         # begin scan
         logger.info("Starting Plex Scanner")
@@ -381,22 +381,24 @@ def wait_plex_alive(config):
         try:
             resp = requests.get('%s/myplex/account' % (config['PLEX_LOCAL_URL']),
                                 headers={'X-Plex-Token': config['PLEX_TOKEN'], 'Accept': 'application/json'},
-                                timeout=30)
+                                timeout=30, verify=False)
             if resp.status_code == 200 and 'json' in resp.headers['Content-Type']:
                 resp_json = resp.json()
                 if 'MyPlex' in resp_json:
-                    logger.info("Plex is running and available for scans - %s (Attempt: %d)", check_attempts,
-                                resp_json['MyPlex']['username'])
+                    logger.info("Plex (Account: %s) is running and available for scans (Attempt: %d)", check_attempts,
+                                resp_json['MyPlex']['username'] if 'username' in resp_json[
+                                    'MyPlex'] else 'Unknown User')
                     return
                 else:
                     logger.error("Unexpected response when checking if Plex was available for scans (Attempt: %d): %s",
                                  check_attempts, resp.text)
 
         except Exception:
-            logger.exception("Exception checking if Plex was up at %r: ", config['PLEX_LOCAL_URL'])
+            logger.exception("Exception checking if Plex was available at %s: ", config['PLEX_LOCAL_URL'])
         logger.warning("Checking again in 15 seconds (Attempt: %d)...", check_attempts)
         time.sleep(15)
         continue
+    return
 
 
 def get_deleted_count(config):
