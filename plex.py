@@ -16,25 +16,28 @@ import utils
 
 logger = logging.getLogger("PLEX")
 
+
 def updateSectionMappings(conf):
-   from xml.etree import ElementTree
-   try:
-           logger.info("Requesting section info from Plex...")
-	   resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
-			conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']),timeout=30)
-	   if(resp.status_code == 200):
-                logger.info("Request was successful")
-                logger.debug("Request response: %s",resp.text)
-		root = ElementTree.fromstring(resp.text) 
-		output = {}
-		for document in root.findall("Directory"):
-		     output[document.get('key')] = [os.path.join(k.get('path'),'') for k in document.findall("Location")]        
-	        conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {} 
-		for k,v in output.items():
-		       conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
-		conf.save(conf.configs)
-   except Exception as e:
-           logger.exception("Issue encountered when attemping to dynamically update section mappings")
+    from xml.etree import ElementTree
+    try:
+        logger.info("Requesting section info from Plex...")
+        resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
+            conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
+        if resp.status_code == 200:
+            logger.info("Request was successful")
+            logger.debug("Request response: %s", resp.text)
+            root = ElementTree.fromstring(resp.text)
+            output = {}
+            for document in root.findall("Directory"):
+                output[document.get('key')] = [os.path.join(k.get('path'), '') for k in document.findall("Location")]
+            conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {}
+            for k, v in output.items():
+                conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
+            conf.save(conf.configs)
+    except Exception as e:
+        logger.exception("Issue encountered when attemping to dynamically update section mappings")
+
+
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
     scan_path = ""
 
@@ -146,6 +149,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
 
+        # wait for plex to become responsive (if PLEX_CHECK_BEFORE_SCAN is enabled)
+        if 'PLEX_CHECK_BEFORE_SCAN' in config and config['PLEX_CHECK_BEFORE_SCAN']:
+            wait_plex_alive(config)
+
         # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
             logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
@@ -226,6 +233,7 @@ def show_sections(config):
     print("==============")
     logger.debug(final_cmd)
     os.system(final_cmd)
+
 
 def analyze_item(config, scan_path):
     if not os.path.exists(config['PLEX_DATABASE_PATH']):
@@ -358,6 +366,37 @@ def empty_trash(config, section):
             logger.exception("Exception sending empty trash for section %s, %d/5 attempts: ", section, x + 1)
             time.sleep(10)
     return
+
+
+def wait_plex_alive(config):
+    if not config['PLEX_LOCAL_URL'] or not config['PLEX_TOKEN']:
+        logger.error(
+            "Unable to check if Plex was ready for scan requests, PLEX_LOCAL_URL and PLEX_TOKEN must be provided.")
+        return
+
+    # PLEX_LOCAL_URL and PLEX_TOKEN was provided
+    check_attempts = 0
+    while True:
+        check_attempts += 1
+        try:
+            resp = requests.get('%s/myplex/account' % (config['PLEX_LOCAL_URL']),
+                                headers={'X-Plex-Token': config['PLEX_TOKEN'], 'Accept': 'application/json'},
+                                timeout=30)
+            if resp.status_code == 200 and 'json' in resp.headers['Content-Type']:
+                resp_json = resp.json()
+                if 'MyPlex' in resp_json:
+                    logger.info("Plex is running and available for scans - %s (Attempt: %d)", check_attempts,
+                                resp_json['MyPlex']['username'])
+                    return
+                else:
+                    logger.error("Unexpected response when checking if Plex was available for scans (Attempt: %d): %s",
+                                 check_attempts, resp.text)
+
+        except Exception:
+            logger.exception("Exception checking if Plex was up at %r: ", config['PLEX_LOCAL_URL'])
+        logger.warning("Checking again in 15 seconds (Attempt: %d)...", check_attempts)
+        time.sleep(15)
+        continue
 
 
 def get_deleted_count(config):
