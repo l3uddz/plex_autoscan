@@ -159,7 +159,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
         if 'PLEX_CHECK_BEFORE_SCAN' in config and config['PLEX_CHECK_BEFORE_SCAN']:
             plex_account_user = wait_plex_alive(config)
             if plex_account_user is not None:
-                logger.info("Plex server is available for scans - (Server Account: %s)", plex_account_user)
+                logger.info("Plex is available for scans - (Server Account: %s)", plex_account_user)
 
         # begin scan
         logger.info("Starting Plex Scanner")
