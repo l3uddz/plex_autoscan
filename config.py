@@ -39,6 +39,7 @@ class Config(object):
         'PLEX_ANALYZE_TYPE': 'basic',
         'PLEX_ANALYZE_DIRECTORY': True,
         'PLEX_TOKEN': '',
+        'PLEX_CHECK_BEFORE_SCAN': False,
         'SERVER_IP': '0.0.0.0',
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
