@@ -387,7 +387,7 @@ def wait_plex_alive(config):
                 if 'MyPlex' in resp_json:
                     logger.info("Plex (Account: %s) is running and available for scans (Attempt: %d)", check_attempts,
                                 resp_json['MyPlex']['username'] if 'username' in resp_json[
-                                    'MyPlex'] else 'Unknown User')
+                                    'MyPlex'] else 'Unknown')
                     return
                 else:
                     logger.error("Unexpected response when checking if Plex was available for scans (Attempt: %d): %s",
