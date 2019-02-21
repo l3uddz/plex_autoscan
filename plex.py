@@ -389,10 +389,9 @@ def wait_plex_alive(config):
                 if 'MyPlex' in resp_json:
                     plex_user = resp_json['MyPlex']['username'] if 'username' in resp_json['MyPlex'] else 'Unknown'
                     return plex_user
-                else:
-                    logger.error("Unexpected response when checking if Plex was available for scans (Attempt: %d): %s",
-                                 check_attempts, resp.text)
-
+                
+            logger.error("Unexpected response when checking if Plex was available for scans (Attempt: %d): status_code = %d - resp_text =\n%s",
+                check_attempts, resp.status_code, resp.text)
         except Exception:
             logger.exception("Exception checking if Plex was available at %s: ", config['PLEX_LOCAL_URL'])
 
