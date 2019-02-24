@@ -148,7 +148,7 @@ def process_google_changes(changes):
             if ('trashed' in change['file'] and change['file']['trashed']) or (
                     'removed' in change and change['removed']):
                 # remove item from cache
-                if google.remove_item_from_cache(change['fileId']):
+                if google.remove_item_from_cache(change['fileId']) and conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
                     logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
                 continue
 
@@ -172,9 +172,11 @@ def process_google_changes(changes):
             # dont consider trashed/removed events for processing
             if 'removed' in change and change['removed']:
                 # remove item from cache
-                if google.remove_item_from_cache(change['teamDriveId']):
+                if google.remove_item_from_cache(change['teamDriveId']) and \
+                        conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
                     logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'],
-                                change['teamDrive']['name'] if 'name' in change['teamDrive'] else 'Unknown teamDrive')
+                                change['teamDrive']['name'] if 'name' in change[
+                                    'teamDrive'] else 'Unknown teamDrive')
                 continue
 
             if 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
@@ -184,6 +186,34 @@ def process_google_changes(changes):
 
     # always dump the cache after running changes
     google.dump_cache()
+
+    # remove files that are not allowed
+    removed_rejected_paths = 0
+    if 'ALLOW_PATHS' in conf.configs['GDRIVE'] and len(conf.configs['GDRIVE']['ALLOW_PATHS']):
+        # use allow paths over the ignore paths
+        for file_path in copy(file_paths):
+            allowed_path = False
+            for allow_path in conf.configs['GDRIVE']['ALLOW_PATHS']:
+                if file_path.lower().startswith(allow_path.lower()):
+                    allowed_path = True
+                    break
+
+            if not allowed_path:
+                # this file was not from an allow path, remove it
+                file_paths.remove(file_path)
+                removed_rejected_paths += 1
+    else:
+        # remove files that are in the ignore paths list
+        for file_path in copy(file_paths):
+            for ignore_path in conf.configs['GDRIVE']['IGNORE_PATHS']:
+                if file_path.lower().startswith(ignore_path.lower()):
+                    # this file was from an ignored path, remove it
+                    file_paths.remove(file_path)
+                    removed_rejected_paths += 1
+
+    if removed_rejected_paths:
+        logger.info("Ignored %d file(s) from Google Drive changes for disallowed file paths",
+                    removed_rejected_paths)
 
     # remove files that are not of an allowed extension type
     removed_rejected_extensions = 0
@@ -196,19 +226,6 @@ def process_google_changes(changes):
     if removed_rejected_extensions:
         logger.info("Ignored %d file(s) from Google Drive changes for disallowed file extensions",
                     removed_rejected_extensions)
-
-    # remove files that are in the ignore paths list
-    removed_rejected_paths = 0
-    for file_path in copy(file_paths):
-        for ignore_path in conf.configs['GDRIVE']['IGNORE_PATHS']:
-            if file_path.lower().startswith(ignore_path.lower()):
-                # this file was from an ignored path, remove it
-                file_paths.remove(file_path)
-                removed_rejected_paths += 1
-
-    if removed_rejected_paths:
-        logger.info("Ignored %d file(s) from Google Drive changes for disallowed file paths",
-                    removed_rejected_paths)
 
     # remove files that already exist in the plex database
     removed_rejected_exists = utils.remove_files_exist_in_plex_database(file_paths, conf.configs['PLEX_DATABASE_PATH'])

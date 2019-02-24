@@ -39,6 +39,7 @@ class Config(object):
         'PLEX_ANALYZE_TYPE': 'basic',
         'PLEX_ANALYZE_DIRECTORY': True,
         'PLEX_TOKEN': '',
+        'PLEX_CHECK_BEFORE_SCAN': False,
         'SERVER_IP': '0.0.0.0',
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
@@ -70,7 +71,9 @@ class Config(object):
             'ENABLED': False,
             'TEAMDRIVE': False,
             'SCAN_EXTENSIONS': [],
-            'IGNORE_PATHS': []
+            'IGNORE_PATHS': [],
+            'ALLOW_PATHS': [],
+            'SHOW_CACHE_MESSAGES': False
         }
     }
 
@@ -147,15 +150,15 @@ class Config(object):
 
         # add example server path mappings
         cfg['SERVER_PATH_MAPPINGS'] = {
-            '/mnt/unionfs': [
-                '/home/seed/media/fused'
+            '/mnt/unionfs/': [
+                '/home/seed/media/fused/'
             ]
         }
 
         # add example file exist path mappings
         cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
-            '/home/thompsons/plexdrive': [
-                '/data'
+            '/home/thompsons/plexdrive/': [
+                '/data/'
             ]
         }
         # add example server ignore list
@@ -170,7 +173,7 @@ class Config(object):
         # add example rclone file exists to remote mappings
         cfg['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
             'Media/': [
-                '/home/thompsons/plexdrive/Media'
+                '/home/thompsons/plexdrive/Media/'
             ]
         }
 

@@ -212,7 +212,7 @@ class Gdrive:
 
     # cache
     def add_item_to_cache(self, item_id, item_name, item_parents):
-        if item_id not in self.cache:
+        if self.cfg['GDRIVE']['SHOW_CACHE_MESSAGES'] and item_id not in self.cache:
             logger.info("Added '%s' to cache: %s", item_id, item_name)
         self.cache[item_id] = {'name': item_name, 'parents': item_parents}
         return
