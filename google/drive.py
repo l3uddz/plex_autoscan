@@ -348,7 +348,7 @@ class GoogleDrive:
 
     def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum):
         if self.show_cache_logs and item_id not in self.cache:
-            logger.info("Added %r to cache: %s", item_id, item_name)
+            logger.info("Added '%s' to cache: %s", item_id, item_name)
         self.cache[item_id] = {'name': item_name, 'parents': item_parents, 'md5Checksum': md5_checksum}
         return
 
@@ -563,7 +563,7 @@ class GoogleDrive:
 
                     # remove item from cache
                     if self.remove_item_from_cache(change['fileId']) and self.show_cache_logs:
-                        logger.info("Removed %r from cache: %s", change['fileId'], change['file']['name'])
+                        logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
 
                     continue
 
@@ -635,7 +635,7 @@ class GoogleDrive:
                         if self.show_cache_logs and 'teamDrive' in change and 'name' in change['teamDrive']:
                             teamdrive_name = 'Unknown teamDrive'
                             teamdrive_name = change['teamDrive']['name']
-                            logger.info("Removed teamDrive %r from cache: %s", change['teamDriveId'], teamdrive_name)
+                            logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'], teamdrive_name)
 
                         self._do_callback('teamdrive_removed', change)
                     continue
