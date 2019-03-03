@@ -544,11 +544,10 @@ class GoogleDrive:
         return removed_file_paths
 
     def _process_changes(self, data):
-        removed_file_paths = {}
         unwanted_file_paths = []
         added_file_paths = {}
         ignored_file_paths = {}
-        removes_no_cache = 0
+        removes = 0
 
         if not data or 'changes' not in data:
             logger.error("There were no changes to process")
@@ -561,30 +560,12 @@ class GoogleDrive:
                 # dont consider trashed/removed events for processing
                 if ('trashed' in change['file'] and change['file']['trashed']) or (
                         'removed' in change and change['removed']):
-                    # store the removed file paths - only if we have this item cached, otherwise we are not interested
-                    # as we would not have stored it anyway...
-                    item_exists = self.get_item_from_cache(change['fileId'])
-                    if item_exists is not None:
-                        success, item_paths = self.get_id_file_paths(change['fileId'],
-                                                                     change['file']['teamDriveId'] if 'teamDriveId'
-                                                                                                      in
-                                                                                                      change['file']
-                                                                     else None)
-                        if success and len(item_paths):
-                            if change['fileId'] in removed_file_paths:
-                                removed_file_paths[change['fileId']].extend(item_paths)
-                            else:
-                                removed_file_paths[change['fileId']] = item_paths
-                    else:
-                        # this file did not exist in cache
-                        removes_no_cache += 1
-
-                    # remove item from cache
                     if self.remove_item_from_cache(change['fileId']) and self.show_cache_logs:
                         logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
-
+                    removes += 1
                     continue
 
+                # retrieve item from cache
                 existing_cache_item = self.get_item_from_cache(change['fileId'])
 
                 # we always want to add changes to the cache so renames etc can be reflected inside the cache
@@ -656,10 +637,8 @@ class GoogleDrive:
                             logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'], teamdrive_name)
 
                         self._do_callback('teamdrive_removed', change)
-                    else:
-                        # this teamdrive did not exist in cache
-                        removes_no_cache += 1
 
+                    removes += 1
                     continue
 
                 if 'teamDrive' in change and 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
@@ -676,15 +655,13 @@ class GoogleDrive:
 
         # display logging
         logger.debug("Added: %s", added_file_paths)
-        logger.debug("Removed: %s", removed_file_paths)
         logger.debug("Unwanted: %s", unwanted_file_paths)
         logger.debug("Ignored: %s", ignored_file_paths)
 
-        logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths),
-                    len(removed_file_paths) + removes_no_cache, len(unwanted_file_paths), len(ignored_file_paths))
+        logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths), removes,
+                    len(unwanted_file_paths), len(ignored_file_paths))
 
         # call further callbacks
-        self._do_callback('items_removed', removed_file_paths)
         self._do_callback('items_added', added_file_paths)
         self._do_callback('items_unwanted', unwanted_file_paths)
         self._do_callback('items_ignored', ignored_file_paths)
