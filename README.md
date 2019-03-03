@@ -434,7 +434,7 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `SERVER_SCAN_DELAY` - How long (in seconds) Plex Autoscan will wait before sending a scan request to Plex.
 
-  - This is useful, for example, when you want Plex Autoscan to wait for more episodes of the same TV show to come in before scanning the season folder, resulting in less work for Plex to do by not scannin the same folder multiple times. This works especially well with `SERVER_USE_SQLITE` enabled.
+  - This is useful, for example, when you want Plex Autoscan to wait for more episodes of the same TV show to come in before scanning the season folder, resulting in less work for Plex to do by not scanning the same folder multiple times. This works especially well with `SERVER_USE_SQLITE` enabled.
 
 
 ### Server - Path Mappings
