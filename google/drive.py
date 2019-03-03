@@ -548,6 +548,7 @@ class GoogleDrive:
         unwanted_file_paths = []
         added_file_paths = {}
         ignored_file_paths = {}
+        removes_no_cache = 0
 
         if not data or 'changes' not in data:
             logger.error("There were no changes to process")
@@ -574,6 +575,9 @@ class GoogleDrive:
                                 removed_file_paths[change['fileId']].extend(item_paths)
                             else:
                                 removed_file_paths[change['fileId']] = item_paths
+                    else:
+                        # this file did not exist in cache
+                        removes_no_cache += 1
 
                     # remove item from cache
                     if self.remove_item_from_cache(change['fileId']) and self.show_cache_logs:
@@ -652,6 +656,10 @@ class GoogleDrive:
                             logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'], teamdrive_name)
 
                         self._do_callback('teamdrive_removed', change)
+                    else:
+                        # this teamdrive did not exist in cache
+                        removes_no_cache += 1
+
                     continue
 
                 if 'teamDrive' in change and 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
@@ -672,8 +680,8 @@ class GoogleDrive:
         logger.debug("Unwanted: %s", unwanted_file_paths)
         logger.debug("Ignored: %s", ignored_file_paths)
 
-        logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths), len(removed_file_paths),
-                    len(unwanted_file_paths), len(ignored_file_paths))
+        logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths),
+                    len(removed_file_paths) + removes_no_cache, len(unwanted_file_paths), len(ignored_file_paths))
 
         # call further callbacks
         self._do_callback('items_removed', removed_file_paths)
