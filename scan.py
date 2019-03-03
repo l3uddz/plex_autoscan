@@ -476,6 +476,28 @@ if __name__ == "__main__":
         app.run(host=conf.configs['SERVER_IP'], port=conf.configs['SERVER_PORT'], debug=False, use_reloader=False)
         logger.info("Server stopped")
         exit(0)
+    elif conf.args['cmd'] == 'build_caches':
+        logger.info("Building caches")
+        # load google drive manager
+        manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+                                     conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                     allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
+
+        if not manager.is_authorized():
+            logger.error("Failed to validate Google Drive access token...")
+            exit(1)
+        else:
+            logger.info("Google Drive access token was successfully validated")
+
+        # load teamdrives (if enabled)
+        if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
+            logger.error("Failed to load teamdrives....?")
+            exit(1)
+
+        # build cache
+        manager.build_caches()
+        logger.info("Finished building all cache's!")
+        exit(0)
     else:
         logger.error("Unknown command...")
         exit(1)

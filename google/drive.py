@@ -74,6 +74,15 @@ class GoogleDriveManager:
         for drive_name, drive in self.drives.items():
             drive.set_callbacks(callbacks)
 
+    def build_caches(self):
+        for drive_type, drive in self.drives.items():
+            logger.info("Building cache for drive: %s", drive_type)
+            drive.show_cache_logs = False
+            drive.set_page_token(1)
+            drive.get_changes()
+            logger.info("Finished building cache for drive: %s", drive_type)
+        return
+
 
 class GoogleDrive:
     auth_url = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -102,6 +111,10 @@ class GoogleDrive:
     ############################################################
     # CORE CLASS METHODS
     ############################################################
+
+    def set_page_token(self, page_token):
+        self.cache['page_token'] = page_token
+        return
 
     def set_callbacks(self, callbacks={}):
         for callback_type, callback_func in callbacks.items():

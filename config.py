@@ -318,11 +318,12 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize', 'update_sections'),
+                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_sections'),
                             help=(
                                 '"sections": prints plex sections\n'
                                 '"server": starts the application\n'
                                 '"authorize": authorize against a google account\n'
+                                '"build_caches": build complete google drive caches\n'
                                 '"update_sections": update section mappings in config\n'
                             )
                             )
