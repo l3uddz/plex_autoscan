@@ -314,7 +314,7 @@ class GoogleDrive:
                 if 'mimeType' in obj:
                     # we know this is a new item fetched from the api, because the cache does not store this field
                     self.add_item_to_cache(obj['id'], obj['name'], [] if 'parents' not in obj else obj['parents'],
-                                           obj['modifiedTime'] if 'modifiedTime' in obj else None)
+                                           obj['md5Checksum'] if 'md5Checksum' in obj else None)
                     new_cache_entries += 1
 
                 if path.strip() == '':
@@ -346,10 +346,10 @@ class GoogleDrive:
 
         return False, []
 
-    def add_item_to_cache(self, item_id, item_name, item_parents, modified_time):
+    def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum):
         if self.show_cache_logs and item_id not in self.cache:
             logger.info("Added %r to cache: %s", item_id, item_name)
-        self.cache[item_id] = {'name': item_name, 'parents': item_parents, 'modifiedTime': modified_time}
+        self.cache[item_id] = {'name': item_name, 'parents': item_parents, 'md5Checksum': md5_checksum}
         return
 
     def remove_item_from_cache(self, item_id):
@@ -572,7 +572,7 @@ class GoogleDrive:
                 # we always want to add changes to the cache so renames etc can be reflected inside the cache
                 self.add_item_to_cache(change['fileId'], change['file']['name'],
                                        [] if 'parents' not in change['file'] else change['file']['parents'],
-                                       change['file']['modifiedTime'] if 'modifiedTime' in change['file'] else None)
+                                       change['file']['md5Checksum'] if 'md5Checksum' in change['file'] else None)
 
                 # get this files paths
                 success, item_paths = self.get_id_file_paths(change['fileId'],
@@ -600,24 +600,24 @@ class GoogleDrive:
                 # was this an existing item?
                 if existing_cache_item is not None and (success and len(item_paths)):
                     # this was an existing item, and we are re-processing it again
-                    # we need to determine if this file has changed (modifiedTime)
-                    if 'modifiedTime' in change['file'] and 'modifiedTime' in existing_cache_item:
-                        # compare this changes modifiedTime and the existing cache item
-                        if change['file']['modifiedTime'] != existing_cache_item['modifiedTime']:
+                    # we need to determine if this file has changed (md5Checksum)
+                    if 'md5Checksum' in change['file'] and 'md5Checksum' in existing_cache_item:
+                        # compare this changes md5Checksum and the existing cache item
+                        if change['file']['md5Checksum'] != existing_cache_item['md5Checksum']:
                             # the file was modified
                             if change['fileId'] in added_file_paths:
                                 added_file_paths[change['fileId']].extend(item_paths)
                             else:
                                 added_file_paths[change['fileId']] = item_paths
                         else:
-                            logger.debug("Ignoring %r because the modifiedTime was the same as cache: %s", item_paths,
-                                         existing_cache_item['modifiedTime'])
+                            logger.debug("Ignoring %r because the md5Checksum was the same as cache: %s", item_paths,
+                                         existing_cache_item['md5Checksum'])
                             if change['fileId'] in ignored_file_paths:
                                 ignored_file_paths[change['fileId']].extend(item_paths)
                             else:
                                 ignored_file_paths[change['fileId']] = item_paths
                     else:
-                        logger.error("No modifiedTime for cache item:\n%s", existing_cache_item)
+                        logger.error("No md5Checksum for cache item:\n%s", existing_cache_item)
 
                 elif success and len(item_paths):
                     # these are new paths/files that were not already in the cache
