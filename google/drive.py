@@ -457,6 +457,7 @@ class GoogleDrive:
         # update internal token dict
         self.cache['page_token'] = page_token
         self._dump_cache()
+        logger.debug("Updated page_token: %s", page_token)
         return
 
     def _new_http_object(self):
