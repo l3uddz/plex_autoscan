@@ -185,7 +185,7 @@ def thread_google_monitor():
         logger.error("Failed to validate Google Drive access token...")
         exit(1)
     else:
-        logger.info("Google Drive access token were successfully validated")
+        logger.info("Google Drive access token was successfully validated")
 
     # load teamdrives (if enabled)
     if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
