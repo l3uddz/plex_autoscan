@@ -191,7 +191,8 @@ class GoogleDrive:
 
     def validate_access_token(self):
         success, resp, data = self.query('/v3/changes/startPageToken',
-                                         params={'supportsTeamDrives': self.support_team_drives}, fetch_all_pages=True)
+                                         params={'supportsTeamDrives': self.support_team_drives}, fetch_all_pages=True,
+                                         page_type='auth')
         if success and resp.status_code == 200:
             if 'startPageToken' not in data:
                 logger.error("Failed validate up to date access_token:\n\n%s\n", data)
