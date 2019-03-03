@@ -10,17 +10,21 @@ from requests_oauthlib import OAuth2Session
 
 from .cache import Cache
 
-logger = logging.getLogger("GDRIVE")
+logger = logging.getLogger("GOOGLE")
 
 
 class GoogleDriveManager:
-    def __init__(self, config, client_id, client_secret, cache_path):
-        self.cfg = config
+    def __init__(self, client_id, client_secret, cache_path, allowed_config=None, allowed_teamdrives=None,
+                 show_cache_logs=True):
         self.client_id = client_id
         self.client_secret = client_secret
         self.cache_path = cache_path
+        self.allowed_config = {} if not allowed_config else allowed_config
+        self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
+        self.show_cache_logs = show_cache_logs
         self.drives = OrderedDict({
-            'drive_root': GoogleDrive(config, client_id, client_secret, cache_path)
+            'drive_root': GoogleDrive(client_id, client_secret, cache_path, allowed_config=self.allowed_config,
+                                      show_cache_logs=show_cache_logs)
         })
 
     def load_teamdrives(self):
@@ -38,13 +42,13 @@ class GoogleDriveManager:
             if not teamdrive_id or not teamdrive_name:
                 logger.error("TeamDrive had insufficient data associated with it, skipping:\n%s", teamdrive)
                 continue
-            if teamdrive_name not in self.cfg.google.teamdrives:
+            if teamdrive_name not in self.allowed_teamdrives:
                 continue
 
             drive_name = "teamdrive_%s" % teamdrive_name
-            self.drives[drive_name] = GoogleDrive(self.cfg, self.client_id, self.client_secret,
-                                                  self.cache_path, teamdrive_id,
-                                                  allowed_config=self.cfg.google.allowed)
+            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, teamdrive_id,
+                                                  allowed_config=self.allowed_config,
+                                                  show_cache_logs=self.show_cache_logs)
             logger.debug("Loaded TeamDrive GoogleDrive instance for: %s (id = %s)", teamdrive_name, teamdrive_id)
             loaded_teamdrives += 1
 
@@ -52,10 +56,23 @@ class GoogleDriveManager:
         return True
 
     def get_changes(self):
+        using_teamdrives = False if len(self.drives) <= 1 else True
         for drive_type, drive in self.drives.items():
-            logger.debug("Retrieving changes from drive: %s", drive_type)
+            if using_teamdrives:
+                logger.info("Retrieving changes from drive: %s", drive_type)
             drive.get_changes()
         logger.debug("Finished retrieving changes from all loaded drives")
+
+    def is_authorized(self):
+        try:
+            return self.drives['drive_root'].validate_access_token()
+        except Exception:
+            logger.exception("Exception validating authentication token: ")
+        return False
+
+    def set_callbacks(self, callbacks):
+        for drive_name, drive in self.drives.items():
+            drive.set_callbacks(callbacks)
 
 
 class GoogleDrive:
@@ -65,7 +82,7 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, config, client_id, client_secret, cache_path, teamdrive_id=None, show_cache_logs=True,
+    def __init__(self, client_id, client_secret, cache_path, teamdrive_id=None, show_cache_logs=True,
                  allowed_config={}):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -73,7 +90,7 @@ class GoogleDrive:
         self.cache_manager = Cache(cache_path)
         self.cache = self.cache_manager.get_cache('drive_root' if not teamdrive_id else 'teamdrive_%s' % teamdrive_id)
         self.settings_cache = self.cache_manager.get_cache('settings')
-        self.support_team_drives = config.google.teamdrive if teamdrive_id is not None else False
+        self.support_team_drives = True if teamdrive_id is not None else False
         self.token = self._load_token()
         self.token_refresh_lock = Lock()
         self.http = self._new_http_object()
@@ -360,7 +377,7 @@ class GoogleDrive:
     # INTERNALS
     ############################################################
 
-    def _do_query(self, request_url: str, method: str, **kwargs):
+    def _do_query(self, request_url, method, **kwargs):
         tries = 0
         max_tries = 2
         lock_acquirer = False
@@ -459,10 +476,10 @@ class GoogleDrive:
     def _remove_unwanted_paths(self, paths_list, mime_type):
         removed_file_paths = []
         # remove paths that were not allowed - this is always enabled
-        if 'file_paths' in self.allowed_config:
+        if 'FILE_PATHS' in self.allowed_config:
             for item_path in copy(paths_list):
                 allowed_path = False
-                for allowed_file_path in self.allowed_config['file_paths']:
+                for allowed_file_path in self.allowed_config['FILE_PATHS']:
                     if item_path.lower().startswith(allowed_file_path.lower()):
                         allowed_path = True
                         break
@@ -473,11 +490,11 @@ class GoogleDrive:
                     continue
 
         # remove unallowed extensions
-        if 'file_extensions' in self.allowed_config and 'file_extensions_list' in self.allowed_config and \
-                self.allowed_config['file_extensions'] and len(paths_list):
+        if 'FILE_EXTENSIONS' in self.allowed_config and 'FILE_EXTENSIONS_LIST' in self.allowed_config and \
+                self.allowed_config['FILE_EXTENSIONS'] and len(paths_list):
             for item_path in copy(paths_list):
                 allowed_file = False
-                for allowed_extension in self.allowed_config['file_extensions_list']:
+                for allowed_extension in self.allowed_config['FILE_EXTENSIONS_LIST']:
                     if item_path.lower().endswith(allowed_extension.lower()):
                         allowed_file = True
                         break
@@ -487,10 +504,10 @@ class GoogleDrive:
                     paths_list.remove(item_path)
 
         # remove unallowed mimes
-        if 'mime_types' in self.allowed_config and 'mime_types_list' in self.allowed_config and \
-                self.allowed_config['mime_types'] and len(paths_list):
+        if 'MIME_TYPES' in self.allowed_config and 'MIME_TYPES_LIST' in self.allowed_config and \
+                self.allowed_config['MIME_TYPES'] and len(paths_list):
             allowed_file = False
-            for allowed_mime in self.allowed_config['mime_types_list']:
+            for allowed_mime in self.allowed_config['MIME_TYPES_LIST']:
                 if allowed_mime.lower() in mime_type.lower():
                     if 'video' in mime_type.lower():
                         # we want to validate this is not a .sub file, which for some reason, google shows as video/MP2G
