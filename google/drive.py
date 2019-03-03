@@ -651,6 +651,13 @@ class GoogleDrive:
 
         # always dump the cache after running changes
         self._dump_cache()
+
+        # display logging
+        logger.debug("Added: %s", added_file_paths)
+        logger.debug("Removed: %s", removed_file_paths)
+        logger.debug("Unwanted: %s", unwanted_file_paths)
+        logger.debug("Ignored: %s", ignored_file_paths)
+        
         logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths), len(removed_file_paths),
                     len(unwanted_file_paths), len(ignored_file_paths))
 
