@@ -89,7 +89,7 @@ class GoogleDrive:
         self.cache_path = cache_path
         self.cache_manager = Cache(cache_path)
         self.cache = self.cache_manager.get_cache('drive_root' if not teamdrive_id else 'teamdrive_%s' % teamdrive_id)
-        self.settings_cache = self.cache_manager.get_cache('settings')
+        self.settings_cache = self.cache_manager.get_cache('settings', autocommit=True)
         self.support_team_drives = True if teamdrive_id is not None else False
         self.token = self._load_token()
         self.token_refresh_lock = Lock()
@@ -435,7 +435,6 @@ class GoogleDrive:
     def _dump_token(self):
         try:
             self.settings_cache['token'] = self.token
-            self._dump_cache()
             return True
         except Exception:
             logger.exception("Exception dumping token to cache: ")
