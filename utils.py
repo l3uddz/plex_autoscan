@@ -111,8 +111,9 @@ def run_command(command, get_output=False):
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
         if output and len(output) >= 3:
-            if not get_output and len(output) >= 8:
-                logger.info(output)
+            if not get_output:
+                if len(output) >= 8:
+                    logger.info(output)
             else:
                 total_output += output
 
