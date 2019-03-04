@@ -106,7 +106,7 @@ def wait_running_process(process_name, use_docker=False, plex_container=None):
 
 
 def run_command(command, get_output=False):
-    output = ''
+    total_output = ''
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
@@ -116,10 +116,10 @@ def run_command(command, get_output=False):
             if not get_output:
                 logger.info(output)
             else:
-                output += output
+                total_output += output
 
     rc = process.poll()
-    return rc if not get_output else output
+    return rc if not get_output else total_output
 
 
 def should_ignore(file_path, config):
