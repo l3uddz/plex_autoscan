@@ -115,10 +115,10 @@ def run_command(command, get_output=False):
             if not get_output:
                 logger.info(output)
             else:
-                get_output += output
+                output += output
 
     rc = process.poll()
-    return rc if get_output else get_output
+    return rc if not get_output else output
 
 
 def should_ignore(file_path, config):
