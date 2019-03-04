@@ -68,7 +68,7 @@ def is_process_running(process_name, plex_container=None):
                                     "|cut -d / -f 3)\" | sed 's/^\///'" % process.pid
                 process_container = run_command(get_pid_container, True)
                 logger.debug("Using: %s", get_pid_container)
-                logger.debug("Docker Container For PID %s: %s", process.pid,
+                logger.debug("Docker Container For PID %s: %r", process.pid,
                              process_container.strip() if process_container is not None else 'Unknown???')
                 if process_container is not None and isinstance(process_container, str) and \
                         process_container.strip().lower() == plex_container.lower():
