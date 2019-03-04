@@ -56,28 +56,45 @@ def map_file_exists_path_for_rclone(config, path):
     return path
 
 
-def is_process_running(process_name):
+def is_process_running(process_name, plex_container=None):
     try:
         for process in psutil.process_iter():
             if process.name().lower() == process_name.lower():
-                return True, process
+                if not plex_container:
+                    return True, process, plex_container
+                # plex_container was not None
+                # we need to check if this processes is from the container we are interested in
+                get_pid_container = "docker inspect --format '{{.Name}}' \"$(cat /proc/%s/cgroup |head -n 1 " \
+                                    "|cut -d / -f 3)\" | sed 's/^\///'" % process.pid
+                process_container = run_command(get_pid_container, True)
+                logger.debug("Docker Container For PID %s: %s", process.pid,
+                             process_container.strip() if process_container is not None else 'Unknown???')
+                if process_container is not None and isinstance(process_container, str) and \
+                        process_container.strip().lower() == plex_container.lower():
+                    return True, process, process_container.strip()
 
-        return False, None
+        return False, None, plex_container
     except psutil.ZombieProcess:
-        return False, None
+        return False, None, plex_container
     except Exception:
         logger.exception("Exception checking for process: '%s': ", process_name)
-        return False, None
+        return False, None, plex_container
 
 
-def wait_running_process(process_name):
+def wait_running_process(process_name, use_docker=False, plex_container=None):
     try:
-        running, process = is_process_running(process_name)
+        running, process, container = is_process_running(process_name,
+                                                         None if not use_docker or not plex_container else
+                                                         plex_container)
         while running and process:
-            logger.info("'%s' is running, pid: %d, cmdline: %r. Checking again in 60 seconds...", process.name(),
-                        process.pid, process.cmdline())
+            logger.info("'%s' is running, pid: %d,%s cmdline: %r. Checking again in 60 seconds...", process.name(),
+                        process.pid,
+                        ' container: %s,' % container.strip() if use_docker and isinstance(container, str) else '',
+                        process.cmdline())
             time.sleep(60)
-            running, process = is_process_running(process_name)
+            running, process, container = is_process_running(process_name,
+                                                             None if not use_docker or not plex_container else
+                                                             plex_container)
 
         return True
 
@@ -87,17 +104,21 @@ def wait_running_process(process_name):
         return False
 
 
-def run_command(command):
+def run_command(command, get_output=False):
+    output = ''
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
         if process.poll() is not None:
             break
         if output and len(output) >= 8:
-            logger.info(output)
+            if not get_output:
+                logger.info(output)
+            else:
+                get_output += output
 
     rc = process.poll()
-    return rc
+    return rc if not get_output else get_output
 
 
 def should_ignore(file_path, config):

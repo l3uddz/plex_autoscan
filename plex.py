@@ -135,7 +135,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths):
         # wait for existing scanners being ran by plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
             scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
-            if not utils.wait_running_process(scanner_name):
+            if not utils.wait_running_process(scanner_name, config['USE_DOCKER'], cmd_quote(config['DOCKER_NAME'])):
                 logger.warning(
                     "There was a problem waiting for existing '%s' process(s) to finish, aborting scan.", scanner_name)
                 # remove item from database if sqlite is enabled
