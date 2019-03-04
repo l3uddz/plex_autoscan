@@ -118,7 +118,7 @@ def run_command(command, get_output=False):
                 get_output += output
 
     rc = process.poll()
-    return rc if not get_output else get_output
+    return rc if get_output else get_output
 
 
 def should_ignore(file_path, config):
