@@ -110,13 +110,14 @@ def run_command(command, get_output=False):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
-        if process.poll() is not None:
-            break
         if output and len(output) >= 8:
             if not get_output:
                 logger.info(output)
             else:
                 total_output += output
+
+        if process.poll() is not None:
+            break
 
     rc = process.poll()
     return rc if not get_output else total_output
