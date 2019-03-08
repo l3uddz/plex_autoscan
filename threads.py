@@ -1,4 +1,9 @@
-import Queue
+try:
+    # Try the Python 3 queue module
+    import queue
+except ImportError:
+    # Fallback to the Python 2 Queue module
+    import Queue as queue
 import copy
 import threading
 
@@ -7,7 +12,7 @@ class PriorityLock:
     def __init__(self):
         self._is_available = True
         self._mutex = threading.Lock()
-        self._waiter_queue = Queue.PriorityQueue()
+        self._waiter_queue = queue.PriorityQueue()
 
     def acquire(self, priority=0):
         self._mutex.acquire()
@@ -28,7 +33,7 @@ class PriorityLock:
         # Notify the next thread in line, if any.
         try:
             _, event = self._waiter_queue.get_nowait()
-        except Queue.Empty:
+        except queue.Empty:
             self._is_available = True
         else:
             event.set()
