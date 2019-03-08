@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import backoff
 import requests
