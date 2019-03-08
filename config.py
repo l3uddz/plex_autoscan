@@ -249,7 +249,7 @@ class Config(object):
     def save(self, cfg,exitOnSave=True):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=2, sort_keys=True)
-	if exitOnSave:
+        if exitOnSave:
              logger.warn(
                  "Please configure/review config before running again: %r",
                  self.settings['config']
