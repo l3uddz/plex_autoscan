@@ -1,4 +1,9 @@
-import queue
+try:
+    # try the Python2 version
+    import Queue as queue
+except ImportError:
+    # fallback to the Python3 version
+    import queue as queue
 import copy
 import threading
 

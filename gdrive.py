@@ -1,7 +1,12 @@
 import json
 import logging
 import os
-from urllib.parse import urlencode
+try:
+    # try the Python2 version
+    from urllib import urlencode
+except ImportError:
+    # fallback to the Python3 version
+    from urllib.parse import urlencode
 
 import backoff
 import requests
