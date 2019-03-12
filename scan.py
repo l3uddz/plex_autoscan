@@ -1,10 +1,14 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 import json
 import logging
 import os
 import sys
 import time
 from logging.handlers import RotatingFileHandler
+
+# Replace Python2.X input with raw_input, renamed to input in Python 3
+if hasattr(__builtins__, 'raw_input'):
+    input = raw_input
 
 from flask import Flask
 from flask import abort
@@ -449,7 +453,7 @@ if __name__ == "__main__":
             logger.info("Visit the link below and paste the authorization code")
             logger.info(google.get_auth_link())
             logger.info("Enter authorization code: ")
-            auth_code = raw_input()
+            auth_code = input()
             logger.debug("auth_code: %r", auth_code)
 
             # Exchange authorization code
