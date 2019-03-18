@@ -64,16 +64,21 @@ class Config(object):
         'RUN_COMMAND_AFTER_SCAN': '',
         'USE_DOCKER': False,
         'USE_SUDO': True,
-        'GDRIVE': {
+        'GOOGLE': {
+            'ENABLED': False,
             'CLIENT_ID': '',
             'CLIENT_SECRET': '',
-            'POLL_INTERVAL': 60,
-            'ENABLED': False,
+            'ALLOWED': {
+                'FILE_PATHS': [],
+                'FILE_EXTENSIONS': False,
+                'FILE_EXTENSIONS_LIST': [],
+                'MIME_TYPES': False,
+                'MIME_TYPES_LIST': []
+            },
+            'POLL_INTERVAL': 120,
             'TEAMDRIVE': False,
-            'SCAN_EXTENSIONS': [],
-            'IGNORE_PATHS': [],
-            'ALLOW_PATHS': [],
-            'SHOW_CACHE_MESSAGES': False
+            'TEAMDRIVES': [],
+            'SHOW_CACHE_LOGS': True
         }
     }
 
@@ -97,11 +102,6 @@ class Config(object):
             'argv': '--queuefile',
             'env': 'PLEX_AUTOSCAN_QUEUEFILE',
             'default': os.path.join(os.path.dirname(sys.argv[0]), 'queue.db')
-        },
-        'tokenfile': {
-            'argv': '--tokenfile',
-            'env': 'PLEX_AUTOSCAN_TOKENFILE',
-            'default': os.path.join(os.path.dirname(sys.argv[0]), 'token.json')
         },
         'cachefile': {
             'argv': '--cachefile',
@@ -164,11 +164,25 @@ class Config(object):
         # add example server ignore list
         cfg['SERVER_IGNORE_LIST'] = ['/.grab/', '.DS_Store', 'Thumbs.db']
 
-        # add example scan extensions to gdrive
-        cfg['GDRIVE']['SCAN_EXTENSIONS'] = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif', 'gifv', 'mng',
-                                            'avi', 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mp4', 'm4p',
-                                            'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp',
-                                            '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b', 'mp3', 'flac', 'ts']
+        # add example allowed scan paths to google
+        cfg['GOOGLE']['ALLOWED']['FILE_PATHS'] = [
+            "My Drive/Media/Movies/",
+            "My Drive/Media/TV/",
+            "My Drive/Media/4K/"
+        ]
+
+        # add example scan extensions to google
+        cfg['GOOGLE']['ALLOWED']['FILE_EXTENSIONS'] = True
+        cfg['GOOGLE']['ALLOWED']['FILE_EXTENSIONS_LIST'] = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif',
+                                                            'gifv', 'mng', 'avi', 'mov', 'qt', 'wmv', 'yuv', 'rm',
+                                                            'rmvb', 'asf', 'amv', 'mp4', 'm4p', 'm4v', 'mpg', 'mp2',
+                                                            'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp',
+                                                            '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b',
+                                                            'mp3', 'flac', 'ts']
+
+        # add example scan mimes for google
+        cfg['GOOGLE']['ALLOWED']['MIME_TYPES'] = True
+        cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
 
         # add example rclone file exists to remote mappings
         cfg['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
@@ -246,14 +260,14 @@ class Config(object):
 
         self.configs = cfg
 
-    def save(self, cfg,exitOnSave=True):
+    def save(self, cfg, exitOnSave=True):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=2, sort_keys=True)
-	if exitOnSave:
-             logger.warn(
-                 "Please configure/review config before running again: %r",
-                 self.settings['config']
-             )
+        if exitOnSave:
+            logger.warn(
+                "Please configure/review config before running again: %r",
+                self.settings['config']
+            )
 
         if exitOnSave:
             exit(0)
@@ -304,11 +318,12 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize','update_sections'),
+                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_sections'),
                             help=(
                                 '"sections": prints plex sections\n'
                                 '"server": starts the application\n'
                                 '"authorize": authorize against a google account\n'
+                                '"build_caches": build complete google drive caches\n'
                                 '"update_sections": update section mappings in config\n'
                             )
                             )
@@ -332,13 +347,6 @@ class Config(object):
                             nargs='?',
                             const=None,
                             help='Queue file location (default: %s)' % self.base_settings['queuefile']['default']
-                            )
-
-        # Token file
-        parser.add_argument(self.base_settings['tokenfile']['argv'],
-                            nargs='?',
-                            const=None,
-                            help='Google token file location (default: %s)' % self.base_settings['tokenfile']['default']
                             )
 
         # Cache file

@@ -1,11 +1,14 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 import json
 import logging
 import os
 import sys
 import time
-from copy import copy
 from logging.handlers import RotatingFileHandler
+
+# Replace Python2.X input with raw_input, renamed to input in Python 3
+if hasattr(__builtins__, 'raw_input'):
+    input = raw_input
 
 from flask import Flask
 from flask import abort
@@ -67,9 +70,10 @@ resleep_paths = []
 import db
 import plex
 import utils
-from gdrive import Gdrive
+from google import GoogleDrive, GoogleDriveManager
 
 google = None
+manager = None
 
 
 ############################################################
@@ -136,110 +140,34 @@ def start_google_monitor():
 # GOOGLE DRIVE
 ############################################################
 
-def process_google_changes(changes):
-    global google
-    file_paths = []
+def process_google_changes(items_added):
+    new_file_paths = []
 
-    # convert changes to file paths list
-    for change in changes:
-        logger.debug("Processing Google change: %s", change)
-        if 'file' in change and 'fileId' in change:
-            # dont consider trashed/removed events for processing
-            if ('trashed' in change['file'] and change['file']['trashed']) or (
-                    'removed' in change and change['removed']):
-                # remove item from cache
-                if google.remove_item_from_cache(change['fileId']) and conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
-                    logger.info("Removed '%s' from cache: %s", change['fileId'], change['file']['name'])
+    # process items added
+    if not items_added:
+        return True
+
+    for file_id, file_paths in items_added.items():
+        for file_path in file_paths:
+            if file_path in new_file_paths:
                 continue
-
-            # we always want to add changes to the cache so renames etc can be reflected inside the cache
-            google.add_item_to_cache(change['fileId'], change['file']['name'],
-                                     [] if 'parents' not in change['file'] else change['file']['parents'])
-
-            # dont process folder events
-            if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
-                # ignore this change as we dont want to scan folders
-                continue
-
-            # get this files paths
-            success, item_paths = google.get_id_file_paths(change['fileId'],
-                                                           change['file']['teamDriveId'] if 'teamDriveId' in change[
-                                                               'file'] else None)
-            if success and len(item_paths):
-                file_paths.extend(item_paths)
-        elif 'teamDrive' in change and 'teamDriveId' in change:
-            # this is a teamdrive change
-            # dont consider trashed/removed events for processing
-            if 'removed' in change and change['removed']:
-                # remove item from cache
-                if google.remove_item_from_cache(change['teamDriveId']) and \
-                        conf.configs['GDRIVE']['SHOW_CACHE_MESSAGES']:
-                    logger.info("Removed teamDrive '%s' from cache: %s", change['teamDriveId'],
-                                change['teamDrive']['name'] if 'name' in change[
-                                    'teamDrive'] else 'Unknown teamDrive')
-                continue
-
-            if 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
-                # we always want to add changes to the cache so renames etc can be reflected inside the cache
-                google.add_item_to_cache(change['teamDrive']['id'], change['teamDrive']['name'], [])
-                continue
-
-    # always dump the cache after running changes
-    google.dump_cache()
-
-    # remove files that are not allowed
-    removed_rejected_paths = 0
-    if 'ALLOW_PATHS' in conf.configs['GDRIVE'] and len(conf.configs['GDRIVE']['ALLOW_PATHS']):
-        # use allow paths over the ignore paths
-        for file_path in copy(file_paths):
-            allowed_path = False
-            for allow_path in conf.configs['GDRIVE']['ALLOW_PATHS']:
-                if file_path.lower().startswith(allow_path.lower()):
-                    allowed_path = True
-                    break
-
-            if not allowed_path:
-                # this file was not from an allow path, remove it
-                file_paths.remove(file_path)
-                removed_rejected_paths += 1
-    else:
-        # remove files that are in the ignore paths list
-        for file_path in copy(file_paths):
-            for ignore_path in conf.configs['GDRIVE']['IGNORE_PATHS']:
-                if file_path.lower().startswith(ignore_path.lower()):
-                    # this file was from an ignored path, remove it
-                    file_paths.remove(file_path)
-                    removed_rejected_paths += 1
-
-    if removed_rejected_paths:
-        logger.info("Ignored %d file(s) from Google Drive changes for disallowed file paths",
-                    removed_rejected_paths)
-
-    # remove files that are not of an allowed extension type
-    removed_rejected_extensions = 0
-    for file_path in copy(file_paths):
-        if not utils.allowed_scan_extension(file_path, conf.configs['GDRIVE']['SCAN_EXTENSIONS']):
-            # this file did not have an allowed extension, remove it
-            file_paths.remove(file_path)
-            removed_rejected_extensions += 1
-
-    if removed_rejected_extensions:
-        logger.info("Ignored %d file(s) from Google Drive changes for disallowed file extensions",
-                    removed_rejected_extensions)
+            new_file_paths.append(file_path)
 
     # remove files that already exist in the plex database
-    removed_rejected_exists = utils.remove_files_exist_in_plex_database(file_paths, conf.configs['PLEX_DATABASE_PATH'])
+    removed_rejected_exists = utils.remove_files_exist_in_plex_database(new_file_paths,
+                                                                        conf.configs['PLEX_DATABASE_PATH'])
 
     if removed_rejected_exists:
-        logger.info("Ignored %d file(s) from Google Drive changes for already being in Plex!",
+        logger.info("Rejected %d file(s) from Google Drive changes for already being in Plex!",
                     removed_rejected_exists)
 
     # process the file_paths list
-    if len(file_paths):
-        logger.info("Proceeding with scan of %d file(s) from Google Drive changes: %s", len(file_paths), file_paths)
+    if len(new_file_paths):
+        logger.info("Proceeding with scan of %d file(s) from Google Drive changes: %s", len(new_file_paths),
+                    new_file_paths)
 
         # loop each file, remapping and starting a scan thread
-        for file_path in file_paths:
+        for file_path in new_file_paths:
             final_path = utils.map_pushed_path(conf.configs, file_path)
             start_scan(final_path, 'Google Drive', 'Download')
 
@@ -247,88 +175,40 @@ def process_google_changes(changes):
 
 
 def thread_google_monitor():
-    global google
+    global manager
 
     logger.info("Starting Google Drive changes monitor in 30 seconds...")
     time.sleep(30)
 
-    # load access tokens
-    google = Gdrive(conf.configs, conf.settings['tokenfile'], conf.settings['cachefile'])
-    if not google.first_run():
-        logger.error("Failed to retrieve Google Drive access tokens...")
+    # load google drive manager
+    manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+                                 conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                 allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
+
+    if not manager.is_authorized():
+        logger.error("Failed to validate Google Drive access token...")
         exit(1)
     else:
-        logger.info("Google Drive access tokens were successfully loaded")
+        logger.info("Google Drive access token was successfully validated")
+
+    # load teamdrives (if enabled)
+    if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
+        logger.error("Failed to load teamdrives....?")
+        exit(1)
+
+    # set callbacks
+    manager.set_callbacks({'items_added': process_google_changes})
 
     try:
-
         logger.info("Google Drive changes monitor started")
         while True:
-            if not google.token['page_token']:
-                # we have no page_token, likely this is first run, lets retrieve a starting page token
-                if not google.get_changes_first_page_token():
-                    logger.error("Failed to retrieve starting Google Drive changes page token...")
-                    return
-                else:
-                    logger.info("Retrieved starting Google Drive changes page token: %s", google.token['page_token'])
-                    time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
-
-            # get page changes
-            changes = []
-            changes_attempts = 0
-
-            while True:
-                try:
-                    success, page = google.get_changes()
-                    changes_attempts = 0
-                except Exception:
-                    changes_attempts += 1
-                    logger.exception(
-                        "Exception occurred while polling Google Drive for changes on page %s on attempt %d/12: ",
-                        str(google.token['page_token']), changes_attempts)
-
-                    if changes_attempts < 12:
-                        logger.warning("Sleeping for 5 minutes before trying to poll Google Drive for changes again...")
-                        time.sleep(60 * 5)
-                        continue
-                    else:
-                        logger.error("Failed to poll Google Drive changes after 12 consecutive attempts, "
-                                     "aborting...")
-                        return
-
-                if not success:
-                    logger.error("Failed to retrieve Google Drive changes for page: %s, aborting...",
-                                 str(google.token['page_token']))
-                    return
-                else:
-                    # successfully retrieved some changes
-                    if 'changes' in page:
-                        changes.extend(page['changes'])
-
-                    # page logic
-                    if page is not None and 'nextPageToken' in page:
-                        # there are more pages to retrieve
-                        logger.debug("There are more Google Drive changes pages to retrieve, retrieving next page...")
-                        continue
-                    elif page is not None and 'newStartPageToken' in page:
-                        # there are no more pages to retrieve
-                        break
-                    else:
-                        logger.error("There was an unexpected outcome when polling Google Drive for changes, "
-                                     "aborting future polls...")
-                        return
-
-            # process changes
-            if len(changes):
-                logger.info("There's %d Google Drive change(s) to process", len(changes))
-                process_google_changes(changes)
-
+            # poll for changes
+            manager.get_changes()
             # sleep before polling for changes again
-            time.sleep(conf.configs['GDRIVE']['POLL_INTERVAL'])
+            time.sleep(conf.configs['GOOGLE']['POLL_INTERVAL'])
 
     except Exception:
-        logger.exception("Fatal Exception occurred while monitoring Google Drive for changes, page = %s: ",
-                         google.token['page_token'])
+        logger.exception("Fatal Exception occurred while monitoring Google Drive for changes: ")
 
 
 ############################################################
@@ -559,26 +439,37 @@ if __name__ == "__main__":
     elif conf.args['cmd'] == 'update_sections':
         plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
-        if not conf.configs['GDRIVE']['ENABLED']:
+        if not conf.configs['GOOGLE']['ENABLED']:
             logger.error("You must enable the ENABLED setting in the GDRIVE config section...")
             exit(1)
         else:
-            google = Gdrive(conf.configs, conf.settings['tokenfile'], conf.settings['cachefile'])
-            if not google.first_run():
-                logger.error("Failed to retrieve access tokens...")
-                exit(1)
+            logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
+            logger.debug("client_secret: %r", conf.configs['GOOGLE']['CLIENT_SECRET'])
+
+            google = GoogleDrive(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+                                 conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'])
+
+            # Provide authorization link
+            logger.info("Visit the link below and paste the authorization code")
+            logger.info(google.get_auth_link())
+            logger.info("Enter authorization code: ")
+            auth_code = input()
+            logger.debug("auth_code: %r", auth_code)
+
+            # Exchange authorization code
+            token = google.exchange_code(auth_code)
+            if not token or 'access_token' not in token:
+                logger.error("Failed exchanging authorization code for an access token....")
+                sys.exit(1)
             else:
-                logger.info("Access tokens were successfully retrieved!")
-                exit(0)
+                logger.info("Exchanged authorization code for an access token:\n\n%s\n", json.dumps(token, indent=2))
+            sys.exit(0)
 
     elif conf.args['cmd'] == 'server':
         if conf.configs['SERVER_USE_SQLITE']:
             start_queue_reloader()
 
-        if conf.configs['GDRIVE']['ENABLED']:
-            if not os.path.exists(conf.settings['tokenfile']):
-                logger.error("You must authorize your Google Drive account with the authorize option...")
-                exit(1)
+        if conf.configs['GOOGLE']['ENABLED']:
             start_google_monitor()
 
         logger.info("Starting server: http://%s:%d/%s",
@@ -588,6 +479,28 @@ if __name__ == "__main__":
                     )
         app.run(host=conf.configs['SERVER_IP'], port=conf.configs['SERVER_PORT'], debug=False, use_reloader=False)
         logger.info("Server stopped")
+        exit(0)
+    elif conf.args['cmd'] == 'build_caches':
+        logger.info("Building caches")
+        # load google drive manager
+        manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+                                     conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                     allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
+
+        if not manager.is_authorized():
+            logger.error("Failed to validate Google Drive access token...")
+            exit(1)
+        else:
+            logger.info("Google Drive access token was successfully validated")
+
+        # load teamdrives (if enabled)
+        if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
+            logger.error("Failed to load teamdrives....?")
+            exit(1)
+
+        # build cache
+        manager.build_caches()
+        logger.info("Finished building all cache's!")
         exit(0)
     else:
         logger.error("Unknown command...")
