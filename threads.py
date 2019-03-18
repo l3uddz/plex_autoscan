@@ -6,6 +6,7 @@ except ImportError:
     import Queue as queue
 import copy
 import threading
+import datetime
 
 
 class PriorityLock:
@@ -22,7 +23,7 @@ class PriorityLock:
             self._mutex.release()
             return True
         event = threading.Event()
-        self._waiter_queue.put((priority, event))
+        self._waiter_queue.put((priority, datetime.datetime.now(), event))
         self._mutex.release()
         event.wait()
         # When the event is triggered, we have the lock.
