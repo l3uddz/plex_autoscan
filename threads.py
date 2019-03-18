@@ -33,7 +33,7 @@ class PriorityLock:
         self._mutex.acquire()
         # Notify the next thread in line, if any.
         try:
-            _, event = self._waiter_queue.get_nowait()
+            _, timeAdded, event = self._waiter_queue.get_nowait()
         except queue.Empty:
             self._is_available = True
         else:
