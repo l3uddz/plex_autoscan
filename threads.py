@@ -4,9 +4,9 @@ try:
 except ImportError:
     # Fallback to the Python 2 Queue module
     import Queue as queue
+import datetime
 import copy
 import threading
-import datetime
 
 
 class PriorityLock:
