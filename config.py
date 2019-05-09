@@ -60,7 +60,7 @@ class Config(object):
             'RC_URL': 'http://localhost:5572'
         },
         'RCLONE_CRYPT': {
-            'ENABLED': false,
+            'ENABLED': False,
             'CRYPT_FOLDER': 'My Drive/crypt',
             'PATH': '/usr/bin/rclone',
             'CONFIG_FILE': '/home/thompsons/.config/rclone/rclone.conf',
