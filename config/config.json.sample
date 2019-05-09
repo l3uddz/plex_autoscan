@@ -51,6 +51,13 @@
     },
     "RC_URL": "http://localhost:5572"
   },
+  "RCLONE_CRYPT": {
+    "ENABLED": false,
+    "CRYPT_FOLDER": "My Drive/crypt",
+    "PATH": "/usr/bin/rclone",
+    "CONFIG_FILE": "/home/thompsons/.config/rclone/rclone.conf",
+    "CRYPT_REMOTE": "gdrive-crypt:"
+  },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {

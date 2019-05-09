@@ -1,3 +1,4 @@
+
 # Plex Autoscan
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/)
@@ -14,17 +15,18 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
-	- [Example](#example)
-	- [Basics](#basics)
-	- [Docker](#docker)
-	- [Plex Media Server](#plex-media-server)
-	- [Plex Autoscan Server](#plex-autoscan-server)
-	- [Google Drive Monitoring](#google-drive-monitoring)
-	- [Rclone Remote Control](#rclone-remote-control)
+    - [Example](#example)
+    - [Basics](#basics)
+    - [Docker](#docker)
+    - [Plex Media Server](#plex-media-server)
+    - [Plex Autoscan Server](#plex-autoscan-server)
+    - [Google Drive Monitoring](#google-drive-monitoring)
+    - [Rclone Crypt Monitoring](#rclone-crypt-monitoring)
+    - [Rclone Remote Control](#rclone-remote-control)
 - [Setup](#setup)
-	- [Sonarr](#sonarr)
-	- [Radarr](#radarr)
-	- [Lidarr](#lidarr)
+    - [Sonarr](#sonarr)
+    - [Radarr](#radarr)
+    - [Lidarr](#lidarr)
 
 <!-- /TOC -->
 
@@ -129,6 +131,13 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "ENABLED": false,
     "MOUNT_FOLDER": "/mnt/rclone",
     "RC_URL": "http://localhost:5572"
+  },
+  "RCLONE_CRYPT": {
+    "ENABLED": false,
+    "CRYPT_FOLDER": "My Drive/crypt",
+    "PATH": "/usr/bin/rclone",
+    "CONFIG_FILE": "/home/thompsons/.config/rclone/rclone.conf",
+    "CRYPT_REMOTE": "gdrive-crypt:"
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "RUN_COMMAND_AFTER_SCAN": "",
@@ -646,7 +655,7 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note: Google Drive Monitoring is not compatible with encrypted files._
+_Note: To use Google Drive Monitoring with rclone crypt encryption you must enable and configure the Rclone Crypt Monitoring._
 
 ```json
 "GDRIVE": {
@@ -688,42 +697,42 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
     ```json
     "IGNORE_PATHS": [
-    	"My Drive/Backups/",
-    	"My Drive/Crypt/",
-    	"My Drive/downloads/",
-    	"My Drive/home/"
+        "My Drive/Backups/",
+        "My Drive/Crypt/",
+        "My Drive/downloads/",
+        "My Drive/home/"
     ],
     ```
-		
+        
   - Teamdrive:
 
     ```json
     "IGNORE_PATHS": [
-    	"shared_movies/foreign/",
-    	"shared_movies/kids/"
+        "shared_movies/foreign/",
+        "shared_movies/kids/"
     ],
     ```
 
 `ALLOW_PATHS` - List of paths to allow changes from. When this is filled in, `IGNORE_PATHS` field above is ignored.
 
   - Examples:
-	
+    
     - My Drive:
-	
+    
       ```json
       "ALLOW_PATHS": [
-      	"My Drive/Media/"
+        "My Drive/Media/"
       ],
       ```
 
     - Teamdrive:
-	
+    
       ```json
       "ALLOW_PATHS": [
-      	"shared_movies/Media/"
+        "shared_movies/Media/"
       ],
       ```
-				
+                
 `TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
 
 _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token and authorize, while this set to `true`._
@@ -816,7 +825,7 @@ To set this up:
           ],
         },
         ```
-				
+                
       - For example, if you store your files under a Google Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`), the server path mappings will look like this:
 
         ```json
@@ -826,8 +835,8 @@ To set this up:
             "shared_movies/Media/Movies/"
           ],
         },
-	        ```
-					
+            ```
+                    
    ii. Docker install
 
       - Format:
@@ -844,7 +853,7 @@ To set this up:
         _Note 1: The Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with_ `teamdrive_name/`.
 
         _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
-				
+                
       - For example, if you store your files under Google Drive's My Drive Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
         ```json
@@ -855,7 +864,7 @@ To set this up:
           ]
         }
         ```
-				
+                
       - For example, if you store your files under Google Drive's Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
         ```json
@@ -870,7 +879,116 @@ To set this up:
 1. Google Drive Monitoring is now setup.
 
 ---
+## Rclone Crypt Monitoring
 
+As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. If your mounted Google Drive is encrypted using rclone crypt, Plex Autoscan can also decrypt the filenames to process the unencrypted files.
+
+_Note: To use rclone crypt monitoring you must first enable and configure Google Drive Monitoring._
+
+```json
+"RCLONE_CRYPT": {
+    "ENABLED": false,
+    "CRYPT_FOLDER": "My Drive/crypt",
+    "RCLONE_PATH": "/usr/bin/rclone",
+    "CONFIG_FILE": "/home/thompsons/.config/rclone/rclone.conf",
+    "CRYPT_REMOTE": "gdrive-crypt:"
+},
+```
+
+`ENABLED` - Enable or Disable rclone crypt monitoring.
+
+`CRYPT_FOLDER` - Google Drive folder containing your rclone crypt encrypted remote.
+
+`PATH` - Path to rclone binary.
+
+`CONFIG_FILE` - Path to rclone config file containing crypt remote configuration.
+
+`CRYPT_REMOTE` - Name of crypt remote as listed in rclone config.
+
+---
+
+1. You will now need to add in your rclone crypt paths on Google Drive into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map rclone crypt paths on Google Drive to their local counter part.
+
+   i. Native install
+
+      - Format:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+            "/path/on/local/host": [
+                "/path/on/sonarr/host/",
+                "path/to/rclone/crypt/on/Google/Drive/"
+            ]
+        },
+        ```
+
+        _Note 1: The rclone crypt Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with `teamdrive_name/`._
+
+        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
+
+      - For example, if you store your rclone crypt encrypted files under My Drive's crypt folder (`My Drive/crypt/...`), the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/mnt/unionfs/Media/Movies/": [
+            "/home/seed/media/fused/"
+            "My Drive/crypt/Movies/"
+          ],
+        },
+        ```
+                
+      - For example, if you store your rclone crypt encrypted files under a Google Teamdrive called "shared_movies" and within a crypt folder (`shared_movies/crypt/...`), the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/mnt/unionfs/Media/Movies/": [
+            "/home/seed/media/fused/"
+            "shared_movies/crypt/Movies/"
+          ],
+        },
+        ```                 
+   ii. Docker install
+
+      - Format:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+            "/path/in/plex/container/": [
+               "/path/from/sonarr/container/",
+               "path/to/rclone/crypt/on/Google/Drive/"
+            ]
+        },
+        ```
+
+        _Note 1: The Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with_ `teamdrive_name/`.
+
+        _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
+                
+      - For example, if you store your rclone crypt encrypted files under Google Drive's My Drive crypt folder (`My Drive/crypt/...`) AND run Plex in a docker container, the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/data/Movies/": [
+            "/movies/",
+            "My Drive/crypt/Movies/"
+          ]
+        }
+        ```
+                
+      - For example, if you store your rclone crypt encrypted files under Google Drive's Teamdrive called "shared_movies" and within a crypt folder (`shared_movies/crypt/...`) AND run Plex in a docker container, the server path mappings will look like this:
+
+        ```json
+        "SERVER_PATH_MAPPINGS": {
+          "/data/Movies/": [
+            "/movies/",
+            "shared_movies/crypt/Movies/"
+          ]
+        }
+        ```
+
+1. Rclone crypt monitoring is now setup.
+
+---
 
 ## Rclone Remote Control
 
@@ -978,32 +1096,7 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
 
    1. Username: _Leave Blank_
 
-   1. Password: _Leave Blank_
-
-1. The settings will look like this:
-
-    ![Radarr Plex Autoscan](https://i.imgur.com/jQJyvMA.png)
-
-1. Click "Save" to add Plex Autoscan.
-
-
-## Lidarr
-
-1. Lidarr -> "Settings" -> "Connect".
-
-1. Add a new "Webhook" Notification.
-
-1. Add the following:
-
-   1. Name: Plex Autoscan
-
-   1. On Grab: `No`
-
-   1. On Album Import: `No`
-
-   1. On Track Import: `Yes`
-
-   1. On Track Upgrade:  `Yes`
+   1. PasswoUpgrade:  `Yes`
 
    1. On Rename: `Yes`
 

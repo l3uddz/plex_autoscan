@@ -187,6 +187,12 @@ def process_google_changes(changes):
     # always dump the cache after running changes
     google.dump_cache()
 
+    # decrypt filenames if using rclone crypt remote is being used
+    if conf.configs["RCLONE_CRYPT"]["ENABLED"]:
+        for file_path in copy(file_paths):
+            file_paths.remove(file_path)
+            file_paths.append(utils.rclone_decrypt_filename(conf.configs, file_path))
+
     # remove files that are not allowed
     removed_rejected_paths = 0
     if 'ALLOW_PATHS' in conf.configs['GDRIVE'] and len(conf.configs['GDRIVE']['ALLOW_PATHS']):

@@ -173,6 +173,39 @@ def rclone_rc_clear_cache(config, scan_path):
     return False
 
 
+def rclone_decrypt_filename(config, encrypted_filename):
+    # check for rclone binary
+    if not os.path.isfile(config["RCLONE_CRYPT"]["PATH"]):
+        logger.error("Rclone binary not found at: '%s'", config["RCLONE_CRYPT"]["PATH"])
+        return encrypted_filename
+
+    # strip off the rclone crypt folder from gdrive filename
+    crypt_folder = config["RCLONE_CRYPT"]["CRYPT_FOLDER"]
+    encrypted_filename = encrypted_filename.lstrip(crypt_folder)
+
+    p = subprocess.Popen([config["RCLONE_CRYPT"]["PATH"],
+                          "--config", 
+                          config["RCLONE_CRYPT"]["CONFIG_FILE"],
+                          "cryptdecode", 
+                          config["RCLONE_CRYPT"]["CRYPT_REMOTE"], encrypted_filename],
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if err:
+        # rclone process ran into some error
+        logger.error("Rclone error while attempting to decrypt filename '%s': %s",
+                      encrypted_filename, err)
+        filename = os.path.join(crypt_folder, encrypted_filename)
+    elif out:
+        if 'Failed' in out:
+            logger.error("Rclone could not decode filename '%s'",encrypted_filename)
+            filename =  os.path.join(crypt_folder, encrypted_filename)
+        else:
+            filename = os.path.join(crypt_folder, out.split('\t')[1].rstrip().lstrip())
+            logger.debug("Unencrypted filename: '%s'", filename)
+    return filename
+
+
+
 def load_json(file_path):
     if os.path.sep not in file_path:
         file_path = os.path.join(os.path.dirname(sys.argv[0]), file_path)

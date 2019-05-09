@@ -59,6 +59,13 @@ class Config(object):
             },
             'RC_URL': 'http://localhost:5572'
         },
+        'RCLONE_CRYPT': {
+            'ENABLED': false,
+            'CRYPT_FOLDER': 'My Drive/crypt',
+            'PATH': '/usr/bin/rclone',
+            'CONFIG_FILE': '/home/thompsons/.config/rclone/rclone.conf',
+            'CRYPT_REMOTE': 'gdrive-crypt:'
+        },
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
         'RUN_COMMAND_AFTER_SCAN': '',
