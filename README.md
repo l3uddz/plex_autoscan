@@ -303,29 +303,6 @@ SECTION ID #: LIBRARY NAME
 Sample output:
 
 ```
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --loglevel=INFO
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --cachefile=cache.db
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --tokenfile=token.json
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --queuefile=queue.db
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --logfile=plex_autoscan.log
- 2018-06-23 08:28:26,910 -     INFO -    CONFIG [140425529542400]: Using default setting --config=config/config.json
- 2018-06-23 08:28:27,069 -     INFO -  AUTOSCAN [140425529542400]:
-        _                         _
-  _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
- | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
- | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
- | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
- |_|
-
-#########################################################################
-# Author:   l3uddz                                                      #
-# URL:      https://github.com/l3uddz/plex_autoscan                     #
-# --                                                                    #
-# Part of the Cloudbox project: https://cloudbox.works                  #
-#########################################################################
-# GNU General Public License v3.0                                       #
-#########################################################################
-
  2018-06-23 08:28:27,070 -     INFO -      PLEX [140425529542400]: Using Plex Scanner
   1: Movies
   2: TV
@@ -758,29 +735,6 @@ To set this up:
 1. Visit the link shown to get the authorization code and paste that in and hit `enter`.
 
     ```
-    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --loglevel=INFO
-    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --cachefile=/opt/plex_autoscan/cache.db
-    2018-06-24 05:50:14,945 -     INFO -    CONFIG [140446220769088]: Using default setting --tokenfile=/opt/plex_autoscan/token.json
-    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --queuefile=/opt/plex_autoscan/queue.db
-    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --logfile=/opt/plex_autoscan/plex_autoscan.log
-    2018-06-24 05:50:14,946 -     INFO -    CONFIG [140446220769088]: Using default setting --config=/opt/plex_autoscan/config/config.json
-    2018-06-24 05:50:15,222 -     INFO -  AUTOSCAN [140446220769088]:
-          _                         _
-    _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __
-    | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \
-    | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
-    | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
-    |_|
-
-    #########################################################################
-    # Author:   l3uddz                                                      #
-    # URL:      https://github.com/l3uddz/plex_autoscan                     #
-    # --                                                                    #
-    # Part of the Cloudbox project: https://cloudbox.works                  #
-    #########################################################################
-    # GNU General Public License v3.0                                       #
-    #########################################################################
-
     Visit https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=&access_type=offline and authorize against the account you wish to use
     Enter authorization code:
     ```
