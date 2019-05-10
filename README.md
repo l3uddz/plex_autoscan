@@ -1,9 +1,10 @@
-<img src="assets/logo.svg" width="513">
+<img src="assets/logo.svg" width="600">
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
 [![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
 [![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
+[![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
 [![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
 
 ---
