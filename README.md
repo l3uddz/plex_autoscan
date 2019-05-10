@@ -1,11 +1,10 @@
-# Plex Autoscan
+<img src="assets/logo.svg" width="513">
 
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg)](https://www.python.org/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord)](https://discord.io/cloudbox)
-[![Feature Requests](https://img.shields.io/badge/Requests-Feathub-blue.svg)](http://feathub.com/l3uddz/plex_autoscan)
-[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/badge.svg?style=flat)](https://beerpay.io/l3uddz/plex_autoscan)
-[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/make-wish.svg?style=flat)](https://beerpay.io/l3uddz/plex_autoscan)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
+[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
+[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
+[![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
 
 ---
 <!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
@@ -25,6 +24,7 @@
 	- [Sonarr](#sonarr)
 	- [Radarr](#radarr)
 	- [Lidarr](#lidarr)
+- [Donate](#donate)
 
 <!-- /TOC -->
 
@@ -694,7 +694,7 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
     	"My Drive/home/"
     ],
     ```
-		
+
   - Teamdrive:
 
     ```json
@@ -707,9 +707,9 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 `ALLOW_PATHS` - List of paths to allow changes from. When this is filled in, `IGNORE_PATHS` field above is ignored.
 
   - Examples:
-	
+
     - My Drive:
-	
+
       ```json
       "ALLOW_PATHS": [
       	"My Drive/Media/"
@@ -717,13 +717,13 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
       ```
 
     - Teamdrive:
-	
+
       ```json
       "ALLOW_PATHS": [
       	"shared_movies/Media/"
       ],
       ```
-				
+
 `TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
 
 _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token and authorize, while this set to `true`._
@@ -816,7 +816,7 @@ To set this up:
           ],
         },
         ```
-				
+
       - For example, if you store your files under a Google Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`), the server path mappings will look like this:
 
         ```json
@@ -827,7 +827,7 @@ To set this up:
           ],
         },
 	        ```
-					
+
    ii. Docker install
 
       - Format:
@@ -844,7 +844,7 @@ To set this up:
         _Note 1: The Google Drive path does not start with a forward slash (` / `). Paths in My Drive will start with just `My Drive/`. and paths in a Google Teamdrive will start with_ `teamdrive_name/`.
 
         _Note 2: Foreign users of Google Drive might not see `My Drive` listed on their Google Drive. They can try using the `My Drive/...` path or see what the log shows and match it up to that. One example is `Mon\u00A0Drive/` for French users._
-				
+
       - For example, if you store your files under Google Drive's My Drive Media folder (`My Drive/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
         ```json
@@ -855,7 +855,7 @@ To set this up:
           ]
         }
         ```
-				
+
       - For example, if you store your files under Google Drive's Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
         ```json
@@ -1026,9 +1026,8 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
 
 ***
 
+# Donate
+
 _If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
 
-## Support on Beerpay
-Hey dude! Help me out for a couple of :beers:!
-
-[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/badge.svg?style=beer-square)](https://beerpay.io/l3uddz/plex_autoscan)  [![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/make-wish.svg?style=flat-square)](https://beerpay.io/l3uddz/plex_autoscan?focus=wish)
+[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/badge.svg?style=beer-square)](https://beerpay.io/l3uddz/plex_autoscan)  
