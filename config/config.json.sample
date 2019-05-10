@@ -42,15 +42,20 @@
   "PLEX_TOKEN": "",
   "PLEX_USER": "plex",
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
-  "RCLONE_RC_CACHE_EXPIRE": {
-    "ENABLED": false,
-    "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-      "Media/": [
-          "/home/thompsons/plexdrive/Media/"
-      ]
-    },
-    "RC_URL": "http://localhost:5572"
-  },
+  "RCLONE": {
+        "RCLONE_RC_CACHE_EXPIRE": {
+        "ENABLED": false,
+        "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+          "Media/": [
+              "/home/thompsons/plexdrive/Media/"
+          ]
+        },
+        "RC_URL": "http://localhost:5572"
+      },
+        'BINARY': '/usr/bin/rclone',
+        'CONFIG': '/home/user/rclone.conf',
+        'CRYPT_MAPPING': {}
+  }
   "RUN_COMMAND_BEFORE_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
