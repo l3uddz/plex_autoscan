@@ -60,7 +60,7 @@ class Config(object):
                 'RC_URL': 'http://localhost:5572'
             },
             'BINARY': '/usr/bin/rclone',
-            'CRYPT_MAPPING': {}
+            'CRYPT_MAPPING': {},
             'CONFIG':''
         },
         'DOCKER_NAME': 'plex',
