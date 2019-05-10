@@ -122,8 +122,9 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     ]
   },
   "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
+	"PLEX_USER": "plex",
   "PLEX_TOKEN": "",
-  "PLEX_USER": "plex",
+	"PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE_RC_CACHE_EXPIRE": {
     "ENABLED": false,
@@ -210,6 +211,8 @@ Plex Media Server options.
 
 ```json
 "PLEX_USER": "plex",
+"PLEX_TOKEN": "abcdefghijkl",
+"PLEX_CHECK_BEFORE_SCAN": false,
 "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
 "PLEX_ANALYZE_TYPE": "basic",
 "PLEX_ANALYZE_DIRECTORY": true,
@@ -221,9 +224,21 @@ Plex Media Server options.
 
   - Docker Install: `"plex"` (user account within the container).
 
+`PLEX_TOKEN` - Plex Access Token. This is used for checking Plex's status, emptying trash, or analyzing media.
+
+  - Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/plex_autoscan/scripts/plex_token.sh`.
+
+	or
+
+  - Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
+
+`PLEX_CHECK_BEFORE_SCAN`: When set to `true`, check and wait for Plex to respond before processing a scan request. Default is `false`.
+
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` - When set to `true`, wait for other Plex Media Scanner processes to finish, before launching a new one.
 
-  - For hosts running a single Plex Docker instance, this can be left as `true`. For multiple Plex Docker instances on a host, set this as `false`.
+  - For hosts running a single Plex Docker instance, this can be left as `true`.
+
+	- For multiple Plex Docker instances on a host, set this as `false`.
 
 `PLEX_ANALYZE_TYPE` - How Plex will analyze the media files that are scanned. Options are `off`, `basic`, `deep`. `off` will disable analyzing. Default is `basic`.
 
@@ -377,7 +392,6 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 
 ```json
-"PLEX_TOKEN": "abcdefghijkl",
 "PLEX_LOCAL_URL": "http://localhost:32400",
 "PLEX_EMPTY_TRASH": true,
 "PLEX_EMPTY_TRASH_CONTROL_FILES": [
@@ -386,13 +400,6 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 "PLEX_EMPTY_TRASH_MAX_FILES": 100,
 "PLEX_EMPTY_TRASH_ZERO_DELETED": true,
 ```
-
-`PLEX_TOKEN` - Plex Access Token.
-
-  - Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/plex_autoscan/scripts/plex_token.sh`, or
-
-  - Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
-
 
 `PLEX_LOCAL_URL` - Local URL of the Plex Media Server.
 
