@@ -33,9 +33,9 @@
 
 # Introduction
 
-Plex Autoscan is a python script that assists in the importing of Sonarr, Radarr, and Lidarr dowloads into Plex Media Server.
+Plex Autoscan is a python script that assists in the importing of Sonarr, Radarr, and Lidarr downloads into Plex Media Server.
 
-It does this by creating a webserver to accept webhook requests from these apps, and in turn, sends a scan request to Plex. Plex will then only scan the parent folder (i.e. season folder for TV shows, movie folder for movies, and album folders for music) of the media file (versus scanning the entire library folder).
+It does this by creating a web server to accept webhook requests from these apps, and in turn, sends a scan request to Plex. Plex will then only scan the parent folder (i.e. season folder for TV shows, movie folder for movies, and album folders for music) of the media file (versus scanning the entire library folder).
 
 In addition to the above, Plex Autoscan can also monitor Google Drive for updates. When a new file is detected, it is checked against the Plex database and if this file is missing, a new scan request is sent to Plex (see section [below](README.md#google-drive-monitoring)).
 
@@ -61,7 +61,7 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `sudo python -m pip install -r requirements.txt`
 
-1. `python scan.py sections` - Run once to generate a default config.json file.
+1. `python scan.py sections` - Run once to generate a default `config.json` file.
 
 1. `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
 
@@ -177,13 +177,11 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 "USE_SUDO": true
 ```
 
-`USE_SUDO` - This option is typically used in conjunction with `PLEX_USER` (e.g. `sudo -u plex`).
+`USE_SUDO` - This option is typically used in conjunction with `PLEX_USER` (e.g. `sudo -u plex`). Default is `true`.
 
-  - If the user that runs your Plex Autoscan server is able to run the Plex Media Scanner CLI command without sudo, or is installed with the same user account (e.g. `plex`), you can you can set this to `false`.
+  - The user that runs Plex Autoscan needs to be able to sudo without a password, otherwise it cannot execute the `PLEX_SCANNER` command as `plex`. If the user cannot sudo without password, set this option to `false`.
 
-  - The user that runs plex_autoscan needs to beable to sudo, without a password otherwise, it cannot execute the PLEX_SCANNER as `plex`. This can be disabled by config option USE_SUDO.
-
- - Default is `true`.
+  - If the user that runs Plex Autoscan is able to run the `PLEX_SCANNER` command without sudo or is installed with the same user account (e.g. `plex`), you can you can set this to `false`.
 
 ## Docker
 
@@ -197,7 +195,7 @@ _Note: Docker examples used below are based on the image by [plexinc/pms-docker]
 "DOCKER_NAME": "plex",
 ```
 
-`USE_DOCKER` - Set to `true` when Plex is in a Docker container. Default is `false`.
+`USE_DOCKER` - Set this to `true` when Plex is in a Docker container. Default is `false`.
 
 `DOCKER_NAME` - Name of the Plex docker container. Default is `"plex"`.
 
@@ -312,6 +310,14 @@ Sample output:
 
 This tells Plex what library sections to map the media paths to when the Plex Scanner command is ran.
 
+
+By running the following command, you can fill in this section automatically:
+
+```shell
+python scan.py update_sections
+```
+
+
 Format:
 
 
@@ -340,7 +346,7 @@ Example:
 ```
 
 
-If you have a complex library setup, you will need to specfiy the child paths as well:
+If you have a complex library setup, you will need to specify the child paths as well:
 
 Example:
 
@@ -388,9 +394,9 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 `PLEX_EMPTY_TRASH_CONTROL_FILES` - Only empty trash when this file exists. Useful when media files, located elsewhere, is mounted on the Plex Server host. Can be left blank if not needed.
 
-`PLEX_EMPTY_TRASH_MAX_FILES` - The maximum amount of missing files to remove from Plex at one emptying trash request.  If there are more missing files than the number listed, the emptying trash request is aborted. This is particularly useful when externally mounted media temporarily dismounts and a ton of files go "missing" in Plex. Default is `100`.
+`PLEX_EMPTY_TRASH_MAX_FILES` - The maximum amount of missing files to remove from Plex at one emptying trash request. If there are more missing files than the number listed, the emptying trash request is aborted. This is particularly useful when externally mounted media temporarily dismounts and a ton of files go "missing" in Plex. Default is `100`.
 
-`PLEX_EMPTY_TRASH_ZERO_DELETED` - When set to `true`, will always empty the trash on the scanned section, even if there are 0 missing files. If `false`, trash will only be emptied when the database returns more than 0 deleted items. Default is `false`.
+`PLEX_EMPTY_TRASH_ZERO_DELETED` - When set to `true`, Plex Autoscan will always empty the trash on the scanned section, even if there are 0 missing files. If `false`, trash will only be emptied when the database returns more than 0 deleted items. Default is `false`.
 
 
 ## Plex Autoscan Server
@@ -606,7 +612,7 @@ The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any 
       curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (2016)/Shut In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86`
       ```
 
-`SERVER_IGNORE_LIST` - List of paths or filenames to ignore when a requests is sent to Plex Autoscan manually (see above). Case senstive.
+`SERVER_IGNORE_LIST` - List of paths or filenames to ignore when a requests is sent to Plex Autoscan manually (see above). Case sensitive.
 
   - For example, `curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Thumbs.db" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86` would be ignored if `Thumbs.db` was in the ignore list.
 
@@ -738,7 +744,7 @@ To set this up:
     Visit https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=&access_type=offline and authorize against the account you wish to use
     Enter authorization code:
     ```
-1. When access token retrieval is successfull, you'll see this:
+1. When access token retrieval is successful, you'll see this:
 
    ```
    2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
