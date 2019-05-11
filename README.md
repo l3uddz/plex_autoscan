@@ -118,7 +118,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   ],
   "PLEX_EMPTY_TRASH_MAX_FILES": 100,
   "PLEX_EMPTY_TRASH_ZERO_DELETED": false,
-  "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
+  "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
   "PLEX_LOCAL_URL": "http://localhost:32400",
   "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
   "PLEX_SECTION_PATH_MAPPINGS": {
@@ -257,7 +257,7 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 
 ```json
-"PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
+"PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
 
 "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
 
