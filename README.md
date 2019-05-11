@@ -119,7 +119,6 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_EMPTY_TRASH_MAX_FILES": 100,
   "PLEX_EMPTY_TRASH_ZERO_DELETED": false,
   "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
-  "PLEX_LOCAL_URL": "http://localhost:32400",
   "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
   "PLEX_SECTION_PATH_MAPPINGS": {
     "1": [
@@ -132,6 +131,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
   "PLEX_USER": "plex",
   "PLEX_TOKEN": "",
+  "PLEX_LOCAL_URL": "http://localhost:32400",
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE_RC_CACHE_EXPIRE": {
@@ -218,6 +218,7 @@ Plex Media Server options.
 ```json
 "PLEX_USER": "plex",
 "PLEX_TOKEN": "abcdefghijkl",
+"PLEX_LOCAL_URL": "http://localhost:32400",
 "PLEX_CHECK_BEFORE_SCAN": false,
 "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
 "PLEX_ANALYZE_TYPE": "basic",
@@ -238,7 +239,15 @@ Plex Media Server options.
 
   - Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
 
-`PLEX_CHECK_BEFORE_SCAN`: When set to `true`, check and wait for Plex to respond before processing a scan request. Default is `false`.
+`PLEX_LOCAL_URL` - URL of the Plex Media Server. Can be localhost or http/https address.
+
+  - Examples:
+
+    - `"http://localhost:32400"` (native install; docker with port 32400 exposed)
+
+    - `"https://plex.domain.com"` (custom domain with reverse proxy enabled)
+
+`PLEX_CHECK_BEFORE_SCAN` - When set to `true`, check and wait for Plex to respond before processing a scan request. Default is `false`.
 
 `PLEX_WAIT_FOR_EXTERNAL_SCANNERS` - When set to `true`, wait for other Plex Media Scanner processes to finish, before launching a new one.
 
@@ -289,7 +298,6 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
   - Native Install: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
 
   - Docker Install: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
-
 
 
 ### Plex Section IDs
@@ -386,7 +394,6 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
 
 ```json
-"PLEX_LOCAL_URL": "http://localhost:32400",
 "PLEX_EMPTY_TRASH": true,
 "PLEX_EMPTY_TRASH_CONTROL_FILES": [
   "/mnt/unionfs/mounted.bin"
@@ -394,12 +401,6 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 "PLEX_EMPTY_TRASH_MAX_FILES": 100,
 "PLEX_EMPTY_TRASH_ZERO_DELETED": true,
 ```
-
-`PLEX_LOCAL_URL` - Local URL of the Plex Media Server.
-
-  - Native Install: `"http://localhost:32400"`
-
-  - Docker Install: `"http://localhost:32400"` (open port)
 
 `PLEX_EMPTY_TRASH` - When set to `true`, empty trash of a section after a scan.
 
