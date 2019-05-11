@@ -419,6 +419,7 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
 "SERVER_PORT": 3468,
 "SERVER_SCAN_DELAY": 180,
+"SERVER_USE_SQLITE": true
 ```
 
 `SERVER_IP` -  Server IP that Plex Autoscan will listen on. Default is `0.0.0.0`.
@@ -437,6 +438,22 @@ To remedy this, a trash emptying command needs to be sent to Plex to get rid of 
 
   - This is useful, for example, when you want Plex Autoscan to wait for more episodes of the same TV show to come in before scanning the season folder, resulting in less work for Plex to do by not scanning the same folder multiple times. This works especially well with `SERVER_USE_SQLITE` enabled.
 
+`SERVER_USE_SQLITE` - Option to enable a database to store queue requests. Default is `true`.
+
+- The benefits to using this are:
+
+  1. Queue will be restored on Plex Autoscan restart, and
+
+  2. Multiple requests to the same folder can be merged into a single folder scan.
+
+- Example log:
+
+  ```
+  Already processing '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv' from same folder, aborting adding an extra scan request to the queue.
+  Scan request from Sonarr for '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv', sleeping for 180 seconds...
+  ```
+
+  The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan request will be delayed by another `180` seconds.
 
 ### Server - Path Mappings
 
@@ -559,23 +576,6 @@ You can leave this empty if it is not required:
 "SERVER_FILE_EXIST_PATH_MAPPINGS": {
 },
 ```
-
-### Scan Queue Database
-
-```json
-"SERVER_USE_SQLITE": true,
-```
-
-Plex Autoscan can use an optionally use a database to store queue requests. The benefits to using this are 1) Queue will be restored on Plex Autoscan restart, and 2) Multiple requests to the same folder can be merged into a single folder scan.
-
-This would look like:
-
-```
-Already processing '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv' from same folder, aborting adding an extra scan request to the queue.
-Scan request from Sonarr for '/data/TV/TV-Anime/Persona 5 the Animation/Season 1/Persona 5 the Animation - s01e01 - I am thou, thou art I.mkv', sleeping for 180 seconds...
-```
-
-The `180` seconds in the example above are from the `SERVER_SCAN_DELAY`, if any more requests come in during this time, the scan request will be delayed by another `180` seconds.
 
 ### Misc
 
