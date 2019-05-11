@@ -265,7 +265,7 @@ class Config(object):
             json.dump(cfg, fp, indent=2, sort_keys=True)
         if exitOnSave:
             logger.warn(
-                "Please configure/review config before running again: %r",
+                "Your config was updated! You may check the changes here: %r",
                 self.settings['config']
             )
 
