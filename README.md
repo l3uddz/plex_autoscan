@@ -268,9 +268,9 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 `PLEX_LD_LIBRARY_PATH`
 
-  - Native Install: `"/usr/lib/plexmediaserver"`
+  - Native Install: `"/usr/lib/plexmediaserver/lib"`
 
-  - Docker Install: `"/usr/lib/plexmediaserver"` (path within the container).
+  - Docker Install: `"/usr/lib/plexmediaserver/lib"` (path within the container).
 
 `PLEX_SCANNER` - Location of Plex Media Scanner binary.
 
