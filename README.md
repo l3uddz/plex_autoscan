@@ -2,7 +2,7 @@
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
-[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
+[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
 [![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
 [![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
 [![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
@@ -14,17 +14,17 @@
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configuration](#configuration)
-	- [Example](#example)
-	- [Basics](#basics)
-	- [Docker](#docker)
-	- [Plex Media Server](#plex-media-server)
-	- [Plex Autoscan Server](#plex-autoscan-server)
-	- [Google Drive Monitoring](#google-drive-monitoring)
-	- [Rclone Remote Control](#rclone-remote-control)
+  - [Example](#example)
+  - [Basics](#basics)
+  - [Docker](#docker)
+  - [Plex Media Server](#plex-media-server)
+  - [Plex Autoscan Server](#plex-autoscan-server)
+  - [Google Drive Monitoring](#google-drive-monitoring)
+  - [Rclone Remote Control](#rclone-remote-control)
 - [Setup](#setup)
-	- [Sonarr](#sonarr)
-	- [Radarr](#radarr)
-	- [Lidarr](#lidarr)
+  - [Sonarr](#sonarr)
+  - [Radarr](#radarr)
+  - [Lidarr](#lidarr)
 - [Donate](#donate)
 
 <!-- /TOC -->
@@ -84,23 +84,30 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 ```json
 {
   "DOCKER_NAME": "plex",
-  "GDRIVE": {
+  "GOOGLE": {
+    "ENABLED": false,
     "CLIENT_ID": "",
     "CLIENT_SECRET": "",
-    "ENABLED": false,
+    "ALLOWED": {
+      "FILE_PATHS": [],
+      "FILE_EXTENSIONS": true,
+      "FILE_EXTENSIONS_LIST": [
+        "webm","mkv","flv","vob","ogv","ogg","drc","gif",
+        "gifv","mng","avi","mov","qt","wmv","yuv","rm",
+        "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
+        "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
+        "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
+        "flac","ts"
+      ],
+      "MIME_TYPES": true,
+      "MIME_TYPES_LIST": [
+        "video"
+      ]
+    },
     "TEAMDRIVE": false,
+    "TEAMDRIVES": [],
     "POLL_INTERVAL": 60,
-    "IGNORE_PATHS": [],
-    "ALLOW_PATHS": [],
-    "SCAN_EXTENSIONS":[
-      "webm","mkv","flv","vob","ogv","ogg","drc","gif",
-      "gifv","mng","avi","mov","qt","wmv","yuv","rm",
-      "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
-      "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
-      "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
-      "flac","ts"
-    ],
-  "SHOW_CACHE_MESSAGES": false
+    "SHOW_CACHE_LOGS": false
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
@@ -123,9 +130,9 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     ]
   },
   "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
-	"PLEX_USER": "plex",
+  "PLEX_USER": "plex",
   "PLEX_TOKEN": "",
-	"PLEX_CHECK_BEFORE_SCAN": false,
+  "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE_RC_CACHE_EXPIRE": {
     "ENABLED": false,
@@ -227,7 +234,7 @@ Plex Media Server options.
 
   - Run the Plex Token script by [Werner Beroux](https://github.com/wernight): `/opt/plex_autoscan/scripts/plex_token.sh`.
 
-	or
+    or
 
   - Visit https://support.plex.tv/hc/en-us/articles/204059436-Finding-an-authentication-token-X-Plex-Token
 
@@ -237,7 +244,7 @@ Plex Media Server options.
 
   - For hosts running a single Plex Docker instance, this can be left as `true`.
 
-	- For multiple Plex Docker instances on a host, set this as `false`.
+  - For multiple Plex Docker instances on a host, set this as `false`.
 
 `PLEX_ANALYZE_TYPE` - How Plex will analyze the media files that are scanned. Options are `off`, `basic`, `deep`. `off` will disable analyzing. Default is `basic`.
 
@@ -318,6 +325,9 @@ By running the following command, you can fill in this section automatically:
 python scan.py update_sections
 ```
 
+The format is mentioned below for reference.
+
+***
 
 Format:
 
@@ -484,7 +494,7 @@ Example:
 If the filepath that was reported to Plex Autoscan by Radarr was `/home/seed/media/fused/Movies/Die Hard/Die Hard.mkv` then the path that would be scanned by Plex would be `/mnt/unionfs/Movies/Die Hard/Die Hard.mkv`.
 
 
-#### Multiple paths
+#### Multiple Paths
 
 You can also have more than one folder paths pointing to a single one.
 
@@ -640,23 +650,30 @@ Once a change is detected, the file will be checked against the Plex database to
 _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 ```json
-"GDRIVE": {
+"GOOGLE": {
+  "ENABLED": false,
   "CLIENT_ID": "",
   "CLIENT_SECRET": "",
-  "ENABLED": false,
+  "ALLOWED": {
+    "FILE_PATHS": [],
+    "FILE_EXTENSIONS": true,
+    "FILE_EXTENSIONS_LIST": [
+      "webm","mkv","flv","vob","ogv","ogg","drc","gif",
+      "gifv","mng","avi","mov","qt","wmv","yuv","rm",
+      "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
+      "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
+      "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
+      "flac","ts"
+    ],
+    "MIME_TYPES": true,
+    "MIME_TYPES_LIST": [
+      "video"
+    ]
+  },
   "TEAMDRIVE": false,
+  "TEAMDRIVES": [],
   "POLL_INTERVAL": 60,
-  "IGNORE_PATHS": [],
-  "ALLOW_PATHS": [],
-  "SCAN_EXTENSIONS":[
-    "webm","mkv","flv","vob","ogv","ogg","drc","gif",
-    "gifv","mng","avi","mov","qt","wmv","yuv","rm",
-    "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
-    "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
-    "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
-    "flac","ts"
-  ],
-  "SHOW_CACHE_MESSAGES": false
+  "SHOW_CACHE_LOGS": false
 },
 ```
 
@@ -666,60 +683,80 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 `CLIENT_SECRET` - Google Drive API Client Secret.
 
-`POLL_INTERVAL` - How often to check for Google Drive changes (in seconds).
+`ALLOWED` - Specify what paths, extensions, and mime types to whitelist.
 
-`SCAN_EXTENSIONS` - File files to be monitored via their file extensions.
+  - `FILE_PATHS` - What paths to monitor.
 
-`IGNORE_PATHS` - List of paths to ignore changes from; don't send scan requests for any changes that start with these file paths.
-
-
-- Examples:
-
-  - My Drive:
-
-    ```json
-    "IGNORE_PATHS": [
-    	"My Drive/Backups/",
-    	"My Drive/Crypt/",
-    	"My Drive/downloads/",
-    	"My Drive/home/"
-    ],
-    ```
-
-  - Teamdrive:
-
-    ```json
-    "IGNORE_PATHS": [
-    	"shared_movies/foreign/",
-    	"shared_movies/kids/"
-    ],
-    ```
-
-`ALLOW_PATHS` - List of paths to allow changes from. When this is filled in, `IGNORE_PATHS` field above is ignored.
-
-  - Examples:
-
-    - My Drive:
+    - Example ("My Drive" only):
 
       ```json
-      "ALLOW_PATHS": [
-      	"My Drive/Media/"
+      "FILE_PATHS": [
+        "My Drive/Media/Movies/",
+        "My Drive/Media/TV/"
+      ],
+      ```
+    - Example ("My Drive" with Teamdrives):
+
+      ```json
+      "FILE_PATHS": [
+        "My Drive/Media/Movies/",
+        "My Drive/Media/TV/",
+        "Shared_Movies/Movies/",
+        "Shared_Movies/4K_Movies/",
+        "Shared_TV/TV/"
+      ],
+      ```    
+
+  - `FILE_EXTENSIONS` - To filter files based on their file extensions. Default is `true`.
+
+  - `FILE_EXTENSIONS_LIST` - What file extensions to monitor. Requires `FILE_EXTENSIONS` to be enabled.
+
+    - Example:
+
+      ```json
+      "FILE_EXTENSIONS_LIST": [
+        "webm","mkv","flv","vob","ogv","ogg","drc","gif",
+        "gifv","mng","avi","mov","qt","wmv","yuv","rm",
+        "rmvb","asf","amv","mp4","m4p","m4v","mpg","mp2",
+        "mpeg","mpe","mpv","m2v","m4v","svi","3gp","3g2",
+        "mxf","roq","nsv","f4v","f4p","f4a","f4b","mp3",
+        "flac","ts"
       ],
       ```
 
-    - Teamdrive:
+  - `MIME_TYPES` - To filter files based on their mime types. Default is `true`.
+
+  - `MIME_TYPES_LIST` - What file extensions to monitor. Requires `MIME_TYPES` to be enabled.
+
+    - Example:
 
       ```json
-      "ALLOW_PATHS": [
-      	"shared_movies/Media/"
-      ],
+      "MIME_TYPES_LIST": [
+        "video"
+      ]
       ```
 
-`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives.
+`TEAMDRIVE` - Enable or Disable monitoring of changes inside Team Drives. Default is `false`.
 
-_Note: For the `TEAMDRIVE` setting to take effect, you must generate the token and authorize, while this set to `true`._
+- _Note: For the `TEAMDRIVE` setting to take effect, you set this to `true` and run the authorize command (see below)._
 
-`SHOW_CACHE_MESSAGES` - Show cache messages from Google Drive. Default is `false`.
+
+`TEAMDRIVES` - What Team Drives to monitor. Requires `TEAMDRIVE` to be enabled.
+
+- Example:
+
+  ```json
+  "TEAMDRIVES": [
+    "Shared_Movies",
+    "Shared_TV"
+  ],
+  ```
+
+- _Note: This is just a list of Teamdrives, not the specific paths within it._
+
+`POLL_INTERVAL` - How often (in seconds) to check for Google Drive changes.
+
+`SHOW_CACHE_LOGS` - Show cache messages from Google Drive. Default is `false`.
 
 ---
 
@@ -728,9 +765,9 @@ To set this up:
 1. Edit `config.json `file, to enable the Google Drive monitoring and fill in your Google Drive API Client ID and Secret.
 
     ```json
+    "ENABLED": true,
     "CLIENT_ID": "yourclientid",
     "CLIENT_SECRET": "yourclientsecret",
-    "ENABLED": true,
     ```
 
 1. Next, you will need to authorize Google Drive.
@@ -794,7 +831,7 @@ To set this up:
             "shared_movies/Media/Movies/"
           ],
         },
-	        ```
+        ```
 
    ii. Docker install
 
