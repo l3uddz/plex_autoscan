@@ -667,6 +667,15 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
   ],
   "SHOW_CACHE_MESSAGES": false
 },
+"RCLONE": {
+  "BINARY": "/usr/bin/rclone", 
+  "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+  "CRYPT_MAPPING": {
+    "My Drive/encrypt/": [
+      "gcrypt:"
+    ] 
+  } 
+},
 ```
 
 `ENABLED` - Enable or Disable Google Drive Monitoring. Requires one time authorization, see below.
@@ -730,6 +739,21 @@ _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token a
 
 `SHOW_CACHE_MESSAGES` - Show cache messages from Google Drive. Default is `false`.
 
+`BINARY` - Path to rclone binary if not in standard location.
+
+`CONFIG` - Path to rclone config file containing crypt remote configuration. Required for crypt decoder.
+
+`CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (My Drive/ or Team Drive/) to rclone mount name. These values enable Rclone crypt decoder.
+
+- Example:
+
+  ```json
+  "CRYPT_MAPPINGS": {
+    "My Drive/encrypt/": [
+      "gcrypt:"
+    ]
+  },
+  ```
 ---
 
 To set this up:
@@ -867,8 +891,37 @@ To set this up:
         }
         ```
 
-1. Google Drive Monitoring is now setup.
+1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 
+    i. Configure RCLONE values. Example below:
+				
+    ```json
+    "RCLONE": {
+      "BINARY": "/usr/bin/rclone", 
+      "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+      "CRYPT_MAPPING": {
+        "My Drive/encrypt/": [
+           "gcrypt:"
+        ] 
+      }
+    },
+    ```
+				
+    ii. Disable mime type checking in your config file. This is not currently supported with Rclone Crypt Decoding. Rclone crypt encodes file paths and encrypts files causing Google Drive to reports all files in a crypt as '"mimeType": "application/octet-stream"'.
+				
+    `"MIME_TYPES": false`
+
+    iii. Add in your rclone crypt paths on Google Drive into 'SERVER_PATH_MAPPINGS'. This will tell Plex Autoscan to map rclone crypt paths on Google Drive to their local counter part.				
+
+    ```json
+    "SERVER_PATH_MAPPINGS": {
+      "/home/seed/media/": [
+      "My Drive/encrypt/"
+      ]
+    },
+    ```
+				
+1. Google Drive Monitoring is now setup.
 ---
 
 
