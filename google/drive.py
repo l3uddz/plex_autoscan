@@ -582,10 +582,10 @@ class GoogleDrive:
 
                 # check if decoder is present
                 if self.cryptdecoder:
-                    decoded = self.cryptdecoder.decoded_path(item_paths[0])
+                    decoded = self.cryptdecoder.decode_path(item_paths[0])
                     if decoded:
                          item_paths = decoded
- 
+
                 # dont process folder events
                 if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
                     # ignore this change as we dont want to scan folders
