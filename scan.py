@@ -156,7 +156,8 @@ def process_google_changes(items_added):
             new_file_paths.append(file_path)
 
     # remove files that already exist in the plex database
-    removed_rejected_exists = utils.remove_files_exist_in_plex_database(new_file_paths,
+    removed_rejected_exists = utils.remove_files_exist_in_plex_database(conf.configs,
+                                                                        new_file_paths,
                                                                         conf.configs['PLEX_DATABASE_PATH'])
 
     if removed_rejected_exists:
@@ -185,12 +186,12 @@ def thread_google_monitor():
 
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPING'] != {}:
-        logger.info("Crypt mappings have been defined, initializing rclone decrypter")
-        decrypter = rclone.RcloneDecrypter(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPING'], conf.configs['RCLONE']['CONFIG'])
+        logger.info("Crypt mappings have been defined, initializing rclone crypt decoder")
+        cryptdecoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPING'], conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                 conf.settings['cachefile'], decrypter= decrypter if decrypter is not None else None,allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                 conf.settings['cachefile'], cryptdecoder= cryptdecoder if cryptdecoder is not None else None,allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'])
 
