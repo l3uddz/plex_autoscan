@@ -14,7 +14,7 @@ logger = logging.getLogger("GOOGLE")
 
 
 class GoogleDriveManager:
-    def __init__(self, client_id, client_secret, cache_path, decrypter=None,allowed_config=None, allowed_teamdrives=None,
+    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None,allowed_config=None, allowed_teamdrives=None,
                  show_cache_logs=True):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -22,9 +22,9 @@ class GoogleDriveManager:
         self.allowed_config = {} if not allowed_config else allowed_config
         self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
         self.show_cache_logs = show_cache_logs
-        self.decrypter = decrypter
+        self.cryptdecoder = cryptdecoder
         self.drives = OrderedDict({
-            'drive_root': GoogleDrive(client_id, client_secret, cache_path,decrypter=self.decrypter,allowed_config=self.allowed_config,
+            'drive_root': GoogleDrive(client_id, client_secret, cache_path,cryptdecoder=self.cryptdecoder,allowed_config=self.allowed_config,
                                       show_cache_logs=show_cache_logs)
         })
 
@@ -47,7 +47,7 @@ class GoogleDriveManager:
                 continue
 
             drive_name = "teamdrive_%s" % teamdrive_name
-            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, decrypter=self.decrypter,teamdrive_id=teamdrive_id,
+            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, cryptdecoder=self.cryptdecoder,teamdrive_id=teamdrive_id,
                                                   allowed_config=self.allowed_config,
                                                   show_cache_logs=self.show_cache_logs)
             logger.debug("Loaded TeamDrive GoogleDrive instance for: %s (id = %s)", teamdrive_name, teamdrive_id)
@@ -92,7 +92,7 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, client_id, client_secret, cache_path, decrypter=None,teamdrive_id=None, show_cache_logs=True,
+    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None,teamdrive_id=None, show_cache_logs=True,
                  allowed_config={}):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -106,7 +106,7 @@ class GoogleDrive:
         self.http = self._new_http_object()
         self.callbacks = {}
         self.teamdrive_id = teamdrive_id
-        self.decrypter = decrypter
+        self.cryptdecoder = cryptdecoder
         self.show_cache_logs = show_cache_logs
         self.allowed_config = allowed_config
 
@@ -579,7 +579,7 @@ class GoogleDrive:
                 success, item_paths = self.get_id_file_paths(change['fileId'],
                                                              change['file']['teamDriveId'] if 'teamDriveId' in change[
                                                                  'file'] else None)
-                print(item_paths)
+
                 # check if decrypter is present
                 if self.decrypter:
                     decrypted = self.decrypter.decrypt_path(item_paths[0])
