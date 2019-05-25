@@ -580,11 +580,11 @@ class GoogleDrive:
                                                              change['file']['teamDriveId'] if 'teamDriveId' in change[
                                                                  'file'] else None)
 
-                # check if decrypter is present
-                if self.decrypter:
-                    decrypted = self.decrypter.decrypt_path(item_paths[0])
-                    if decrypted:
-                         item_paths = decrypted
+                # check if decoder is present
+                if self.cryptdecoder:
+                    decoded = self.cryptdecoder.decoded_path(item_paths[0])
+                    if decoded:
+                         item_paths = decoded
  
                 # dont process folder events
                 if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
