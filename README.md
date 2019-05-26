@@ -125,6 +125,13 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_TOKEN": "",
   "PLEX_USER": "plex",
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
+  "RCLONE": {
+    "BINARY": "", 
+    "CONFIG": "", 
+    "CRYPT_MAPPING": {
+      "": [] 
+    } 
+  },
   "RCLONE_RC_CACHE_EXPIRE": {
     "ENABLED": false,
     "MOUNT_FOLDER": "/mnt/rclone",
