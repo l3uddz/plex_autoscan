@@ -48,7 +48,7 @@ def map_pushed_path_file_exists(config, path):
 
 
 def map_file_exists_path_for_rclone(config, path):
-    for mapped_path, mappings in config['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
+    for mapped_path, mappings in config['RCLONE']['RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
                 logger.debug("Mapping file check path '%s' to '%s' for rclone cache clear", mapping, mapped_path)
@@ -153,7 +153,7 @@ def get_priority(config, scan_path):
 
 def rclone_rc_clear_cache(config, scan_path):
     try:
-        rclone_rc_url = urljoin(config['RCLONE_RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
+        rclone_rc_url = urljoin(config['RCLONE']['RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
 
         cache_clear_path = map_file_exists_path_for_rclone(config, scan_path).lstrip(os.path.sep)
         logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
