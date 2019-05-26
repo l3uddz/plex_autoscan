@@ -130,14 +130,14 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "CONFIG": "", 
     "CRYPT_MAPPING": {
       "": [] 
-    } 
-  },
-  "RCLONE_RC_CACHE_EXPIRE": {
-    "ENABLED": false,
-    "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-      "": []
     }, 
-    "RC_URL": "http://localhost:5572"
+    "RC_CACHE_EXPIRE": {
+      "ENABLED": false,  
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+        "": [] 
+      }, 
+      "RC_URL": "http://localhost:5572"
+    } 
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "RUN_COMMAND_AFTER_SCAN": "",
@@ -939,25 +939,25 @@ To set this up:
 _Note: This if for users of Rclone mounts using the "cache" backend._
 
 
-When `RCLONE_RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache clear request for that file's parent folder, on the Rclone remote, until the file check succeeds.
+When `RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache clear request for that file's parent folder, on the Rclone remote, until the file check succeeds.
 
 For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mkv` doesn't exist locally, then a clear cache request will be sent to the remote for `A Good Movie (2000)` folder, on the Rclone remote. But if a file exist checks fails again, it will move to the parent folder and try to clear that (eg `Media`), and keep doing this until a file check exists comes back positive or checks count reaches `SERVER_MAX_FILE_CHECKS`.
 
 ```json
-"RCLONE_RC_CACHE_EXPIRE": {
-  "ENABLED": false,
-  "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-    "Media/": [
-      "/mnt/unionfs/Media/"
-    ]
-  },
-  "RC_URL": "http://localhost:5572"
+"RCLONE": {
+  "RC_CACHE_EXPIRE": {
+    "ENABLED": false,
+    "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+      "Media/": [
+        "/mnt/unionfs/Media/"
+      ]
+    },
+    "RC_URL": "http://localhost:5572"
+  }
 },
 ```
 
-`RCLONE_RC_CACHE_EXPIRE` - enable cache clearing.
-
-`MOUNT_FOLDER` - Path on the host where Rclone cache is mounted.
+`ENABLED` - enable or disable cache clearing.
 
 `FILE_EXISTS_TO_REMOTE_MAPPINGS` - maps local mount path to Rclone remote one. Used during file exists checks.
 
