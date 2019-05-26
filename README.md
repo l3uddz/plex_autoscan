@@ -134,7 +134,9 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   },
   "RCLONE_RC_CACHE_EXPIRE": {
     "ENABLED": false,
-    "MOUNT_FOLDER": "/mnt/rclone",
+    "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+      "": []
+    }, 
     "RC_URL": "http://localhost:5572"
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
