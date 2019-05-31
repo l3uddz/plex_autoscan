@@ -1,4 +1,4 @@
-<img src="assets/logo.svg" width="600">
+<img src="assets/logo.svg" width="600" alt="Plex Autoscan">
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
@@ -620,7 +620,7 @@ You can leave this empty if it is not required:
 
     - Initiate a scan via HTTP (e.g. curl):
 
-      ```shell
+      ```
       curl -d "eventType=Manual&filepath=/mnt/unionfs/Media/Movies/Shut In (2016)/Shut In (2016) - Bluray-1080p.x264.DTS-GECKOS.mkv" http://ipaddress:3468/0c1fa3c9867e48b1bb3aa055cb86`
       ```
 
@@ -1034,6 +1034,12 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
 
 # Donate
 
-_If you find this project helpful, feel free to make a small donation via [Monzo](https://monzo.me/jamesbayliss9) (Credit Cards, Apple Pay, Google Pay, and others; no fees), [Paypal](https://www.paypal.me/l3uddz) (l3uddz@gmail.com), and Bitcoin (3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL)._
+If you find this project helpful, feel free to make a small donation to the developer:
 
-[![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/badge.svg?style=beer-square)](https://beerpay.io/l3uddz/plex_autoscan)  
+  - [Monzo](https://monzo.me/jamesbayliss9): Credit Cards, Apple Pay, Google Pay
+
+  - [Beerpay](https://beerpay.io/l3uddz/traktarr): Credit Cards
+
+  - [Paypal: l3uddz@gmail.com](https://www.paypal.me/l3uddz)
+
+  - BTC: 3CiHME1HZQsNNcDL6BArG7PbZLa8zUUgjL
