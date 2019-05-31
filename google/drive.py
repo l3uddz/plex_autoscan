@@ -547,6 +547,7 @@ class GoogleDrive:
         unwanted_file_paths = []
         added_file_paths = {}
         ignored_file_paths = {}
+        renamed_file_paths = {}
         removes = 0
 
         if not data or 'changes' not in data:
@@ -615,6 +616,12 @@ class GoogleDrive:
                                     added_file_paths[change['fileId']].extend(item_paths)
                                 else:
                                     added_file_paths[change['fileId']] = item_paths
+
+                                if change['fileId'] in renamed_file_paths:
+                                    renamed_file_paths[change['fileId']].extend(item_paths)
+                                else:
+                                    renamed_file_paths[change['fileId']] = item_paths
+
                             else:
                                 logger.debug("Ignoring %r because the md5Checksum was the same as cache: %s", item_paths,
                                              existing_cache_item['md5Checksum'])
@@ -664,9 +671,10 @@ class GoogleDrive:
         logger.debug("Added: %s", added_file_paths)
         logger.debug("Unwanted: %s", unwanted_file_paths)
         logger.debug("Ignored: %s", ignored_file_paths)
+        logger.debug("Renamed: %s", renamed_file_paths)
 
-        logger.info('%d added / %d removed / %d unwanted / %d ignored', len(added_file_paths), removes,
-                    len(unwanted_file_paths), len(ignored_file_paths))
+        logger.info('%d added / %d removed / %d unwanted / %d ignored / %d renamed', len(added_file_paths), removes,
+                    len(unwanted_file_paths), len(ignored_file_paths), len(renamed_file_paths))
 
         # call further callbacks
         self._do_callback('items_added', added_file_paths)
