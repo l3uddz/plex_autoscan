@@ -191,7 +191,7 @@ def thread_google_monitor():
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                 conf.settings['cachefile'], cryptdecoder=cryptdecoder if cryptdecoder is not None else None,allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                 conf.settings['cachefile'], cryptdecoder, allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'])
 
