@@ -610,7 +610,8 @@ class GoogleDrive:
                             else:
                                 added_file_paths[change['fileId']] = item_paths
                         else:
-                            if change['file']['name'] != existing_cache_item['name']:
+                            if ('name' in change['file'] and 'name' in existing_cache_item) and \
+                                    change['file']['name'] != existing_cache_item['name']:
                                 logger.debug("md5Checksum matches but file was server-side renamed: %s", item_paths)
                                 if change['fileId'] in added_file_paths:
                                     added_file_paths[change['fileId']].extend(item_paths)
@@ -623,8 +624,8 @@ class GoogleDrive:
                                     renamed_file_paths[change['fileId']] = item_paths
 
                             else:
-                                logger.debug("Ignoring %r because the md5Checksum was the same as cache: %s", item_paths,
-                                             existing_cache_item['md5Checksum'])
+                                logger.debug("Ignoring %r because the md5Checksum was the same as cache: %s",
+                                             item_paths, existing_cache_item['md5Checksum'])
                                 if change['fileId'] in ignored_file_paths:
                                     ignored_file_paths[change['fileId']].extend(item_paths)
                                 else:
