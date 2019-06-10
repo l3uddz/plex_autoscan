@@ -655,8 +655,6 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note: Google Drive Monitoring is not compatible with encrypted files._
-
 ```json
 "GDRIVE": {
   "CLIENT_ID": "",
@@ -748,18 +746,27 @@ _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token a
 
 `SHOW_CACHE_MESSAGES` - Show cache messages from Google Drive. Default is `false`.
 
-`BINARY` - Path to rclone binary if not in standard location.
+`BINARY` - Path to Rclone binary if not in standard location.
 
-`CONFIG` - Path to rclone config file containing crypt remote configuration. Required for crypt decoder.
+`CONFIG` - Path to Rclone config file containing crypt remote configuration. Required for crypt decoder.
 
-`CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (My Drive/ or Team Drive/) to rclone mount name. These values enable Rclone crypt decoder.
+`CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (`My Drive/` or `Team Drive Name/`) to Rclone mount name. These values enable Rclone crypt decoder.
 
-- Example:
+- Example: Crypt folder on drive called encrypt mapped to Rclone crypt mount called grypt:
 
   ```json
   "CRYPT_MAPPINGS": {
     "My Drive/encrypt/": [
       "gcrypt:"
+    ]
+  },
+  ```
+  - Example: Crypt Teamdrive mapped to Rclone crypt mount called Shared_TV_crypt:
+
+  ```json
+  "CRYPT_MAPPINGS": {
+    "Shared_TV/": [
+      "Shared_TV_crypt:"
     ]
   },
   ```
@@ -902,7 +909,7 @@ To set this up:
 
 1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 
-    i. Configure RCLONE values. Example below:
+    i. Configure Rclone values. Example below:
 				
     ```json
     "RCLONE": {
@@ -920,7 +927,7 @@ To set this up:
 				
     `"MIME_TYPES": false`
 
-    iii. Add in your rclone crypt paths on Google Drive into 'SERVER_PATH_MAPPINGS'. This will tell Plex Autoscan to map rclone crypt paths on Google Drive to their local counter part.				
+    iii. Add in your Rclone crypt paths on Google Drive into 'SERVER_PATH_MAPPINGS'. This will tell Plex Autoscan to map Rclone crypt paths on Google Drive to their local counter part.				
 
     ```json
     "SERVER_PATH_MAPPINGS": {
