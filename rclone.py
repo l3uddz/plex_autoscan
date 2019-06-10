@@ -17,11 +17,11 @@ class RcloneDecoder:
     def decode_path(self, path):
         for crypt_dir, mapped_remotes in self._crypt_mappings.items():
             # Isolate root/file path and attempt to locate entry in mappings
-            logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
             file_path = path.replace(crypt_dir,'')
             logger.info("Encoded file Path identified as '{}'".format(file_path))
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
+                    logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
                     logger.info("Crypt base directory '{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
                     logger.debug("Raw query is '{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
                     try:
