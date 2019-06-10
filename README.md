@@ -8,7 +8,7 @@
 [![Beerpay](https://beerpay.io/l3uddz/plex_autoscan/make-wish.svg?style=flat)](https://beerpay.io/l3uddz/plex_autoscan)
 
 ---
-<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
+<!-- TOC depthFrom:1 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 test -->
 
 - [Introduction](#introduction)
 - [Requirements](#requirements)
