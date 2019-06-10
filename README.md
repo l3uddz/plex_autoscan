@@ -134,10 +134,19 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_LOCAL_URL": "http://localhost:32400",
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
-  "RCLONE_RC_CACHE_EXPIRE": {
-    "ENABLED": false,
-    "MOUNT_FOLDER": "/mnt/rclone",
-    "RC_URL": "http://localhost:5572"
+  "RCLONE": {
+    "BINARY": "", 
+    "CONFIG": "", 
+    "CRYPT_MAPPING": {
+      "": [] 
+    }, 
+    "RC_CACHE_EXPIRE": {
+      "ENABLED": false,  
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+        "": [] 
+      }, 
+      "RC_URL": "http://localhost:5572"
+    } 
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "RUN_COMMAND_AFTER_SCAN": "",
@@ -648,8 +657,6 @@ As mentioned earlier, Plex Autoscan can monitor Google Drive for changes. It doe
 
 Once a change is detected, the file will be checked against the Plex database to make sure this is not already there. If this match comes back negative, a scan request for the parent folder is added into the process queue, and if that parent folder is already in the process queue, the duplicate request will be ignored.
 
-_Note: Google Drive Monitoring is not compatible with encrypted files._
-
 ```json
 "GOOGLE": {
   "ENABLED": false,
@@ -675,6 +682,15 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
   "TEAMDRIVES": [],
   "POLL_INTERVAL": 60,
   "SHOW_CACHE_LOGS": false
+},
+"RCLONE": {
+  "BINARY": "/usr/bin/rclone", 
+  "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+  "CRYPT_MAPPING": {
+    "My Drive/encrypt/": [
+      "gcrypt:"
+    ] 
+  } 
 },
 ```
 
@@ -759,6 +775,30 @@ _Note: Google Drive Monitoring is not compatible with encrypted files._
 
 `SHOW_CACHE_LOGS` - Show cache messages from Google Drive. Default is `false`.
 
+`BINARY` - Path to Rclone binary if not in standard location.
+
+`CONFIG` - Path to Rclone config file containing crypt remote configuration. Required for crypt decoder.
+
+`CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (`My Drive/` or `Team Drive Name/`) to Rclone mount name. These values enable Rclone crypt decoder.
+
+- Example: Crypt folder on drive called `encrypt` mapped to Rclone crypt mount called `grypt:`.
+
+  ```json
+  "CRYPT_MAPPINGS": {
+    "My Drive/encrypt/": [
+      "gcrypt:"
+    ]
+  },
+  ```
+- Example: Crypt Teamdrive named `Shared_TV` mapped to Rclone crypt mount called `Shared_TV_crypt:`.
+
+  ```json
+  "CRYPT_MAPPINGS": {
+    "Shared_TV/": [
+      "Shared_TV_crypt:"
+    ]
+  },
+  ```
 ---
 
 To set this up:
@@ -873,8 +913,37 @@ To set this up:
         }
         ```
 
-1. Google Drive Monitoring is now setup.
+1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 
+    i. Configure Rclone values. Example below:
+				
+    ```json
+    "RCLONE": {
+      "BINARY": "/usr/bin/rclone", 
+      "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+      "CRYPT_MAPPING": {
+        "My Drive/encrypt/": [
+           "gcrypt:"
+        ] 
+      }
+    },
+    ```
+				
+    ii. Disable mime type checking in your config file. This is not currently supported with Rclone Crypt Decoding. Rclone crypt encodes file paths and encrypts files causing Google Drive to reports all files in a crypt as '"mimeType": "application/octet-stream"'.
+				
+    `"MIME_TYPES": false`
+
+    iii. Add in your Rclone crypt paths on Google Drive into 'SERVER_PATH_MAPPINGS'. This will tell Plex Autoscan to map Rclone crypt paths on Google Drive to their local counter part.				
+
+    ```json
+    "SERVER_PATH_MAPPINGS": {
+      "/home/seed/media/": [
+      "My Drive/encrypt/"
+      ]
+    },
+    ```
+				
+1. Google Drive Monitoring is now setup.
 ---
 
 
@@ -883,25 +952,25 @@ To set this up:
 _Note: This if for users of Rclone mounts using the "cache" backend._
 
 
-When `RCLONE_RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache clear request for that file's parent folder, on the Rclone remote, until the file check succeeds.
+When `RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache clear request for that file's parent folder, on the Rclone remote, until the file check succeeds.
 
 For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mkv` doesn't exist locally, then a clear cache request will be sent to the remote for `A Good Movie (2000)` folder, on the Rclone remote. But if a file exist checks fails again, it will move to the parent folder and try to clear that (eg `Media`), and keep doing this until a file check exists comes back positive or checks count reaches `SERVER_MAX_FILE_CHECKS`.
 
 ```json
-"RCLONE_RC_CACHE_EXPIRE": {
-  "ENABLED": false,
-  "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-    "Media/": [
-      "/mnt/unionfs/Media/"
-    ]
-  },
-  "RC_URL": "http://localhost:5572"
+"RCLONE": {
+  "RC_CACHE_EXPIRE": {
+    "ENABLED": false,
+    "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+      "Media/": [
+        "/mnt/unionfs/Media/"
+      ]
+    },
+    "RC_URL": "http://localhost:5572"
+  }
 },
 ```
 
-`RCLONE_RC_CACHE_EXPIRE` - enable cache clearing.
-
-`MOUNT_FOLDER` - Path on the host where Rclone cache is mounted.
+`ENABLED` - enable or disable cache clearing.
 
 `FILE_EXISTS_TO_REMOTE_MAPPINGS` - maps local mount path to Rclone remote one. Used during file exists checks.
 

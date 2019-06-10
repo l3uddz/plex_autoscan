@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -70,6 +71,7 @@ resleep_paths = []
 import db
 import plex
 import utils
+import rclone
 from google import GoogleDrive, GoogleDriveManager
 
 google = None
@@ -180,11 +182,17 @@ def thread_google_monitor():
     logger.info("Starting Google Drive changes monitor in 30 seconds...")
     time.sleep(30)
 
+    # load rclone client if crypt being used
+    if conf.configs['RCLONE']['CRYPT_MAPPING'] != {}:
+        logger.info("Crypt mappings have been defined, initializing rclone crypt decoder")
+        cryptdecoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPING'],
+                                            conf.configs['RCLONE']['CONFIG'])
+
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
-                                 allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'],
-                                 show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'])
+                                 show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
+                                 crypt_decoder=cryptdecoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
     if not manager.is_authorized():
         logger.error("Failed to validate Google Drive access token...")

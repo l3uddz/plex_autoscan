@@ -53,11 +53,15 @@ class Config(object):
         'SERVER_USE_SQLITE': False,
         'SERVER_SCAN_PRIORITIES': {},
         'SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION': False,
-        'RCLONE_RC_CACHE_EXPIRE': {
-            'ENABLED': False,
-            'FILE_EXISTS_TO_REMOTE_MAPPINGS': {
+        'RCLONE':{
+            'RC_CACHE_EXPIRE': {
+                'ENABLED': False,
+                'FILE_EXISTS_TO_REMOTE_MAPPINGS': {},
+                'RC_URL': 'http://localhost:5572'
             },
-            'RC_URL': 'http://localhost:5572'
+            'BINARY': '/usr/bin/rclone',
+            'CRYPT_MAPPING': {},
+            'CONFIG':''
         },
         'DOCKER_NAME': 'plex',
         'RUN_COMMAND_BEFORE_SCAN': '',
@@ -185,7 +189,7 @@ class Config(object):
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
 
         # add example rclone file exists to remote mappings
-        cfg['RCLONE_RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+        cfg['RCLONE']['RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
             'Media/': [
                 '/home/thompsons/plexdrive/Media/'
             ]
