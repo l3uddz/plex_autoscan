@@ -156,8 +156,7 @@ def process_google_changes(items_added):
             new_file_paths.append(file_path)
 
     # remove files that already exist in the plex database
-    removed_rejected_exists = utils.remove_files_exist_in_plex_database(conf.configs,
-                                                                        new_file_paths,
+    removed_rejected_exists = utils.remove_files_exist_in_plex_database(new_file_paths,
                                                                         conf.configs['PLEX_DATABASE_PATH'])
 
     if removed_rejected_exists:
