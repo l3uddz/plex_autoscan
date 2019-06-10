@@ -92,7 +92,7 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None,teamdrive_id=None, show_cache_logs=True,
+    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None, teamdrive_id=None, show_cache_logs=True,
                  allowed_config={}):
         self.client_id = client_id
         self.client_secret = client_secret
