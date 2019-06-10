@@ -752,7 +752,7 @@ _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token a
 
 `CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (`My Drive/` or `Team Drive Name/`) to Rclone mount name. These values enable Rclone crypt decoder.
 
-- Example: Crypt folder on drive called encrypt mapped to Rclone crypt mount called grypt:
+- Example: Crypt folder on drive called `encrypt` mapped to Rclone crypt mount called `grypt:`.
 
   ```json
   "CRYPT_MAPPINGS": {
@@ -761,7 +761,7 @@ _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token a
     ]
   },
   ```
-- Example: Crypt Teamdrive mapped to Rclone crypt mount called Shared_TV_crypt:
+- Example: Crypt Teamdrive named `Shared_TV` mapped to Rclone crypt mount called `Shared_TV_crypt:`.
 
   ```json
   "CRYPT_MAPPINGS": {
