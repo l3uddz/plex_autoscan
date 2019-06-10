@@ -14,7 +14,7 @@ logger = logging.getLogger("GOOGLE")
 
 
 class GoogleDriveManager:
-    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None,allowed_config=None, allowed_teamdrives=None,
+    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None, allowed_config=None, allowed_teamdrives=None,
                  show_cache_logs=True):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -24,7 +24,7 @@ class GoogleDriveManager:
         self.show_cache_logs = show_cache_logs
         self.cryptdecoder = cryptdecoder
         self.drives = OrderedDict({
-            'drive_root': GoogleDrive(client_id, client_secret, cache_path,cryptdecoder=self.cryptdecoder,allowed_config=self.allowed_config,
+            'drive_root': GoogleDrive(client_id, client_secret, cache_path, cryptdecoder=self.cryptdecoder, allowed_config=self.allowed_config,
                                       show_cache_logs=show_cache_logs)
         })
 
@@ -47,7 +47,7 @@ class GoogleDriveManager:
                 continue
 
             drive_name = "teamdrive_%s" % teamdrive_name
-            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, cryptdecoder=self.cryptdecoder,teamdrive_id=teamdrive_id,
+            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, cryptdecoder=self.cryptdecoder, teamdrive_id=teamdrive_id,
                                                   allowed_config=self.allowed_config,
                                                   show_cache_logs=self.show_cache_logs)
             logger.debug("Loaded TeamDrive GoogleDrive instance for: %s (id = %s)", teamdrive_name, teamdrive_id)
