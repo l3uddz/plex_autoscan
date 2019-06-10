@@ -14,18 +14,18 @@ logger = logging.getLogger("GOOGLE")
 
 
 class GoogleDriveManager:
-    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None, allowed_config=None, allowed_teamdrives=None,
-                 show_cache_logs=True):
+    def __init__(self, client_id, client_secret, cache_path, allowed_config=None, show_cache_logs=True,
+                 crypt_decoder=None, allowed_teamdrives=None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.cache_path = cache_path
         self.allowed_config = {} if not allowed_config else allowed_config
-        self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
         self.show_cache_logs = show_cache_logs
-        self.cryptdecoder = cryptdecoder
+        self.crypt_decoder = crypt_decoder
+        self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
         self.drives = OrderedDict({
-            'drive_root': GoogleDrive(client_id, client_secret, cache_path, cryptdecoder=self.cryptdecoder, allowed_config=self.allowed_config,
-                                      show_cache_logs=show_cache_logs)
+            'drive_root': GoogleDrive(client_id, client_secret, cache_path, crypt_decoder=self.crypt_decoder,
+                                      allowed_config=self.allowed_config, show_cache_logs=show_cache_logs)
         })
 
     def load_teamdrives(self):
@@ -47,9 +47,11 @@ class GoogleDriveManager:
                 continue
 
             drive_name = "teamdrive_%s" % teamdrive_name
-            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path, cryptdecoder=self.cryptdecoder, teamdrive_id=teamdrive_id,
+            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path,
                                                   allowed_config=self.allowed_config,
-                                                  show_cache_logs=self.show_cache_logs)
+                                                  show_cache_logs=self.show_cache_logs,
+                                                  crypt_decoder=self.crypt_decoder,
+                                                  teamdrive_id=teamdrive_id)
             logger.debug("Loaded TeamDrive GoogleDrive instance for: %s (id = %s)", teamdrive_name, teamdrive_id)
             loaded_teamdrives += 1
 
@@ -92,8 +94,8 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, client_id, client_secret, cache_path, cryptdecoder=None, teamdrive_id=None, show_cache_logs=True,
-                 allowed_config={}):
+    def __init__(self, client_id, client_secret, cache_path, allowed_config={}, show_cache_logs=True, crypt_decoder=None,
+                 teamdrive_id=None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.cache_path = cache_path
@@ -105,10 +107,10 @@ class GoogleDrive:
         self.token_refresh_lock = Lock()
         self.http = self._new_http_object()
         self.callbacks = {}
-        self.teamdrive_id = teamdrive_id
-        self.cryptdecoder = cryptdecoder
-        self.show_cache_logs = show_cache_logs
         self.allowed_config = allowed_config
+        self.show_cache_logs = show_cache_logs
+        self.crypt_decoder = crypt_decoder
+        self.teamdrive_id = teamdrive_id
 
     ############################################################
     # CORE CLASS METHODS
@@ -581,8 +583,8 @@ class GoogleDrive:
                                                                  'file'] else None)
 
                 # check if decoder is present
-                if self.cryptdecoder:
-                    decoded = self.cryptdecoder.decode_path(item_paths[0])
+                if self.crypt_decoder:
+                    decoded = self.crypt_decoder.decode_path(item_paths[0])
                     if decoded:
                          item_paths = decoded
 
