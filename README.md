@@ -761,7 +761,7 @@ _Note: For the `TEAMDRIVE` setting to take effect, you must generate the token a
     ]
   },
   ```
-  - Example: Crypt Teamdrive mapped to Rclone crypt mount called Shared_TV_crypt:
+- Example: Crypt Teamdrive mapped to Rclone crypt mount called Shared_TV_crypt:
 
   ```json
   "CRYPT_MAPPINGS": {
