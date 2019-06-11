@@ -231,7 +231,7 @@ def remove_files_exist_in_plex_database(config, file_paths, plex_db_path):
                             .fetchone()
                         if found_item and os.path.isfile(file_path):
                             # check if file sizes match in plex
-                            file_size = os.path.getsize(map_pushed_path(config, file_path))
+                            file_size = os.path.getsize(map_pushed_path_file_exists(config, file_path))
                             logger.debug("'%s' was found in the plex media_parts table", file_name)
                             logger.debug("Checking if file size '%s' matches file size '%s' in the plex database at '%s'", file_size, found_item[0], plex_db_path)
                             if file_size == found_item[0]:
