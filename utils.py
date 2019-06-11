@@ -216,8 +216,7 @@ def dump_json(file_path, obj, processing=True):
             json.dump(obj, fp)
     return
 
-
-def remove_files_exist_in_plex_database(file_paths, plex_db_path):
+def remove_files_exist_in_plex_database(config, file_paths, plex_db_path):
     removed_items = 0
     try:
         if plex_db_path and os.path.exists(plex_db_path):
@@ -228,12 +227,17 @@ def remove_files_exist_in_plex_database(file_paths, plex_db_path):
                         # check if file exists in plex
                         file_name = os.path.basename(file_path)
                         logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
-                        found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
+                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
                             .fetchone()
-                        if found_item:
+                        if found_item and os.path.isfile(file_path):
+                            # check if file sizes match in plex
+                            file_size = os.path.getsize(map_pushed_path(config, file_path))
                             logger.debug("'%s' was found in the plex media_parts table", file_name)
-                            file_paths.remove(file_path)
-                            removed_items += 1
+                            logger.debug("Checking if file size '%s' matches file size '%s' in the plex database at '%s'", file_size, found_item[0], plex_db_path)
+                            if file_size == found_item[0]:
+                                logger.debug("'%s' size matches size found in the plex media_parts table", file_size)
+                                file_paths.remove(file_path)
+                                removed_items += 1
 
     except Exception:
         logger.exception("Exception checking if %s exists in the plex database: ", file_paths)
