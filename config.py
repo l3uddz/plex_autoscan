@@ -27,7 +27,7 @@ class Config(object):
         'PLEX_SECTION_PATH_MAPPINGS': {},
         'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
         'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
-        'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver',
+        'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver/lib',
         'PLEX_DATABASE_PATH': '/var/lib/plexmediaserver/Library/Application Support/Plex Media Server'
                               '/Plug-in Support/Databases/com.plexapp.plugins.library.db',
         'PLEX_LOCAL_URL': 'http://localhost:32400',
@@ -269,7 +269,7 @@ class Config(object):
             json.dump(cfg, fp, indent=2, sort_keys=True)
         if exitOnSave:
             logger.warn(
-                "Please configure/review config before running again: %r",
+                "Your config was updated! You may check the changes here: %r",
                 self.settings['config']
             )
 
