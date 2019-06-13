@@ -181,6 +181,9 @@ def thread_google_monitor():
 
     logger.info("Starting Google Drive changes monitor in 30 seconds...")
     time.sleep(30)
+    
+    # initialize cryptdecoder to none
+    cryptdecoer = None
 
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPING'] != {}:
