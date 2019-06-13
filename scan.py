@@ -187,7 +187,7 @@ def thread_google_monitor():
 
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPING'] != {}:
-        logger.info("Crypt mappings have been defined, initializing Rclone Crypt Decoder")
+        logger.info("Crypt mappings have been defined, initializing Rclone Crypt Decoder...")
         cryptdecoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPING'],
                                             conf.configs['RCLONE']['CONFIG'])
 
