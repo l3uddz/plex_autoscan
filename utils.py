@@ -216,8 +216,7 @@ def dump_json(file_path, obj, processing=True):
             json.dump(obj, fp)
     return
 
-
-def remove_files_exist_in_plex_database(file_paths, plex_db_path):
+def remove_files_exist_in_plex_database(config, file_paths, plex_db_path):
     removed_items = 0
     try:
         if plex_db_path and os.path.exists(plex_db_path):
@@ -227,13 +226,20 @@ def remove_files_exist_in_plex_database(file_paths, plex_db_path):
                     for file_path in copy(file_paths):
                         # check if file exists in plex
                         file_name = os.path.basename(file_path)
-                        logger.debug("Checking if '%s' exists in the plex database at '%s'", file_name, plex_db_path)
-                        found_item = c.execute("SELECT * FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
+                        logger.debug("Checking to see if '%s' exists in the Plex DB located at '%s'", file_name, plex_db_path)
+                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
                             .fetchone()
-                        if found_item:
-                            logger.debug("'%s' was found in the plex media_parts table", file_name)
-                            file_paths.remove(file_path)
-                            removed_items += 1
+                        real_path = map_pushed_path(config, map_pushed_path_file_exists(config, file_path))
+                        if found_item and os.path.isfile(real_path):
+                            # check if file sizes match in plex
+                            file_size = os.path.getsize(real_path)
+                            logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)
+                            logger.debug("Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.", file_size, found_item[0])
+                            if file_size == found_item[0]:
+                                logger.debug("'%s' size matches size found in the Plex DB.", file_size)
+                                logger.debug("Removing path from scan queue: '%s'", file_path)
+                                file_paths.remove(file_path)
+                                removed_items += 1
 
     except Exception:
         logger.exception("Exception checking if %s exists in the plex database: ", file_paths)
