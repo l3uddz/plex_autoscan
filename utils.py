@@ -216,8 +216,9 @@ def dump_json(file_path, obj, processing=True):
             json.dump(obj, fp)
     return
 
-def remove_files_exist_in_plex_database(config, file_paths, plex_db_path):
+def remove_files_exist_in_plex_database(config, file_paths):
     removed_items = 0
+    plex_db_path = config['PLEX_DATABASE_PATH']
     try:
         if plex_db_path and os.path.exists(plex_db_path):
             with sqlite3.connect(plex_db_path) as conn:

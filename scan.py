@@ -157,8 +157,7 @@ def process_google_changes(items_added):
 
     # remove files that already exist in the plex database
     removed_rejected_exists = utils.remove_files_exist_in_plex_database(conf.configs,
-                                                                        new_file_paths,
-                                                                        conf.configs['PLEX_DATABASE_PATH'])
+                                                                        new_file_paths)
 
     if removed_rejected_exists:
         logger.info("Rejected %d file(s) from Google Drive changes for already being in Plex!",
