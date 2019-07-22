@@ -94,7 +94,8 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, client_id, client_secret, cache_path, allowed_config={}, show_cache_logs=True, crypt_decoder=None,
+    def __init__(self, client_id, client_secret, cache_path, allowed_config={}, show_cache_logs=True,
+                 crypt_decoder=None,
                  teamdrive_id=None):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -364,10 +365,16 @@ class GoogleDrive:
 
         return False, []
 
-    def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum):
+    def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum, file_paths=[]):
         if self.show_cache_logs and item_id not in self.cache:
             logger.info("Added '%s' to cache: %s", item_id, item_name)
-        self.cache[item_id] = {'name': item_name, 'parents': item_parents, 'md5Checksum': md5_checksum}
+
+        if not file_paths:
+            existing_item = self.cache[item_id] if item_id in self.cache else None
+            if existing_item is not None and 'paths' in existing_item:
+                file_paths = existing_item['paths']
+        self.cache[item_id] = {'name': item_name, 'parents': item_parents, 'md5Checksum': md5_checksum,
+                               'paths': file_paths}
         return
 
     def remove_item_from_cache(self, item_id):
@@ -552,6 +559,7 @@ class GoogleDrive:
         added_file_paths = {}
         ignored_file_paths = {}
         renamed_file_paths = {}
+        moved_file_paths = {}
         removes = 0
 
         if not data or 'changes' not in data:
@@ -582,12 +590,18 @@ class GoogleDrive:
                 success, item_paths = self.get_id_file_paths(change['fileId'],
                                                              change['file']['teamDriveId'] if 'teamDriveId' in change[
                                                                  'file'] else None)
+                if success:
+                    # save item paths
+                    self.add_item_to_cache(change['fileId'], change['file']['name'],
+                                           [] if 'parents' not in change['file'] else change['file']['parents'],
+                                           change['file']['md5Checksum'] if 'md5Checksum' in change['file'] else None,
+                                           item_paths)
 
                 # check if decoder is present
                 if self.crypt_decoder:
                     decoded = self.crypt_decoder.decode_path(item_paths[0])
                     if decoded:
-                         item_paths = decoded
+                        item_paths = decoded
 
                 # dont process folder events
                 if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
@@ -632,6 +646,20 @@ class GoogleDrive:
                                     renamed_file_paths[change['fileId']].extend(item_paths)
                                 else:
                                     renamed_file_paths[change['fileId']] = item_paths
+                            elif 'paths' in existing_cache_item and not self._list_matches(item_paths,
+                                                                                           existing_cache_item[
+                                                                                               'paths']):
+                                logger.debug("md5Checksum matches but file was server-side moved: %s", item_paths)
+
+                                if change['fileId'] in added_file_paths:
+                                    added_file_paths[change['fileId']].extend(item_paths)
+                                else:
+                                    added_file_paths[change['fileId']] = item_paths
+
+                                if change['fileId'] in renamed_file_paths:
+                                    moved_file_paths[change['fileId']].extend(item_paths)
+                                else:
+                                    moved_file_paths[change['fileId']] = item_paths
 
                             else:
                                 logger.debug("Ignoring %r because the md5Checksum was the same as cache: %s",
@@ -683,9 +711,11 @@ class GoogleDrive:
         logger.debug("Unwanted: %s", unwanted_file_paths)
         logger.debug("Ignored: %s", ignored_file_paths)
         logger.debug("Renamed: %s", renamed_file_paths)
+        logger.debug("Moved: %s", moved_file_paths)
 
-        logger.info('%d added / %d removed / %d unwanted / %d ignored / %d renamed', len(added_file_paths), removes,
-                    len(unwanted_file_paths), len(ignored_file_paths), len(renamed_file_paths))
+        logger.info('%d added / %d removed / %d unwanted / %d ignored / %d renamed / %d moved', len(added_file_paths),
+                    removes, len(unwanted_file_paths), len(ignored_file_paths), len(renamed_file_paths),
+                    len(moved_file_paths))
 
         # call further callbacks
         self._do_callback('items_added', added_file_paths)
@@ -698,3 +728,14 @@ class GoogleDrive:
         if callback_type in self.callbacks and callback_data:
             self.callbacks[callback_type](callback_data)
         return
+
+    @staticmethod
+    def _list_matches(list_master, list_check):
+        try:
+            for item in list_master:
+                if item not in list_check:
+                    return False
+            return True
+        except Exception:
+            logger.exception('Exception checking if lists match: ')
+        return False
