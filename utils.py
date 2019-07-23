@@ -227,13 +227,14 @@ def remove_files_exist_in_plex_database(config, file_paths):
                     for file_path in copy(file_paths):
                         # check if file exists in plex
                         file_name = os.path.basename(file_path)
-                        logger.debug("Checking to see if '%s' exists in the Plex DB located at '%s'", file_name, plex_db_path)
-                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?", ('%' + file_name,)) \
+                        file_path_plex = map_pushed_path(config, file_path)
+                        logger.debug("Checking to see if '%s' exists in the Plex DB located at '%s'", file_path_plex, plex_db_path)
+                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?", ('%' + file_path_plex,)) \
                             .fetchone()
-                        real_path = map_pushed_path(config, map_pushed_path_file_exists(config, file_path))
-                        if found_item and os.path.isfile(real_path):
+                        file_path_actual = map_pushed_path_file_exists(config, file_path_plex)
+                        if found_item and os.path.isfile(file_path_actual):
                             # check if file sizes match in plex
-                            file_size = os.path.getsize(real_path)
+                            file_size = os.path.getsize(file_path_actual)
                             logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)
                             logger.debug("Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.", file_size, found_item[0])
                             if file_size == found_item[0]:
