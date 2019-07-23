@@ -656,7 +656,7 @@ class GoogleDrive:
                                 else:
                                     added_file_paths[change['fileId']] = item_paths
 
-                                if change['fileId'] in renamed_file_paths:
+                                if change['fileId'] in moved_file_paths:
                                     moved_file_paths[change['fileId']].extend(item_paths)
                                 else:
                                     moved_file_paths[change['fileId']] = item_paths
