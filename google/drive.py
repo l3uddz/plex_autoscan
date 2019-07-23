@@ -606,7 +606,7 @@ class GoogleDrive:
                 # dont process folder events
                 if 'mimeType' in change['file'] and 'vnd.google-apps.folder' in change['file']['mimeType']:
                     # ignore this change as we dont want to scan folders
-                    logger.debug("Ignoring %r because its a folder", item_paths)
+                    logger.debug("Ignoring %r because it is a folder", item_paths)
                     if change['fileId'] in ignored_file_paths:
                         ignored_file_paths[change['fileId']].extend(item_paths)
                     else:
