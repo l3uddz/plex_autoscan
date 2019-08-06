@@ -153,7 +153,8 @@ def get_priority(config, scan_path):
 
 def rclone_rc_clear_cache(config, scan_path):
     try:
-        rclone_rc_url = urljoin(config['RCLONE']['RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
+        rclone_rc_expire_url = urljoin(config['RCLONE']['RC_CACHE_EXPIRE']['RC_URL'], 'cache/expire')
+        rclone_rc_refresh_url = urljoin(config['RCLONE']['RC_CACHE_EXPIRE']['RC_URL'], 'vfs/refresh')
 
         cache_clear_path = map_file_exists_path_for_rclone(config, scan_path).lstrip(os.path.sep)
         logger.debug("Top level cache_clear_path: '%s'", cache_clear_path)
@@ -172,11 +173,23 @@ def rclone_rc_clear_cache(config, scan_path):
             # send cache clear request
             logger.info("Sending rclone cache clear for: '%s'", cache_clear_path)
             try:
-                resp = requests.post(rclone_rc_url, json={'remote': cache_clear_path}, timeout=120)
+                # try cache clear
+                resp = requests.post(rclone_rc_expire_url, json={'remote': cache_clear_path}, timeout=120)
                 if '{' in resp.text and '}' in resp.text:
                     data = resp.json()
                     if 'error' in data:
-                        logger.info("Failed to clear rclone cache for '%s': %s", cache_clear_path, data['error'])
+                        # try to vfs/refresh as fallback
+                        resp = requests.post(rclone_rc_refresh_url, json={'dir': cache_clear_path}, timeout=120)
+                        if '{' in resp.text and '}' in resp.text:
+                            data = resp.json()
+                            if 'result' in data and cache_clear_path in data['result'] \
+                                    and data['result'][cache_clear_path] == 'OK':
+                                # successfully vfs refreshed
+                                logger.info("Successfully refreshed rclone vfs cache for '%s'", cache_clear_path)
+                                return True
+
+                        logger.info("Failed to clear rclone cache for '%s': %s", cache_clear_path,
+                                    data['error'])
                         continue
                     elif ('status' in data and 'message' in data) and data['status'] == 'ok':
                         logger.info("Successfully cleared rclone cache for '%s'", cache_clear_path)
@@ -184,11 +197,11 @@ def rclone_rc_clear_cache(config, scan_path):
 
                 # abort on unexpected response (no json response, no error/status & message in returned json
                 logger.error("Unexpected rclone cache clear response from %s while trying to clear '%s': %s",
-                             rclone_rc_url, cache_clear_path, resp.text)
+                             rclone_rc_expire_url, cache_clear_path, resp.text)
                 break
 
             except Exception:
-                logger.exception("Exception sending rclone cache clear to %s for '%s': ", rclone_rc_url,
+                logger.exception("Exception sending rclone cache clear to %s for '%s': ", rclone_rc_expire_url,
                                  cache_clear_path)
                 break
 
@@ -216,6 +229,7 @@ def dump_json(file_path, obj, processing=True):
             json.dump(obj, fp)
     return
 
+
 def remove_files_exist_in_plex_database(config, file_paths):
     removed_items = 0
     plex_db_path = config['PLEX_DATABASE_PATH']
@@ -228,15 +242,19 @@ def remove_files_exist_in_plex_database(config, file_paths):
                         # check if file exists in plex
                         file_name = os.path.basename(file_path)
                         file_path_plex = map_pushed_path(config, file_path)
-                        logger.debug("Checking to see if '%s' exists in the Plex DB located at '%s'", file_path_plex, plex_db_path)
-                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?", ('%' + file_path_plex,)) \
+                        logger.debug("Checking to see if '%s' exists in the Plex DB located at '%s'", file_path_plex,
+                                     plex_db_path)
+                        found_item = c.execute("SELECT size FROM media_parts WHERE file LIKE ?",
+                                               ('%' + file_path_plex,)) \
                             .fetchone()
                         file_path_actual = map_pushed_path_file_exists(config, file_path_plex)
                         if found_item and os.path.isfile(file_path_actual):
                             # check if file sizes match in plex
                             file_size = os.path.getsize(file_path_actual)
                             logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)
-                            logger.debug("Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.", file_size, found_item[0])
+                            logger.debug(
+                                "Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.",
+                                file_size, found_item[0])
                             if file_size == found_item[0]:
                                 logger.debug("'%s' size matches size found in the Plex DB.", file_size)
                                 logger.debug("Removing path from scan queue: '%s'", file_path)
