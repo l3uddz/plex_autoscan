@@ -135,18 +135,18 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE": {
-    "BINARY": "", 
-    "CONFIG": "", 
+    "BINARY": "",
+    "CONFIG": "",
     "CRYPT_MAPPING": {
-      "": [] 
-    }, 
+      "": []
+    },
     "RC_CACHE_EXPIRE": {
       "ENABLED": false,  
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-        "": [] 
-      }, 
+        "": []
+      },
       "RC_URL": "http://localhost:5572"
-    } 
+    }
   },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "RUN_COMMAND_AFTER_SCAN": "",
@@ -234,11 +234,15 @@ Plex Media Server options.
 "PLEX_ANALYZE_DIRECTORY": true,
 ```
 
-`PLEX_USER` - User account that Plex runs as.
+`PLEX_USER` - User account that Plex runs as. This only gets used when either `USE_SUDO` or `USE_DOCKER` is set to `true`.
 
-  - Native Install: `"plex"`
+  - Native Install: User account (on the host) that Plex runs as.
 
-  - Docker Install: `"plex"` (user account within the container).
+  - Docker Install: User account within the container.
+
+    - Depends on the Docker image being used. For example, [plexinc/pms-docker](https://github.com/plexinc/pms-docker) uses `"plex"`, whereas [linuxserver/plex](https://github.com/linuxserver/docker-plex) uses `"abc"`.
+
+  - Default is `"plex"`.
 
 `PLEX_TOKEN` - Plex Access Token. This is used for checking Plex's status, emptying trash, or analyzing media.
 
@@ -684,13 +688,13 @@ Once a change is detected, the file will be checked against the Plex database to
   "SHOW_CACHE_LOGS": false
 },
 "RCLONE": {
-  "BINARY": "/usr/bin/rclone", 
-  "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+  "BINARY": "/usr/bin/rclone",
+  "CONFIG": "/home/seed/.config/rclone/rclone.conf",
   "CRYPT_MAPPING": {
     "My Drive/encrypt/": [
       "gcrypt:"
-    ] 
-  } 
+    ]
+  }
 },
 ```
 
@@ -916,21 +920,21 @@ To set this up:
 1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 
     1. Configure Rclone values. Example below:
-        
+
         ```json
         "RCLONE": {
-          "BINARY": "/usr/bin/rclone", 
-          "CONFIG": "/home/seed/.config/rclone/rclone.conf", 
+          "BINARY": "/usr/bin/rclone",
+          "CONFIG": "/home/seed/.config/rclone/rclone.conf",
           "CRYPT_MAPPING": {
             "My Drive/encrypt/": [
                "gcrypt:"
-            ] 
+            ]
           }
         },
         ```
-        
+
     1. Disable mime type checking in your config file. This is not currently supported with Rclone Crypt Decoding. Rclone crypt encodes file paths and encrypts files causing Google Drive to reports all files in a crypt as '"mimeType": "application/octet-stream"'.
-        
+
         `"MIME_TYPES": false`
 
     1. Add in your Rclone crypt paths on Google Drive into 'SERVER_PATH_MAPPINGS'. This will tell Plex Autoscan to map Rclone crypt paths on Google Drive to their local counter part.				
@@ -942,7 +946,7 @@ To set this up:
             ]
           },
           ```
-				
+
 1. Google Drive Monitoring is now setup.
 ---
 
