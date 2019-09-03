@@ -205,14 +205,14 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 Docker specific options.
 
 
-_Note: Docker examples used below are based on the image by [plexinc/pms-docker](https://hub.docker.com/r/plexinc/pms-docker/), with `/config/` in the container path mapped to `/opt/plex/` on the host._
+_Note: Some of the Docker examples used below are based on the image by [plexinc/pms-docker](https://hub.docker.com/r/plexinc/pms-docker/), with `/config/` in the container path mapped to `/opt/plex/` on the host. Obvious differences are mentioned between PlexInc and LSIO images._
 
 ```json
 "USE_DOCKER": true,
 "DOCKER_NAME": "plex",
 ```
 
-`USE_DOCKER` - Set this to `true` when Plex is in a Docker container. Default is `false`.
+`USE_DOCKER` - Set to `true` when Plex is in a Docker container. Default is `false`.
 
 `DOCKER_NAME` - Name of the Plex docker container. Default is `"plex"`.
 
@@ -238,9 +238,11 @@ Plex Media Server options.
 
   - Native Install: User account (on the host) that Plex runs as.
 
-  - Docker Install: User account within the container.
+  - Docker Install: User account within the container. Depends on the Docker image being used.
 
-    - Depends on the Docker image being used. For example, [plexinc/pms-docker](https://github.com/plexinc/pms-docker) uses `"plex"`, whereas [linuxserver/plex](https://github.com/linuxserver/docker-plex) uses `"abc"`.
+    - [plexinc/pms-docker](https://github.com/plexinc/pms-docker): `"plex"`
+
+    - [linuxserver/plex](https://github.com/linuxserver/docker-plex): `"abc"`
 
   - Default is `"plex"`.
 
@@ -292,25 +294,38 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
   - Native Install: `"/usr/lib/plexmediaserver/lib"`
 
-  - Docker Install: `"/usr/lib/plexmediaserver/lib"` (path within the container).
+  - Docker Install: Path within the container. Depends on the Docker image being used.
+
+    - [plexinc/pms-docker](https://github.com/plexinc/pms-docker): `"/usr/lib/plexmediaserver/lib"`
+
+    - [linuxserver/plex](https://github.com/linuxserver/docker-plex): `"/usr/lib/plexmediaserver/lib"`
 
 `PLEX_SCANNER` - Location of Plex Media Scanner binary.
 
   - Native Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
 
-  - Docker Install: `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"` (path within the container).
+  - Docker Install: Path within the container. Depends on the Docker image being used.
+
+    - [plexinc/pms-docker](https://github.com/plexinc/pms-docker): `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
+
+    - [linuxserver/plex](https://github.com/linuxserver/docker-plex): `"/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner"`
+
 
 `PLEX_SUPPORT_DIR` - Location of Plex "Application Support" path.
 
   - Native Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"`
 
-  - Docker Install: `"/var/lib/plexmediaserver/Library/Application\\ Support"` (path within the container).
+  - Docker Install: Path within the container. Depends on the Docker image being used.
+
+    - [plexinc/pms-docker](https://github.com/plexinc/pms-docker): `"/var/lib/plexmediaserver/Library/Application\\ Support"`
+
+    - [linuxserver/plex](https://github.com/linuxserver/docker-plex): `"/config/Library/Application\\ Support"`
 
 `PLEX_DATABASE_PATH` - Location of Plex library database.
 
   - Native Install: `"/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"`
 
-  - Docker Install: `"/opt/plex/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"` (path on the host)
+  - Docker Install: If Plex Autoscan is running directly on the host, this will be the path on the host. If Plex Autoscan is running inside a Plex container (e.g. https://github.com/horjulf/docker-plex_autoscan), this will be a path within the container.
 
 
 ### Plex Section IDs
@@ -337,7 +352,7 @@ Sample output:
 
 ### Plex Section Mappings
 
-This tells Plex what library sections to map the media paths to when the Plex Scanner command is ran.
+Tells Plex what library sections to map the media paths to when the Plex Scanner command is ran.
 
 
 By running the following command, you can fill in this section automatically:
