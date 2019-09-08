@@ -25,7 +25,7 @@ def get_plex_section(config, path):
         for mapping in mappings:
             if mapping.lower() in path.lower():
                 return int(section)
-    logger.error("Unable to map '%s' to a section id....", path)
+    logger.error("Unable to map '%s' to a Section ID.", path)
     return -1
 
 
@@ -33,7 +33,7 @@ def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
-                logger.debug("Mapping '%s' to '%s'", mapping, mapped_path)
+                logger.debug("Mapping '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
@@ -42,7 +42,7 @@ def map_pushed_path_file_exists(config, path):
     for mapped_path, mappings in config['SERVER_FILE_EXIST_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
-                logger.debug("Mapping file check path '%s' to '%s'", mapping, mapped_path)
+                logger.debug("Mapping file check path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
@@ -51,7 +51,7 @@ def map_file_exists_path_for_rclone(config, path):
     for mapped_path, mappings in config['RCLONE']['RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
         for mapping in mappings:
             if mapping in path:
-                logger.debug("Mapping file check path '%s' to '%s' for rclone cache clear", mapping, mapped_path)
+                logger.debug("Mapping file check path '%s' to '%s' for Rclone dir cache clear request.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
@@ -143,9 +143,9 @@ def get_priority(config, scan_path):
         for priority, paths in config['SERVER_SCAN_PRIORITIES'].items():
             for path in paths:
                 if path.lower() in scan_path.lower():
-                    logger.debug("Using priority %d for path '%s'", int(priority), scan_path)
+                    logger.debug("Using priority '%d' for path '%s'", int(priority), scan_path)
                     return int(priority)
-        logger.debug("Using default priority 0 for path '%s'", scan_path)
+        logger.debug("Using default priority '0' for path '%s'", scan_path)
     except Exception:
         logger.exception("Exception determining priority to use for '%s': ", scan_path)
     return 0
@@ -164,14 +164,14 @@ def rclone_rc_clear_cache(config, scan_path):
             cache_clear_path = os.path.dirname(cache_clear_path)
             if cache_clear_path == last_clear_path or not len(cache_clear_path):
                 # is the last path we tried to clear, the same as this path, if so, abort
-                logger.error("Aborting rclone cache clear for '%s' due to directory level exhaustion, last level: '%s'",
+                logger.error("Aborting Rclone dir cache clear request for '%s' due to directory level exhaustion, last level: '%s'",
                              scan_path, last_clear_path)
                 return False
             else:
                 last_clear_path = cache_clear_path
 
-            # send cache clear request
-            logger.info("Sending rclone cache clear for: '%s'", cache_clear_path)
+            # send Rclone mount dir cache clear request
+            logger.info("Sending Rclone mount dir cache clear request for: '%s'", cache_clear_path)
             try:
                 # try cache clear
                 resp = requests.post(rclone_rc_expire_url, json={'remote': cache_clear_path}, timeout=120)
@@ -185,28 +185,28 @@ def rclone_rc_clear_cache(config, scan_path):
                             if 'result' in data and cache_clear_path in data['result'] \
                                     and data['result'][cache_clear_path] == 'OK':
                                 # successfully vfs refreshed
-                                logger.info("Successfully refreshed rclone vfs cache for '%s'", cache_clear_path)
+                                logger.info("Successfully refreshed Rclone VFS mount's dir cache for '%s'", cache_clear_path)
                                 return True
 
-                        logger.info("Failed to clear rclone cache for '%s': %s", cache_clear_path,
-                                    data['error'])
+                        logger.info("Failed to clear Rclone mount's dir cache for '%s': %s", cache_clear_path,
+                                    data['error'] if 'error' in data else data)
                         continue
                     elif ('status' in data and 'message' in data) and data['status'] == 'ok':
-                        logger.info("Successfully cleared rclone cache for '%s'", cache_clear_path)
+                        logger.info("Successfully cleared Rclone Cache mount's dir cache for '%s'", cache_clear_path)
                         return True
 
                 # abort on unexpected response (no json response, no error/status & message in returned json
-                logger.error("Unexpected rclone cache clear response from %s while trying to clear '%s': %s",
+                logger.error("Unexpected Rclone mount dir cache clear response from %s while trying to clear '%s': %s",
                              rclone_rc_expire_url, cache_clear_path, resp.text)
                 break
 
             except Exception:
-                logger.exception("Exception sending rclone cache clear to %s for '%s': ", rclone_rc_expire_url,
+                logger.exception("Exception sending Rclone mount dir cache clear request to %s for '%s': ", rclone_rc_expire_url,
                                  cache_clear_path)
                 break
 
     except Exception:
-        logger.exception("Exception clearing rclone directory cache for '%s': ", scan_path)
+        logger.exception("Exception clearing Rclone mount dir cache for '%s': ", scan_path)
     return False
 
 
@@ -262,7 +262,7 @@ def remove_files_exist_in_plex_database(config, file_paths):
                                 removed_items += 1
 
     except Exception:
-        logger.exception("Exception checking if %s exists in the plex database: ", file_paths)
+        logger.exception("Exception checking if %s exists in the Plex DB: ", file_paths)
     return removed_items
 
 
@@ -272,5 +272,5 @@ def allowed_scan_extension(file_path, extensions):
         if check_path.endswith(ext.lower()):
             logger.debug("'%s' had allowed extension: %s", file_path, ext)
             return True
-    logger.debug("'%s' did not have an allowed extension", file_path)
+    logger.debug("'%s' did not have an allowed extension.", file_path)
     return False

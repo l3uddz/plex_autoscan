@@ -111,6 +111,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
+  "PLEX_FIX_MISMATCHED": false,
   "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
   "PLEX_EMPTY_TRASH_CONTROL_FILES": [
@@ -232,6 +233,7 @@ Plex Media Server options.
 "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
 "PLEX_ANALYZE_TYPE": "basic",
 "PLEX_ANALYZE_DIRECTORY": true,
+"PLEX_FIX_MISMATCHED": false,
 ```
 
 `PLEX_USER` - User account that Plex runs as. This only gets used when either `USE_SUDO` or `USE_DOCKER` is set to `true`.
@@ -274,6 +276,13 @@ Plex Media Server options.
 
 `PLEX_ANALYZE_DIRECTORY` - When set to `true`, Plex will analyze all the media files in the parent folder (e.g. movie folder, season folder) vs just the newly added file. Default is `true`.
 
+`PLEX_FIX_MISMATCHED` - When set to `true`, Plex Autoscan will attempt to fix an incorrectly matched item in Plex.
+
+  - Plex Autoscan will compare the TVDBID/TMDBID/IMDBID sent by Sonarr/Radarr with what Plex has matched with, and if this match is incorrect, it will autocorrect the match on the item (movie file or TV episode). If the incorrect match is a duplicate entry in Plex, it will auto split the original entry before correcting the match on the new item.
+
+  - This only works when 1) requests come from Sonarr/Radarr, 2) season folders are being used, and 3) all movies and TV shows have their own unique paths.
+
+  - Default is `false`.
 
 ### Plex File Locations
 
@@ -1123,7 +1132,7 @@ Setup instructions to connect Sonarr/Radarr/Lidarr to Plex Autoscan.
 
 If you find this project helpful, feel free to make a small donation to the developer:
 
-  - [Monzo](https://monzo.me/jamesbayliss9): Credit Cards, Apple Pay, Google Pay
+  - [Monzo](https://monzo.me/today): Credit Cards, Apple Pay, Google Pay
 
   - [Beerpay](https://beerpay.io/l3uddz/traktarr): Credit Cards
 

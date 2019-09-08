@@ -27,6 +27,7 @@
   },
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
+  "PLEX_FIX_MISMATCHED": false,
   "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
   "PLEX_EMPTY_TRASH_CONTROL_FILES": [
@@ -51,19 +52,19 @@
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE": {
-    "BINARY": "", 
-    "CONFIG": "", 
+    "BINARY": "",
+    "CONFIG": "",
     "CRYPT_MAPPING": {
       "": []
-    }, 
+    },
     "RC_CACHE_EXPIRE": {
-      "ENABLED": false,  
+      "ENABLED": false,
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-        "": [] 
-      }, 
+        "": []
+      },
       "RC_URL": "http://localhost:5572"
-    } 
-  }, 
+    }
+  },
   "RUN_COMMAND_BEFORE_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {

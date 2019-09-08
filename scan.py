@@ -2,7 +2,6 @@
 import json
 import logging
 import os
-import subprocess
 import sys
 import time
 from logging.handlers import RotatingFileHandler
@@ -84,10 +83,10 @@ manager = None
 
 
 def queue_processor():
-    logger.info("Starting queue processor in 10 seconds")
+    logger.info("Starting queue processor in 10 seconds...")
     try:
         time.sleep(10)
-        logger.info("Queue processor started")
+        logger.info("Queue processor started.")
         db_scan_requests = db.get_all_items()
         items = 0
         for db_item in db_scan_requests:
@@ -96,9 +95,9 @@ def queue_processor():
                                           db_item['scan_type'], resleep_paths])
             items += 1
             time.sleep(2)
-        logger.info("Restored %d scan requests from database", items)
+        logger.info("Restored %d scan requests from database.", items)
     except Exception:
-        logger.exception("Exception while processing scan requests from database: ")
+        logger.exception("Exception while processing scan requests from database.")
     return
 
 
@@ -107,24 +106,27 @@ def queue_processor():
 ############################################################
 
 
-def start_scan(path, scan_for, scan_type):
+def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None, scan_lookup_id=None):
     section = utils.get_plex_section(conf.configs, path)
     if section <= 0:
         return False
     else:
-        logger.debug("Using section id: %d for '%s'", section, path)
+        logger.debug("Using Section ID '%d' for '%s'", section, path)
 
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
         if not db_exists and db.add_item(path, scan_for, section, scan_type):
-            logger.info("Added '%s' to database, proceeding with scan", path)
+            logger.info("Added '%s' to database.", path)
+            logger.info("Proceeding with scan...")
         else:
             logger.info(
-                "Already processing '%s' from same folder, aborting adding an extra scan request to the queue", db_file)
+                "Already processing '%s' from same folder. Skip adding extra scan request to the queue.", db_file)
             resleep_paths.append(db_file)
             return False
 
-    thread.start(plex.scan, args=[conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths])
+    thread.start(plex.scan,
+                 args=[conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths, scan_title,
+                       scan_lookup_type, scan_lookup_id])
     return True
 
 
@@ -160,7 +162,7 @@ def process_google_changes(items_added):
                                                                         new_file_paths)
 
     if removed_rejected_exists:
-        logger.info("Rejected %d file(s) from Google Drive changes for already being in Plex!",
+        logger.info("Rejected %d file(s) from Google Drive changes for already being in Plex.",
                     removed_rejected_exists)
 
     # process the file_paths list
@@ -179,7 +181,7 @@ def process_google_changes(items_added):
 def thread_google_monitor():
     global manager
 
-    logger.info("Starting Google Drive changes monitor in 30 seconds...")
+    logger.info("Starting Google Drive monitoring in 30 seconds...")
     time.sleep(30)
 
     # initialize cryptdecoder to none
@@ -187,7 +189,7 @@ def thread_google_monitor():
 
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPING'] != {}:
-        logger.info("Crypt mappings have been defined, initializing Rclone Crypt Decoder...")
+        logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
         cryptdecoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPING'],
                                             conf.configs['RCLONE']['CONFIG'])
 
@@ -198,21 +200,21 @@ def thread_google_monitor():
                                  crypt_decoder=cryptdecoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
     if not manager.is_authorized():
-        logger.error("Failed to validate Google Drive access token...")
+        logger.error("Failed to validate Google Drive Access Token.")
         exit(1)
     else:
-        logger.info("Google Drive access token was successfully validated")
+        logger.info("Google Drive access token was successfully validated.")
 
     # load teamdrives (if enabled)
     if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
-        logger.error("Failed to load teamdrives....?")
+        logger.error("Failed to load Google Teamdrives.")
         exit(1)
 
     # set callbacks
     manager.set_callbacks({'items_added': process_google_changes})
 
     try:
-        logger.info("Google Drive changes monitor started")
+        logger.info("Google Drive changes monitor started.")
         while True:
             # poll for changes
             manager.get_changes()
@@ -394,8 +396,29 @@ def client_pushed():
         logger.info("Client %r scan request for movie: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
+
+        # parse scan inputs
+        scan_title = None
+        scan_lookup_type = None
+        scan_lookup_id = None
+
+        if 'remoteMovie' in data:
+            if 'imdbId' in data['remoteMovie'] and data['remoteMovie']['imdbId']:
+                # prefer imdb
+                scan_lookup_id = data['remoteMovie']['imdbId']
+                scan_lookup_type = 'IMDB'
+            elif 'tmdbId' in data['remoteMovie'] and data['remoteMovie']['tmdbId']:
+                # fallback tmdb
+                scan_lookup_id = data['remoteMovie']['tmdbId']
+                scan_lookup_type = 'TheMovieDB'
+
+            scan_title = data['remoteMovie']['title'] if 'title' in data['remoteMovie'] and data['remoteMovie'][
+                'title'] else None
+
+        # start scan
         start_scan(final_path, 'Radarr',
-                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'], scan_title,
+                   scan_lookup_type, scan_lookup_id)
 
     elif 'series' in data and 'episodeFile' in data and 'eventType' in data:
         # sonarr download/upgrade webhook
@@ -403,8 +426,22 @@ def client_pushed():
         logger.info("Client %r scan request for series: '%s', event: '%s'", request.remote_addr, path,
                     "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
         final_path = utils.map_pushed_path(conf.configs, path)
+
+        # parse scan inputs
+        scan_title = None
+        scan_lookup_type = None
+        scan_lookup_id = None
+        if 'series' in data:
+            scan_lookup_id = data['series']['tvdbId'] if 'tvdbId' in data['series'] and data['series'][
+                'tvdbId'] else None
+            scan_lookup_type = 'TheTVDB' if scan_lookup_id is not None else None
+            scan_title = data['series']['title'] if 'title' in data['series'] and data['series'][
+                'title'] else None
+
+        # start scan
         start_scan(final_path, 'Sonarr',
-                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'], scan_title,
+                   scan_lookup_type, scan_lookup_id)
 
     elif 'artist' in data and 'trackFile' in data and 'eventType' in data:
         # lidarr download/upgrade webhook
@@ -435,14 +472,14 @@ if __name__ == "__main__":
  | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
  |_|                                                           
  
-#########################################################################
-# Author:   l3uddz                                                      #
-# URL:      https://github.com/l3uddz/plex_autoscan                     #
-# --                                                                    #
-# Part of the Cloudbox project: https://cloudbox.works                  #
-#########################################################################
-# GNU General Public License v3.0                                       #
-#########################################################################
+###########################################################
+# Author:   l3uddz                                        #
+# URL:      https://github.com/l3uddz/plex_autoscan       #
+# --                                                      #
+#  Part of the Cloudbox project: https://cloudbox.works   #
+###########################################################
+#            GNU General Public License v3.0              #
+###########################################################
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
@@ -452,7 +489,7 @@ if __name__ == "__main__":
         plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GOOGLE']['ENABLED']:
-            logger.error("You must enable the ENABLED setting in the GDRIVE config section...")
+            logger.error("You must enable the GOOGLE section in config.")
             exit(1)
         else:
             logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
@@ -462,7 +499,7 @@ if __name__ == "__main__":
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'])
 
             # Provide authorization link
-            logger.info("Visit the link below and paste the authorization code")
+            logger.info("Visit the link below and paste the authorization code: ")
             logger.info(google.get_auth_link())
             logger.info("Enter authorization code: ")
             auth_code = input()
@@ -471,10 +508,10 @@ if __name__ == "__main__":
             # Exchange authorization code
             token = google.exchange_code(auth_code)
             if not token or 'access_token' not in token:
-                logger.error("Failed exchanging authorization code for an access token....")
+                logger.error("Failed exchanging authorization code for an Access Token.")
                 sys.exit(1)
             else:
-                logger.info("Exchanged authorization code for an access token:\n\n%s\n", json.dumps(token, indent=2))
+                logger.info("Exchanged authorization code for an Access Token:\n\n%s\n", json.dumps(token, indent=2))
             sys.exit(0)
 
     elif conf.args['cmd'] == 'server':
@@ -500,20 +537,20 @@ if __name__ == "__main__":
                                      allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
         if not manager.is_authorized():
-            logger.error("Failed to validate Google Drive access token...")
+            logger.error("Failed to validate Google Drive Access Token.")
             exit(1)
         else:
-            logger.info("Google Drive access token was successfully validated")
+            logger.info("Google Drive Access Token was successfully validated.")
 
         # load teamdrives (if enabled)
         if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
-            logger.error("Failed to load teamdrives....?")
+            logger.error("Failed to load Google Teamdrives.")
             exit(1)
 
         # build cache
         manager.build_caches()
-        logger.info("Finished building all cache's!")
+        logger.info("Finished building all caches.")
         exit(0)
     else:
-        logger.error("Unknown command...")
+        logger.error("Unknown command.")
         exit(1)

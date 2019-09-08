@@ -421,7 +421,7 @@ class GoogleDrive:
         # do query
         while tries < max_tries:
             if self.token_refresh_lock.locked() and not lock_acquirer:
-                logger.debug("Token refresh lock is currently acquired... trying again in 500ms")
+                logger.debug("Token refresh lock is currently acquired. Trying again in 500ms...")
                 time.sleep(0.5)
                 continue
 

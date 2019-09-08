@@ -38,6 +38,7 @@ class Config(object):
         'PLEX_WAIT_FOR_EXTERNAL_SCANNERS': True,
         'PLEX_ANALYZE_TYPE': 'basic',
         'PLEX_ANALYZE_DIRECTORY': True,
+        'PLEX_FIX_MISMATCHED': False,
         'PLEX_TOKEN': '',
         'PLEX_CHECK_BEFORE_SCAN': False,
         'SERVER_IP': '0.0.0.0',
@@ -188,7 +189,7 @@ class Config(object):
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES'] = True
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
 
-        # add example rclone file exists to remote mappings
+        # add example Rclone file exists to remote mappings
         cfg['RCLONE']['RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
             'Media/': [
                 '/home/thompsons/plexdrive/Media/'
@@ -250,7 +251,7 @@ class Config(object):
 
     def load(self):
         if not os.path.exists(self.settings['config']):
-            logger.warn("No config file found, creating default config.")
+            logger.info("No config file found. Creating a default config...")
             self.save(self.default_config)
 
         cfg = {}
@@ -268,8 +269,8 @@ class Config(object):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=2, sort_keys=True)
         if exitOnSave:
-            logger.warn(
-                "Your config was updated! You may check the changes here: %r",
+            logger.info(
+                "Your config was with new fields. You may check the changes here: %r",
                 self.settings['config']
             )
 
