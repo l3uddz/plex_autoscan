@@ -162,7 +162,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                 logger.info("Plex is available for media scanning - (Server Account: '%s')", plex_account_user)
 
         # begin scan
-        logger.info("Running Plex Media Scanner for: %s", cmd_quote(scan_path))
+        logger.info("Running Plex Media Scanner for: %s", scan_path)
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
@@ -374,7 +374,7 @@ def analyze_item(config, scan_path):
 
     # begin analysis
     logger.debug("Starting %s analysis of 'metadata_item': %s",
-                'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
+                 'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
     logger.debug(final_cmd)
     utils.run_command(final_cmd.encode("utf-8"))
     logger.info("Finished %s analysis of 'metadata_item': %s",
@@ -394,8 +394,9 @@ def get_file_metadata_item_id(config, file_path):
                                      x + 1)
                         break
                     else:
-                        logger.error("Could not locate record in 'media_parts' where 'file' = '%s' in %d of 5 attempts...",
-                                     file_path, x + 1)
+                        logger.error(
+                            "Could not locate record in 'media_parts' where 'file' = '%s' in %d of 5 attempts...",
+                            file_path, x + 1)
                         time.sleep(10)
 
                 if not media_item_row:
@@ -500,11 +501,12 @@ def get_file_metadata_ids(config, file_path):
                     media_item_row = c.execute("SELECT * FROM media_parts WHERE file=?", (file_path,)).fetchone()
                     if media_item_row:
                         logger.debug("Found row in 'media_parts' where 'file' = '%s' after %d of 5 tries.", file_path,
-                                    x + 1)
+                                     x + 1)
                         break
                     else:
-                        logger.error("Could not locate record in 'media_parts' where 'file' = '%s' in %d of 5 attempts...",
-                                     file_path, x + 1)
+                        logger.error(
+                            "Could not locate record in 'media_parts' where 'file' = '%s' in %d of 5 attempts...",
+                            file_path, x + 1)
                         time.sleep(10)
 
                 if not media_item_row:
