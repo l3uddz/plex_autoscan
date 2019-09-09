@@ -52,15 +52,16 @@
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE": {
-    "BINARY": "",
-    "CONFIG": "",
-    "CRYPT_MAPPING": {
-      "": []
+    "BINARY": "/usr/bin/rclone",
+    "CONFIG": "/home/user/.config/rclone/rclone.conf",
+    "CRYPT_MAPPINGS": {
     },
-    "RC_CACHE_EXPIRE": {
+    "RC_CACHE_REFRESH": {
       "ENABLED": false,
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-        "": []
+      "Media/": [
+          "/mnt/rclone/Media/"
+      ]
       },
       "RC_URL": "http://localhost:5572"
     }
@@ -81,8 +82,8 @@
   "SERVER_MAX_FILE_CHECKS": 10,
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
-      "/mnt/unionfs": [
-          "/home/seed/media/fused"
+      "/mnt/unionfs/": [
+          "/home/user/media/fused/"
       ]
   },
   "SERVER_PORT": 3468,

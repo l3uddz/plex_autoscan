@@ -82,7 +82,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             scan_path_is_directory = os.path.isdir(check_path)
             time.sleep(config['SERVER_FILE_CHECK_DELAY'])
             # send Rclone cache clear if enabled
-            if config['RCLONE']['RC_CACHE_EXPIRE']['ENABLED']:
+            if config['RCLONE']['RC_CACHE_REFRESH']['ENABLED']:
                 utils.rclone_rc_clear_cache(config, check_path)
 
         elif checks >= config['SERVER_MAX_FILE_CHECKS']:
@@ -103,7 +103,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                         config['SERVER_FILE_CHECK_DELAY'])
             time.sleep(config['SERVER_FILE_CHECK_DELAY'])
             # send Rclone cache clear if enabled
-            if config['RCLONE']['RC_CACHE_EXPIRE']['ENABLED']:
+            if config['RCLONE']['RC_CACHE_REFRESH']['ENABLED']:
                 utils.rclone_rc_clear_cache(config, check_path)
 
     # build plex scanner command

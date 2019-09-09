@@ -138,13 +138,14 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "RCLONE": {
     "BINARY": "",
     "CONFIG": "",
-    "CRYPT_MAPPING": {
-      "": []
+    "CRYPT_MAPPINGS": {
     },
-    "RC_CACHE_EXPIRE": {
+    "RC_CACHE_REFRESH": {
       "ENABLED": false,  
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-        "": []
+        "Media/": [
+            "/mnt/rclone/Media/"
+        ]      
       },
       "RC_URL": "http://localhost:5572"
     }
@@ -714,7 +715,7 @@ Once a change is detected, the file will be checked against the Plex database to
 "RCLONE": {
   "BINARY": "/usr/bin/rclone",
   "CONFIG": "/home/seed/.config/rclone/rclone.conf",
-  "CRYPT_MAPPING": {
+  "CRYPT_MAPPINGS": {
     "My Drive/encrypt/": [
       "gcrypt:"
     ]
@@ -805,9 +806,9 @@ Once a change is detected, the file will be checked against the Plex database to
 
 `BINARY` - Path to Rclone binary if not in standard location.
 
-`CONFIG` - Path to Rclone config file containing crypt remote configuration. Required for crypt decoder.
+`CONFIG` - Path to Rclone config file containing Rclone Crypt remote configuration. Required for Rclone Crypt decoder.
 
-`CRYPT_MAPPING` - Mapping of path (root or subfolder) of Google Drive crypt (`My Drive/` or `Team Drive Name/`) to Rclone mount name. These values enable Rclone crypt decoder.
+`CRYPT_MAPPINGS` - Mapping of path (root or subfolder) of Google Drive crypt (`My Drive/` or `Team Drive Name/`) to Rclone mount name. These values enable Rclone crypt decoder.
 
 - Example: Crypt folder on drive called `encrypt` mapped to Rclone crypt mount called `grypt:`.
 
@@ -949,7 +950,7 @@ To set this up:
         "RCLONE": {
           "BINARY": "/usr/bin/rclone",
           "CONFIG": "/home/seed/.config/rclone/rclone.conf",
-          "CRYPT_MAPPING": {
+          "CRYPT_MAPPINGS": {
             "My Drive/encrypt/": [
                "gcrypt:"
             ]
@@ -979,13 +980,13 @@ To set this up:
 
 _Note: This if for Rclone mounts using the "cache" or "vfs" backends._
 
-When `RC_CACHE_EXPIRE` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache/expire or vfs/refresh requests, for that file's parent folder, until the file check succeeds.
+When `RC_CACHE_REFRESH` is enabled, if a file exist check fails (as set in `SERVER_FILE_EXIST_PATH_MAPPINGS`), Plex Autoscan will keep sending an Rclone cache/expire or vfs/refresh requests, for that file's parent folder, until the file check succeeds.
 
 For example, if the file `/mnt/unionfs/Media/A Good Movie (2000)/A Good Movie.mkv` doesn't exist locally, then a clear cache request will be sent to the remote for `A Good Movie (2000)` folder, on the Rclone remote. But if a file exist checks fails again, it will move to the parent folder and try to clear that (eg `Media`), and keep doing this until a file check exists comes back positive or checks count reaches `SERVER_MAX_FILE_CHECKS`.
 
 ```json
 "RCLONE": {
-  "RC_CACHE_EXPIRE": {
+  "RC_CACHE_REFRESH": {
     "ENABLED": false,
     "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
       "Media/": [

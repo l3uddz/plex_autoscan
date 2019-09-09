@@ -55,13 +55,13 @@ class Config(object):
         'SERVER_SCAN_PRIORITIES': {},
         'SERVER_SCAN_FOLDER_ON_FILE_EXISTS_EXHAUSTION': False,
         'RCLONE': {
-            'RC_CACHE_EXPIRE': {
+            'RC_CACHE_REFRESH': {
                 'ENABLED': False,
                 'FILE_EXISTS_TO_REMOTE_MAPPINGS': {},
                 'RC_URL': 'http://localhost:5572'
             },
             'BINARY': '/usr/bin/rclone',
-            'CRYPT_MAPPING': {},
+            'CRYPT_MAPPINGS': {},
             'CONFIG': ''
         },
         'DOCKER_NAME': 'plex',
@@ -156,13 +156,13 @@ class Config(object):
         # add example server path mappings
         cfg['SERVER_PATH_MAPPINGS'] = {
             '/mnt/unionfs/': [
-                '/home/seed/media/fused/'
+                '/home/user/media/fused/'
             ]
         }
 
         # add example file exist path mappings
         cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
-            '/home/thompsons/plexdrive/': [
+            '/home/user/rclone/': [
                 '/data/'
             ]
         }
@@ -190,9 +190,9 @@ class Config(object):
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
 
         # add example Rclone file exists to remote mappings
-        cfg['RCLONE']['RC_CACHE_EXPIRE']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+        cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
             'Media/': [
-                '/home/thompsons/plexdrive/Media/'
+                '/mnt/rclone/Media/'
             ]
         }
 
