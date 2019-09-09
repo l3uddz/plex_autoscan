@@ -443,14 +443,18 @@ def client_pushed():
                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'], scan_title,
                    scan_lookup_type, scan_lookup_id)
 
-    elif 'artist' in data and 'trackFile' in data and 'eventType' in data:
+    elif 'artist' in data and 'trackFiles' in data and 'eventType' in data:
         # lidarr download/upgrade webhook
-        path = os.path.join(data['artist']['path'], data['trackFile']['relativePath'])
-        logger.info("Client %r scan request for album track: '%s', event: '%s'", request.remote_addr, path,
-                    "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
-        final_path = utils.map_pushed_path(conf.configs, path)
-        start_scan(final_path, 'Lidarr',
-                   "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+        for track in data['trackFiles']:
+            if 'path' not in track and 'relativePath' not in track:
+                continue
+
+            path = track['path'] if 'path' in track else os.path.join(data['artist']['path'], track['relativePath'])
+            logger.info("Client %r scan request for album track: '%s', event: '%s'", request.remote_addr, path,
+                        "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
+            final_path = utils.map_pushed_path(conf.configs, path)
+            start_scan(final_path, 'Lidarr',
+                       "Upgrade" if ('isUpgrade' in data and data['isUpgrade']) else data['eventType'])
 
     else:
         logger.error("Unknown scan request from: %r", request.remote_addr)
