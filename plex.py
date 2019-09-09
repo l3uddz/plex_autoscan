@@ -162,7 +162,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                 logger.info("Plex is available for media scanning - (Server Account: '%s')", plex_account_user)
 
         # begin scan
-        logger.info("Running Plex Media Scanner...")
+        logger.info("Running Plex Media Scanner for: %s", cmd_quote(scan_path))
         logger.debug(final_cmd)
         utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
