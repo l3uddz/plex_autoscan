@@ -250,6 +250,7 @@ class Config(object):
         return upgraded_settings, upgraded
 
     def load(self):
+        logger.debug("Upgrading config...")
         if not os.path.exists(self.settings['config']):
             logger.info("No config file found. Creating a default config...")
             self.save(self.default_config)
@@ -262,7 +263,9 @@ class Config(object):
             if upgraded:
                 self.save(cfg)
                 exit(0)
-
+            else:
+                logger.debug("Config was not upgraded as there were no changes to add.")
+                
         self.configs = cfg
 
     def save(self, cfg, exitOnSave=True):
@@ -270,7 +273,7 @@ class Config(object):
             json.dump(cfg, fp, indent=2, sort_keys=True)
         if exitOnSave:
             logger.info(
-                "Your config was with new fields. You may check the changes here: %r",
+                "Your config was upgraded. You may check the changes here: %r",
                 self.settings['config']
             )
 
@@ -323,13 +326,14 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_sections'),
+                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_config', 'update_sections'),
                             help=(
                                 '"sections": prints plex sections\n'
                                 '"server": starts the application\n'
                                 '"authorize": authorize against a google account\n'
                                 '"build_caches": build complete google drive caches\n'
-                                '"update_sections": update section mappings in config\n'
+                                '"update_config": perform upgrade of config\n'
+                                '"update_sections": update section mappings in config'
                             )
                             )
 

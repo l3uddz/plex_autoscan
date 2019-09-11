@@ -487,7 +487,8 @@ if __name__ == "__main__":
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)
-
+        exit(0)
+    elif conf.args['cmd'] == 'update_config':
         exit(0)
     elif conf.args['cmd'] == 'update_sections':
         plex.updateSectionMappings(conf)
