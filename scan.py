@@ -452,7 +452,7 @@ if __name__ == "__main__":
         plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GOOGLE']['ENABLED']:
-            logger.error("You must enable the ENABLED setting in the GDRIVE config section...")
+            logger.error("You must enable the ENABLED setting in the GOOGLE config section...")
             exit(1)
         else:
             logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
