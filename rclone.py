@@ -23,9 +23,9 @@ class RcloneDecoder:
                 for mapped_remote in mapped_remotes:
                     logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
                     logger.info("Crypt base directory '{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
-                    logger.debug("Raw query is '{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
+                    logger.debug("Raw query is '{}'".format(" ".join([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path])))
                     try:
-                        decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).decode('utf-8').rstrip('\n')
+                        decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).decode('utf-8').git rstrip('\n')
                     except subprocess.CalledProcessError as e:
                         logger.error("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
                         return None
