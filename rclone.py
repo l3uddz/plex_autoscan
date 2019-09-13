@@ -22,10 +22,10 @@ class RcloneDecoder:
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
                     logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
-                    logger.info("Crypt base directory '{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
-                    logger.debug("Raw query is '{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
+                    logger.info("Crypt base directory '{}' has mapping defined in config as remote '{}'. Attempting to decode...".format(crypt_dir, mapped_remote))
+                    logger.debug("Raw query is '{}'".format(" ".join([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path])))
                     try:
-                        decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).rstrip('\n')
+                        decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).decode('utf-8').rstrip('\n')
                     except subprocess.CalledProcessError as e:
                         logger.error("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
                         return None
@@ -36,7 +36,7 @@ class RcloneDecoder:
                         logger.error("Failed to decode path '{}'".format(file_path))
                     else:
                         logger.info("Decoded path of '{}' is '{}'".format(file_path, decoded))
-                        return [os.path.join(crypt_dir, decoded.decode('utf-8'))]
+                        return [os.path.join(crypt_dir, decoded)]
             else:
                 logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from CRYPT_MAPPINGS", path, crypt_dir)
         return None
