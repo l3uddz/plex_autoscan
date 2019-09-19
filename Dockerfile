@@ -10,18 +10,18 @@ ENV PLEX_AUTOSCAN_LOGLEVEL INFO
 ENV PLEX_AUTOSCAN_QUEUEFILE /config/queue.db
 ENV PLEX_AUTOSCAN_CACHEFILE /config/cache.db
 
-# download plex_autoscan
-RUN git clone --depth 1 --single-branch --branch master https://github.com/l3uddz/plex_autoscan /opt/plex_autoscan && \
-    # install pip requirements
-    cd /opt/plex_autoscan && \
+ADD . /opt/plex_autoscan
+
+# install 
+RUN cd /opt/plex_autoscan && \
     python -m pip install --no-cache-dir -r requirements.txt && \
     # link the config directory to expose as a volume
     ln -s /opt/plex_autoscan/config /config
 
-ADD start-plex_autoscan.sh /
+ADD docker-utils/start-plex_autoscan.sh /
 RUN chmod +x /start-plex_autoscan.sh
 
-ADD healthcheck-plex_autoscan.sh /
+ADD docker-utils/healthcheck-plex_autoscan.sh /
 RUN chmod +x /healthcheck-plex_autoscan.sh
 
 # map /config to host defined config path (used to store configuration from app)
