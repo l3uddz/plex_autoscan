@@ -1134,6 +1134,8 @@ More complicated setups may require additional volume mappings and configuration
 
 Mounting the Docker API socket file is necessary for the plex_autoscan service to interact with Plex Docker containers.
 
+Please take your Docker volume mount paths into account when configuring your config.json and replace all user variables in the following command defined by <> with the correct values accordingly.
+
 ```
 docker run -d \
     -p 3468:3468 \
@@ -1146,7 +1148,87 @@ docker run -d \
     -e PGID=<gid for media group with access to your library> \
     sabrsorensen/alpine-plex_autoscan
 ```
-Please take your Docker volume mount paths into account when configuring your config.json and replace all user variables in the above command defined by <> with the correct values accordingly.
+
+docker-compose.yml for coexisting plex and plex_autoscan containers, note the matching /data volume mappings:
+```
+    plex:
+        image: plexinc/pms-docker:plexpass
+        container_name: plex
+        ...
+        volumes:
+            - /opt/plex/config:/config
+            - /opt/plex/transcode:/transcode
+            - /media/plex-union:/data
+        ...
+
+    plexautoscan:
+        image: sabrsorensen/alpine-plex_autoscan
+        container_name: plexautoscan
+        ...
+        environment:
+            - PGID=<plexGID>
+            - PUID=<plexautoscanUID>
+        ports:
+            - 3468:3468/tcp
+        volumes:
+            - /opt/plex_autoscan:/config
+            - /opt/plex/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases/:/plexDb
+            - /media/plex-union:/data
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /etc/localtime:/etc/localtime:ro
+        ...
+
+    sonarr:
+        ...
+        volumes:
+            - /media/plex-union/tv_shows:/data/tv_shows
+        ...
+```
+
+and the associated config.json entries to match:
+
+```
+  "DOCKER_NAME": "plex", # needs to match your Plex container name
+  ...
+  "PLEX_DATABASE_PATH": "/plexDb/com.plexapp.plugins.library.db",
+  ...
+  "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib", # path from within the Plex container
+  ...
+  "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner", # path from within the Plex container
+  ...
+  "PLEX_SECTION_PATH_MAPPINGS": {
+    "1": [
+      "/data/tv_shows/" # Map the path from an incoming scan request to the corresponding Plex library
+    ]
+  }, 
+  ...
+  "PLEX_SUPPORT_DIR": "/config/Plex Media Server/", # path from within the Plex container
+  ...
+  "SERVER_FILE_EXIST_PATH_MAPPINGS": {
+    "/data/": [ # path from within plex_autoscan container
+      "/data/" # path from within Plex container
+    ]
+  }, 
+  ...
+  "SERVER_PATH_MAPPINGS": {
+    "/data/tv_shows/": [ # path from within plex_autoscan container
+      "/data/tv_shows/", # path from within Sonarr container
+      "My Drive/media/tv_shows/" # path on Google Drive
+    ]
+  }, 
+  ...
+  "SERVER_PORT": 3468, # needs to match the port exposed in the plex_autoscan container
+  ...
+  "SERVER_SCAN_PRIORITIES": {
+    "0": [
+      "/data/tv_shows/" # path from within the Plex container
+    ]
+  },
+  ...
+  "USE_DOCKER": true,
+  "USE_SUDO": false
+```
+
 
 If you wish to use the Google Drive change monitoring, you'll need to run the token authorization workflow with the following docker exec command, replacing `<containerName>` with your plex_autoscan container's name:
 
