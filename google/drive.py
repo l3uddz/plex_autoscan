@@ -509,7 +509,7 @@ class GoogleDrive:
                         allowed_path = True
                         break
                 if not allowed_path:
-                    logger.debug("Ignoring %r because its not an allowed path", item_path)
+                    logger.debug("Ignoring %r because its not an allowed path.", item_path)
                     removed_file_paths.append(item_path)
                     paths_list.remove(item_path)
                     continue
@@ -524,7 +524,7 @@ class GoogleDrive:
                         allowed_file = True
                         break
                 if not allowed_file:
-                    logger.debug("Ignoring %r because it was not an allowed extension", item_path)
+                    logger.debug("Ignoring %r because it was not an allowed extension.", item_path)
                     removed_file_paths.append(item_path)
                     paths_list.remove(item_path)
 
