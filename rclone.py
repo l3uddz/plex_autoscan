@@ -9,7 +9,7 @@ class RcloneDecoder:
         self._binary = binary
         if self._binary == "" or not os.path.isfile(binary):
              self._binary = os.path.normpath(subprocess.check_output(["which", "rclone"]).decode().rstrip('\n'))
-             logger.info("Rclone binary path located as '{}'".format(binary))
+             logger.info("Rclone binary path located as: '%s'", binary)
 
         self._config = config
         self._crypt_mappings = crypt_mappings
@@ -21,21 +21,21 @@ class RcloneDecoder:
             logger.info("Encoded file path identified as: '%s'", file_path)
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
-                    logger.info("Crypt base directory identified as u'{}'".format(crypt_dir))
-                    logger.info("Crypt base directory u'{}' has mapping defined in config as remote '{}'. Attempting to decode...".format(crypt_dir, mapped_remote))
-                    logger.debug("Raw query is u'{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
+                    logger.info("Crypt base directory identified as: '%s'", crypt_dir)
+                    logger.info("Crypt base directory '%s' has mapping defined in config as remote '%s'. Attempting to decode...", crypt_dir, mapped_remote)
+                    logger.debug("Raw query is: '%s'", " ".join([self._binary, "cryptdecode", mapped_remote, file_path]))
                     try:
                         decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).rstrip('\n')
                     except subprocess.CalledProcessError as e:
-                        logger.error("command u'{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+                        logger.error("command '%s' return with error (code %s): %s", e.cmd, e.returncode, e.output)
                         return None
 
                     decoded = decoded.split(' ',1)[1].lstrip()
 
                     if "failed" in decoded.lower():
-                        logger.error("Failed to decode path u'{}'".format(file_path))
+                        logger.error("Failed to decode path: '%s'", file_path)
                     else:
-                        logger.info("Decoded path of u'{}' is u'{}'".format(file_path, decoded))
+                        logger.info("Decoded path of '%s' is: '%s'", file_path, decoded)
                         return [os.path.join(crypt_dir, decoded.decode('utf-8'))]
             else:
                 logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from CRYPT_MAPPINGS", path, crypt_dir)
