@@ -18,7 +18,7 @@ class RcloneDecoder:
         for crypt_dir, mapped_remotes in self._crypt_mappings.items():
             # Isolate root/file path and attempt to locate entry in mappings
             file_path = path.replace(crypt_dir,'')
-            logger.info("Encoded file Path identified as '{}'".format(file_path).decode('utf-8'))
+            logger.info("Encoded file Path identified as '{}'".format(file_path.decode('utf-8')))
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
                     logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
