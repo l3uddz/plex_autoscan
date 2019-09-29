@@ -35,7 +35,7 @@ class RcloneDecoder:
                     if "failed" in decoded.lower():
                         logger.error("Failed to decode path: '%s'", file_path)
                     else:
-                        logger.info("Decoded path of '%s' is: '%s'", file_path, decoded)
+                        logger.info("Decoded path of '%s' is: '%s'", file_path, os.path.join(crypt_dir, decoded.decode('utf-8')))
                         return [os.path.join(crypt_dir, decoded.decode('utf-8'))]
             else:
                 logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from 'CRYPT_MAPPINGS'.", path, crypt_dir)
