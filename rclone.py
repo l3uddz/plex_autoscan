@@ -27,7 +27,7 @@ class RcloneDecoder:
                     try:
                         decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).rstrip('\n')
                     except subprocess.CalledProcessError as e:
-                        logger.error("command '%s' return with error (code %s): %s", e.cmd, e.returncode, e.output)
+                        logger.error("Command '%s' returned with error (code %s): %s", e.cmd, e.returncode, e.output)
                         return None
 
                     decoded = decoded.split(' ',1)[1].lstrip()
