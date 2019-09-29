@@ -22,7 +22,7 @@ class RcloneDecoder:
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
                     logger.info("Crypt base directory identified as u'{}'".format(crypt_dir))
-                    logger.info("Crypt base directory u'{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
+                    logger.info("Crypt base directory u'{}' has mapping defined in config as remote '{}'. Attempting to decode...".format(crypt_dir, mapped_remote))
                     logger.debug("Raw query is u'{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
                     try:
                         decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).rstrip('\n')
