@@ -18,24 +18,24 @@ class RcloneDecoder:
         for crypt_dir, mapped_remotes in self._crypt_mappings.items():
             # Isolate root/file path and attempt to locate entry in mappings
             file_path = path.replace(crypt_dir,'')
-            logger.info("Encoded file path identified as '{}'".format(file_path.decode('utf-8')))
+            logger.info("Encoded file path identified as u'{}'".format(file_path))
             if path.lower().startswith(crypt_dir.lower()):
                 for mapped_remote in mapped_remotes:
-                    logger.info("Crypt base directory identified as '{}'".format(crypt_dir))
-                    logger.info("Crypt base directory '{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
-                    logger.debug("Raw query is '{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
+                    logger.info("Crypt base directory identified as u'{}'".format(crypt_dir))
+                    logger.info("Crypt base directory u'{}' has mapping defined in config as remote '{}'. Attempting to decode".format(crypt_dir, mapped_remote))
+                    logger.debug("Raw query is u'{}'".format(" ".join([self._binary, "cryptdecode", mapped_remote, file_path])))
                     try:
                         decoded = subprocess.check_output([self._binary, "--config", self._config, "cryptdecode", mapped_remote, file_path], stderr=subprocess.STDOUT).rstrip('\n')
                     except subprocess.CalledProcessError as e:
-                        logger.error("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+                        logger.error("command u'{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
                         return None
 
                     decoded = decoded.split(' ',1)[1].lstrip()
 
                     if "failed" in decoded.lower():
-                        logger.error("Failed to decode path '{}'".format(file_path))
+                        logger.error("Failed to decode path u'{}'".format(file_path))
                     else:
-                        logger.info("Decoded path of '{}' is '{}'".format(file_path, decoded))
+                        logger.info("Decoded path of u'{}' is u'{}'".format(file_path, decoded))
                         return [os.path.join(crypt_dir, decoded.decode('utf-8'))]
             else:
                 logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from CRYPT_MAPPINGS", path, crypt_dir)
