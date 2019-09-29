@@ -38,5 +38,5 @@ class RcloneDecoder:
                         logger.info("Decoded path of '%s' is: '%s'", file_path, decoded)
                         return [os.path.join(crypt_dir, decoded.decode('utf-8'))]
             else:
-                logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from CRYPT_MAPPINGS", path, crypt_dir)
+                logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from 'CRYPT_MAPPINGS'.", path, crypt_dir)
         return None
