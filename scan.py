@@ -47,7 +47,7 @@ conf = config.Config()
 # File logger
 fileHandler = RotatingFileHandler(
     conf.settings['logfile'],
-    maxBytes=1024 * 1024 * 5,
+    maxBytes=1024 * 1024 * 2,
     backupCount=5,
     encoding='utf-8'
 )
