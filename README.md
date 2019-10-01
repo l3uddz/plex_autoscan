@@ -142,11 +142,11 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
     "CRYPT_MAPPINGS": {
     },
     "RC_CACHE_REFRESH": {
-      "ENABLED": false,  
+      "ENABLED": false,
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
         "Media/": [
             "/mnt/rclone/Media/"
-        ]      
+        ]
       },
       "RC_URL": "http://localhost:5572"
     }
@@ -752,7 +752,7 @@ Once a change is detected, the file will be checked against the Plex database to
         "Shared_Movies/4K_Movies/",
         "Shared_TV/TV/"
       ],
-      ```    
+      ```
 
   - `FILE_EXTENSIONS` - To filter files based on their file extensions. Default is `true`.
 
@@ -1136,6 +1136,8 @@ Mounting the Docker API socket file is necessary for the plex_autoscan service t
 
 Please take your Docker volume mount paths into account when configuring your config.json and replace all user variables in the following command defined by <> with the correct values accordingly.
 
+If using the rclone crypt or cache expire/refresh functionality, you will also need to map your rclone.conf into the container and specify the location in plex_autoscan.config
+
 ```
 docker run -d \
     -p 3468:3468 \
@@ -1200,22 +1202,46 @@ and the associated config.json entries to match:
     "1": [
       "/data/tv_shows/" # Map the path from an incoming scan request to the corresponding Plex library
     ]
-  }, 
+  },
   ...
   "PLEX_SUPPORT_DIR": "/config/Plex Media Server/", # path from within the Plex container
+  ...
+  "RCLONE": {
+    "BINARY": "/usr/bin/rclone",
+    "CONFIG": "/config/rclone/rclone.conf",
+    "CRYPT_MAPPINGS": {},
+    "RC_CACHE_EXPIRE": {
+      "ENABLED": true,
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+          "media/tv_shows": [
+            "/data/tv_shows/"
+            ]
+        },
+      "RC_URL": "http://172.18.0.1:5572"
+    },
+    "RC_CACHE_REFRESH": {
+      "ENABLED": true,
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+          "media/tv_shows": [
+            "/data/tv_shows/"
+            ]
+        },
+      "RC_URL": "http://172.18.0.1:5572"
+    }
+  },
   ...
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
     "/data/": [ # path from within plex_autoscan container
       "/data/" # path from within Plex container
     ]
-  }, 
+  },
   ...
   "SERVER_PATH_MAPPINGS": {
     "/data/tv_shows/": [ # path from within plex_autoscan container
       "/data/tv_shows/", # path from within Sonarr container
       "My Drive/media/tv_shows/" # path on Google Drive
     ]
-  }, 
+  },
   ...
   "SERVER_PORT": 3468, # needs to match the port exposed in the plex_autoscan container
   ...
