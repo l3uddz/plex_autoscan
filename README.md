@@ -1148,7 +1148,7 @@ docker run -d \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -e PUID=<uid for plexautoscan user> \
     -e PGID=<gid for media group with access to your library> \
-    sabrsorensen/alpine-plex_autoscan
+    cloudbox/plex_autoscan
 ```
 
 docker-compose.yml for coexisting plex and plex_autoscan containers, note the matching /data volume mappings:
@@ -1164,12 +1164,13 @@ docker-compose.yml for coexisting plex and plex_autoscan containers, note the ma
         ...
 
     plexautoscan:
-        image: sabrsorensen/alpine-plex_autoscan
+        image: cloudbox/plex_autoscan
         container_name: plexautoscan
         ...
         environment:
-            - PGID=<plexGID>
-            - PUID=<plexautoscanUID>
+            - PGID=<GID of plex group>
+            - PUID=<UID of plex user>
+            - DOCKERGID=<GID of docker group>
         ports:
             - 3468:3468/tcp
         volumes:
