@@ -5,7 +5,7 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 LABEL org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/sabrsorensen/alpine-plex_autoscan.git" \
+      org.label-schema.vcs-url="https://github.com/l3uddz/plex_autoscan.git" \
       org.label-schema.build-date=$BUILD_DATE
 
 # linking the base image's rclone binary to the path expected by plex_autoscan's default config
@@ -35,7 +35,7 @@ ENV PLEX_AUTOSCAN_CACHEFILE /config/cache.db
 
 ADD . /opt/plex_autoscan
 
-# install 
+# install
 RUN cd /opt/plex_autoscan && \
     python -m pip install --no-cache-dir -r requirements.txt && \
     # link the config directory to expose as a volume
