@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import json
 import logging
 import os
@@ -46,7 +47,7 @@ conf = config.Config()
 # File logger
 fileHandler = RotatingFileHandler(
     conf.settings['logfile'],
-    maxBytes=1024 * 1024 * 5,
+    maxBytes=1024 * 1024 * 2,
     backupCount=5,
     encoding='utf-8'
 )
@@ -184,20 +185,20 @@ def thread_google_monitor():
     logger.info("Starting Google Drive monitoring in 30 seconds...")
     time.sleep(30)
 
-    # initialize cryptdecoder to none
-    cryptdecoder = None
+    # initialize crypt_decoder to None
+    crypt_decoder = None
 
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPINGS'] != {}:
         logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
-        cryptdecoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
+        crypt_decoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
                                             conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
-                                 crypt_decoder=cryptdecoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
+                                 crypt_decoder=crypt_decoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
     if not manager.is_authorized():
         logger.error("Failed to validate Google Drive Access Token.")
