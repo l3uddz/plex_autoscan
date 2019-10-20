@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+
+cd /opt/plex_autoscan
+exec s6-setuidgid plexautoscan git pull

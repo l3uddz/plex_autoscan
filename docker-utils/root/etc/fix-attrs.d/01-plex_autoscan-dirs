@@ -1,0 +1,2 @@
+/opt/plex_autoscan true plexautoscan:plexautoscan 0600 0700
+/config true plexautoscan:plexautoscan 0640 0750

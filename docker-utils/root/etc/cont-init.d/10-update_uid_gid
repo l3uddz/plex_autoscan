@@ -1,0 +1,31 @@
+#!/usr/bin/with-contenv sh
+
+if [ -n $PUID ] && [ $PUID != $(id -u plexautoscan) ]
+then
+    usermod -o -u "$PUID" plexautoscan
+    update="true"
+fi
+
+if [ -n $PGID ] && [ $PGID != $(id -g plexautoscan) ]
+then
+    groupmod -o -g "$PGID" plexautoscan
+    update="true"
+fi
+
+if [ -n $DOCKERGID ] && [ "*$DOCKERGID*" != "$(id -G plexautoscan)" ]
+then
+    groupmod -o -g "$DOCKERGID" docker
+    update="true"
+fi
+
+echo "GID/UID
+User uid:    $(id -u plexautoscan)
+User gid:    $(id -g plexautoscan)
+------------------------------------
+"
+
+if [ -n $update ]
+then
+    chown -R plexautoscan:plexautoscan /config
+    chown -R plexautoscan:plexautoscan /opt/plex_autoscan
+fi
