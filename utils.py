@@ -35,7 +35,7 @@ def get_plex_section(config, path):
                         return int(section_id)
 
     except Exception:
-        logger.exception("Exception checking if '%s' exists in the plex database: ", path)
+            logger.error("Unable to map '%s' to a Section ID.", path)
 
 
 def map_pushed_path(config, path):
