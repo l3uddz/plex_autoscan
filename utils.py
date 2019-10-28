@@ -21,13 +21,24 @@ logger = logging.getLogger("UTILS")
 
 
 def get_plex_section(config, path):
-    for section, mappings in config['PLEX_SECTION_PATH_MAPPINGS'].items():
-        for mapping in mappings:
-            if mapping.lower() in path.lower():
-                return int(section)
-    logger.error("Unable to map '%s' to a Section ID.", path)
-    return -1
+    try:
+        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.text_factory = str
+            with closing(conn.cursor()) as c:
+                # check if file exists in plex
+                logger.debug("Checking if root folder path '%s' matches Plex Library root path in the Plex DB.", path)
+                section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
+                for section_id, root_path in section_data:
+                    if path.startswith(root_path + os.sep):
+                        logger.debug("Plex Library Section ID '%d' matching root folder '%s' was found in the Plex DB.",
+                                     section_id, root_path)
+                        return int(section_id)
+                logger.error("Unable to map '%s' to a Section ID.", path)
 
+    except Exception:
+        logger.exception("Exception while trying to map '%s' to a Section ID in the Plex DB: ", path)
+    return -1
 
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
