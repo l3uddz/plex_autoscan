@@ -789,7 +789,18 @@ Once a change is detected, the file will be checked against the Plex database to
 
 `TEAMDRIVES` - What Team Drives to monitor. Requires `TEAMDRIVE` to be enabled.
 
+- Format:
+
+  ```json
+  "TEAMDRIVES": [
+    "NAME_OF_TEAMDRIVE_1",
+    "NAME_OF_TEAMDRIVE_2"
+  ],
+  ```
+
 - Example:
+
+  For 2 Teamdrives named `Shared_Movies` and `Shared_TV`.
 
   ```json
   "TEAMDRIVES": [
@@ -933,14 +944,27 @@ To set this up:
 
       - For example, if you store your files under Google Drive's Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
-        ```json
-        "SERVER_PATH_MAPPINGS": {
-          "/data/Movies/": [
-            "/movies/",
-            "shared_movies/Media/Movies/"
-          ]
-        }
-        ```
+        - Format:
+
+          ```json
+          "SERVER_PATH_MAPPINGS": {
+            "/data/Movies/": [
+              "/movies/",
+              "NAME_OF_TEAMDRIVE/Media/Movies/"
+            ]
+          }
+          ```
+
+        - Example:
+
+          ```json
+          "SERVER_PATH_MAPPINGS": {
+            "/data/Movies/": [
+              "/movies/",
+              "shared_movies/Media/Movies/"
+            ]
+          }
+          ```
 
 1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 
