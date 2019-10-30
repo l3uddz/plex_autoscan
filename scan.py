@@ -112,7 +112,7 @@ def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None
     if section <= 0:
         return False
     else:
-        logger.debug("Using Section ID '%d' for '%s'", section, path)
+        logger.info("Using Section ID '%d' for '%s'", section, path)
 
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)

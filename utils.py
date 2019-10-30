@@ -27,16 +27,19 @@ def get_plex_section(config, path):
             conn.text_factory = str
             with closing(conn.cursor()) as c:
                 # check if file exists in plex
-                logger.debug("Checking for root folder path '%s' matches Plex Library root path in plex database at '%s'", path, config['PLEX_DATABASE_PATH'])
+                logger.debug("Checking if root folder path '%s' matches Plex Library root path in the Plex DB at '%s'",
+                             path, config['PLEX_DATABASE_PATH'])
                 section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
                 for section_id, root_path in section_data:
-                    if path.lower().startswith(root_path.lower()+os.sep):
-                        logger.info("Plex Library Section ID '%s' matching root folder '$s' was found in the plex sections_locations table", section_id, root_path)
+                    if path.startswith(root_path + os.sep):
+                        logger.debug("Plex Library Section ID '%s' matching root folder '$s' was found in the Plex DB "
+                                     "'sections_locations' table.", section_id, root_path)
                         return int(section_id)
+                logger.error("Unable to map '%s' to a Section ID.", path)
 
     except Exception:
-        logger.exception("Unable to map '%s' to a Section ID in the Plex database: ", path)
-
+        logger.exception("Exception while trying to map '%s' to a Section ID in the Plex database: ", path)
+    return -1
 
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
