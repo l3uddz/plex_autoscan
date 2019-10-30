@@ -32,8 +32,8 @@ def get_plex_section(config, path):
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
-                logger.debug("Mapping '%s' to '%s'.", mapping, mapped_path)
+            if path.startswith(mapping):
+                logger.debug("Mapping server path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
@@ -41,7 +41,7 @@ def map_pushed_path(config, path):
 def map_pushed_path_file_exists(config, path):
     for mapped_path, mappings in config['SERVER_FILE_EXIST_PATH_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
+            if path.startswith(mapping):
                 logger.debug("Mapping file check path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
@@ -50,7 +50,7 @@ def map_pushed_path_file_exists(config, path):
 def map_file_exists_path_for_rclone(config, path):
     for mapped_path, mappings in config['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
+            if path.startswith(mapping):
                 logger.debug("Mapping file check path '%s' to '%s' for Rclone dir cache clear request.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
