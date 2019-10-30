@@ -7,6 +7,10 @@ import sys
 import time
 from logging.handlers import RotatingFileHandler
 
+# urllib3
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Replace Python2.X input with raw_input, renamed to input in Python 3
 if hasattr(__builtins__, 'raw_input'):
     input = raw_input
