@@ -46,12 +46,12 @@ def map_pushed_path_file_exists(config, path):
                 return path.replace(mapping, mapped_path)
     return path
 
-
+# For Rclone dir cache clear request
 def map_file_exists_path_for_rclone(config, path):
     for mapped_path, mappings in config['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
         for mapping in mappings:
             if path.startswith(mapping):
-                logger.debug("Mapping file check path '%s' to '%s' for Rclone dir cache clear request.", mapping, mapped_path)
+                logger.debug("Mapping Rclone file check path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
