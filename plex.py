@@ -90,10 +90,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             # remove item from database if sqlite is enabled
             if config['SERVER_USE_SQLITE']:
                 if db.remove_item(path):
-                    logger.info("Removed '%s' from database.", path)
+                    logger.info("Removed '%s' from Plex Autoscan database.", path)
                     time.sleep(1)
                 else:
-                    logger.error("Failed removing '%s' from database.", path)
+                    logger.error("Failed removing '%s' from Plex Autoscan database.", path)
             return
 
         else:
@@ -141,10 +141,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                 # remove item from database if sqlite is enabled
                 if config['SERVER_USE_SQLITE']:
                     if db.remove_item(path):
-                        logger.info("Removed '%s' from database.", path)
+                        logger.info("Removed '%s' from Plex Autoscan database.", path)
                         time.sleep(1)
                     else:
-                        logger.error("Failed removing '%s' from database.", path)
+                        logger.error("Failed removing '%s' from Plex Autoscan database.", path)
                 return
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
@@ -170,11 +170,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
         # remove item from Plex database if sqlite is enabled
         if config['SERVER_USE_SQLITE']:
             if db.remove_item(path):
-                logger.debug("Removed '%s' from database.", path)
+                logger.debug("Removed '%s' from Plex Autoscan database.", path)
                 time.sleep(1)
                 logger.info("There are %d queued items remaining.", db.queued_count())
             else:
-                logger.error("Failed removing '%s' from database.", path)
+                logger.error("Failed removing '%s' from Plex Autoscan database.", path)
 
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
@@ -251,7 +251,7 @@ def show_sections(config):
 
 def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_lookup_id):
     if not os.path.exists(config['PLEX_DATABASE_PATH']):
-        logger.info("Could not analyze '%s' because plex database could not be found.", scan_path)
+        logger.info("Could not analyze '%s' because Plex database could not be found.", scan_path)
         return
 
     # get files metadata_item_id
@@ -632,7 +632,7 @@ def get_deleted_count(config):
         return int(deleted_metadata) + int(deleted_media_parts)
 
     except Exception as ex:
-        logger.exception("Exception retrieving deleted item count from database: ")
+        logger.exception("Exception retrieving deleted item count from Plex DB: ")
     return -1
 
 

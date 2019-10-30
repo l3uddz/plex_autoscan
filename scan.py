@@ -96,9 +96,9 @@ def queue_processor():
                                           db_item['scan_type'], resleep_paths])
             items += 1
             time.sleep(2)
-        logger.info("Restored %d scan requests from database.", items)
+        logger.info("Restored %d scan requests from Plex Autoscan database.", items)
     except Exception:
-        logger.exception("Exception while processing scan requests from database.")
+        logger.exception("Exception while processing scan requests from Plex Autoscan database.")
     return
 
 
@@ -117,7 +117,7 @@ def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
         if not db_exists and db.add_item(path, scan_for, section, scan_type):
-            logger.info("Added '%s' to database.", path)
+            logger.info("Added '%s' to Plex Autoscan database.", path)
             logger.info("Proceeding with scan...")
         else:
             logger.info(
