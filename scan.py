@@ -192,7 +192,7 @@ def thread_google_monitor():
     if conf.configs['RCLONE']['CRYPT_MAPPINGS'] != {}:
         logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
         crypt_decoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
-                                            conf.configs['RCLONE']['CONFIG'])
+                                             conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
@@ -332,44 +332,44 @@ def client_pushed():
             return """<!DOCTYPE html>
             <html lang="en">
             <head>
-            	<title>Plex Autoscan</title>
-            	<meta charset="utf-8">
-            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+                <title>Plex Autoscan</title>
+                <meta charset="utf-8">
+                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
             </head>
             <body>
-            	<div class="container">
-            		<div class="row justify-content-md-center">
-            			<div class="col-md-auto text-center" style="padding-top: 10px;">
-            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
-            				<h3 class="text-left" style="margin: 10px;">Success</h3>
-            				<div class="alert alert-info" role="alert">
-            					<code style="color: #000;">'{0}'</code> was added to scan queue.
-            				</div>
-            			</div>
-            		</div>
-            	</div>
+                <div class="container">
+                    <div class="row justify-content-md-center">
+                        <div class="col-md-auto text-center" style="padding-top: 10px;">
+                            <h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+                            <h3 class="text-left" style="margin: 10px;">Success</h3>
+                            <div class="alert alert-info" role="alert">
+                                <code style="color: #000;">'{0}'</code> was added to scan queue.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </body>
             </html>""".format(final_path)
         else:
             return """<!DOCTYPE html>
             <html lang="en">
             <head>
-            	<title>Plex Autoscan</title>
-            	<meta charset="utf-8">
-            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+                <title>Plex Autoscan</title>
+                <meta charset="utf-8">
+                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
             </head>
             <body>
-            	<div class="container">
-            		<div class="row justify-content-md-center">
-            			<div class="col-md-auto text-center" style="padding-top: 10px;">
-            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
-            				<h3 class="text-left" style="margin: 10px;">Error</h3>
-            				<div class="alert alert-danger" role="alert">
-            					<code style="color: #000;">'{0}'</code> has already been added to the scan queue.
-            				</div>
-            			</div>
-            		</div>
-            	</div>
+                <div class="container">
+                    <div class="row justify-content-md-center">
+                        <div class="col-md-auto text-center" style="padding-top: 10px;">
+                            <h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+                            <h3 class="text-left" style="margin: 10px;">Error</h3>
+                            <div class="alert alert-danger" role="alert">
+                                <code style="color: #000;">'{0}'</code> has already been added to the scan queue.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </body>
             </html>""".format(data['filepath'])
 
@@ -476,7 +476,7 @@ if __name__ == "__main__":
  | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
  | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
  |_|                                                           
- 
+
 ###########################################################
 # Author:   l3uddz                                        #
 # URL:      https://github.com/l3uddz/plex_autoscan       #
