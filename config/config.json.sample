@@ -38,14 +38,6 @@
   "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
   "PLEX_LOCAL_URL": "http://localhost:32400",
   "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
-  "PLEX_SECTION_PATH_MAPPINGS": {
-    "1": [
-      "/Movies/"
-    ],
-    "2": [
-      "/TV/"
-    ]
-  },
   "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
   "PLEX_USER": "plex",
   "PLEX_TOKEN": "",

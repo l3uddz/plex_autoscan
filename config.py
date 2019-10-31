@@ -24,7 +24,6 @@ class Config(object):
 
     base_config = {
         'PLEX_USER': 'plex',
-        'PLEX_SECTION_PATH_MAPPINGS': {},
         'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
         'PLEX_SUPPORT_DIR': '/var/lib/plexmediaserver/Library/Application\ Support',
         'PLEX_LD_LIBRARY_PATH': '/usr/lib/plexmediaserver/lib',
@@ -137,16 +136,6 @@ class Config(object):
             ],
             "2": [
                 '/Music/'
-            ]
-        }
-
-        # add example section path mappings
-        cfg['PLEX_SECTION_PATH_MAPPINGS'] = {
-            '1': [
-                '/Movies/'
-            ],
-            '2': [
-                '/TV/'
             ]
         }
 
@@ -318,22 +307,21 @@ class Config(object):
     def parse_args(self):
         parser = argparse.ArgumentParser(
             description=(
-                'Script to assist sonarr/radarr with plex imports. Will only scan the folder \n'
-                'that has been imported, instead of the whole library section.'
+                'Script to assist Sonarr/Radarr/Lidarr with Plex imports so that it will only scan the folder \n'
+                'that has been imported, instead of the entire library section.'
             ),
             formatter_class=argparse.RawTextHelpFormatter
         )
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_config', 'update_sections'),
+                            choices=('sections', 'server', 'authorize', 'build_caches', 'update_config'),
                             help=(
-                                '"sections": prints plex sections\n'
+                                '"sections": prints Plex sections\n'
                                 '"server": starts the application\n'
-                                '"authorize": authorize against a google account\n'
-                                '"build_caches": build complete google drive caches\n'
-                                '"update_config": perform upgrade of config\n'
-                                '"update_sections": update section mappings in config'
+                                '"authorize": authorize against a Google account\n'
+                                '"build_caches": build complete Google Drive caches\n'
+                                '"update_config": perform upgrade of config'
                             )
                             )
 

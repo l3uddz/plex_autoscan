@@ -1,7 +1,8 @@
 # plex_autoscan
-Script to assist sonarr/radarr with plex imports. Will only scan the folder that has been import, instead of the whole library section.
+Script to assist Sonarr/Radarr/Lidarr with Plex imports so that it will only scan the folder that has been imported, instead of the entire library section.
 
 # Install
+
 ## Debian/Ubuntu
 
 1. `cd /opt`
@@ -38,14 +39,6 @@ Example configuration:
     "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver",
     "PLEX_LOCAL_URL": "http://localhost:32400",
     "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
-    "PLEX_SECTION_PATH_MAPPINGS": {
-        "1": [
-            "/Movies/"
-        ],
-        "2": [
-            "/TV/"
-        ]
-    },
     "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
     "PLEX_TOKEN": "XXXXXXXXXX",
     "PLEX_USER": "plex",
@@ -78,22 +71,7 @@ Output:
 ## Plex
 
 Ensure the `PLEX_LD_LIBRARY_PATH` / `PLEX_SCANNER` / `PLEX_SUPPORT_DIR` variables are the correct locations (the defaults should be preset).
-You can verify this is working correctly by doing, `python scan.py sections` which will return a list of your plex library sections & id's, which we will use to setup `PLEX_SECTION_PATH_MAPPINGS`.
-
-`PLEX_SECTION_PATH_MAPPINGS` example:
-
-```json
-    "PLEX_SECTION_PATH_MAPPINGS": {
-        "1": [
-            "/Movies/"
-        ],
-        "2": [
-            "/TV/"
-        ]
-    },
-```
-
-This tells the script that if the filepath that we have decided to scan has /Movies/ in the path, use section 1, otherwise use 2 when /TV/ is in the path. This is used when starting the plex command line scanner.
+You can verify this is working correctly by doing, `python scan.py sections` which will return a list of your Plex library Section Names & IDs.
 
 `PLEX_USER` is self explanatory, again this should be fine as the default plex. **Ignore for Windows installations**
 

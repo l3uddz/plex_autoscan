@@ -491,8 +491,6 @@ if __name__ == "__main__":
         exit(0)
     elif conf.args['cmd'] == 'update_config':
         exit(0)
-    elif conf.args['cmd'] == 'update_sections':
-        plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GOOGLE']['ENABLED']:
             logger.error("You must enable the GOOGLE section in config.")

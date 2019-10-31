@@ -17,27 +17,6 @@ import utils
 logger = logging.getLogger("PLEX")
 
 
-def updateSectionMappings(conf):
-    from xml.etree import ElementTree
-    try:
-        logger.info("Requesting section info from Plex...")
-        resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
-            conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
-        if resp.status_code == 200:
-            logger.info("Requesting of section info was successful.")
-            logger.debug("Request response: %s", resp.text)
-            root = ElementTree.fromstring(resp.text)
-            output = {}
-            for document in root.findall("Directory"):
-                output[document.get('key')] = [os.path.join(k.get('path'), '') for k in document.findall("Location")]
-            conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {}
-            for k, v in output.items():
-                conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
-            conf.save(conf.configs)
-    except Exception as e:
-        logger.exception("Issue encountered when attemping to dynamically update section mappings.")
-
-
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_title=None, scan_lookup_type=None,
          scan_lookup_id=None):
     scan_path = ""
