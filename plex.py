@@ -430,7 +430,7 @@ def get_metadata_item_id_has_duplicates(config, metadata_item_id, scan_directory
                                                      'from media_items mi '
                                                      'join media_parts mp on mp.media_item_id = mi.id '
                                                      'where mi.metadata_item_id=? and mp.file not like ?',
-                                                     (metadata_item_id, '{}%'.format(scan_directory),)).fetchone()
+                                                     (metadata_item_id, scan_directory,)).fetchone()
                 if metadata_item_id_matches:
                     row_dict = dict(metadata_item_id_matches)
                     if 'matches' in row_dict and row_dict['matches'] >= 1:
