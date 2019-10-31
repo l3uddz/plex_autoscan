@@ -31,8 +31,8 @@ def get_plex_section(config, path):
                 section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
                 for section_id, root_path in section_data:
                     if path.startswith(root_path + os.sep):
-                        logger.debug("Plex Library Section ID '%s' matching root folder '$s' was found in the Plex DB.",
-                                     str(section_id), str(root_path))
+                        logger.debug("Plex Library Section ID '%d' matching root folder '%s' was found in the Plex DB.",
+                                     section_id, root_path)
                         return int(section_id)
                 logger.error("Unable to map '%s' to a Section ID.", path)
 
