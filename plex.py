@@ -151,7 +151,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             if db.remove_item(path):
                 logger.debug("Removed '%s' from Plex Autoscan database.", path)
                 time.sleep(1)
-                logger.info("There are %d queued items remaining.", db.queued_count())
+                logger.info("There are %d queued item(s) remaining.", db.queued_count())
             else:
                 logger.error("Failed removing '%s' from Plex Autoscan database.", path)
 
@@ -307,17 +307,18 @@ def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_look
     new_guid = 'com.plexapp.agents.%s://%s?lang=en' % (scan_lookup_type.lower(), str(scan_lookup_id).lower())
     # does good match?
     if parent_guid and (parent_guid.lower() != new_guid):
-        logger.debug("Fixing match for 'metadata_item' '%s' as existing 'GUID' '%s' does not match '%s' ('%s')",
+        logger.debug("Fixing match for 'metadata_item' '%s' as existing 'GUID' '%s' does not match '%s' ('%s').",
                      parent_title,
                      parent_guid, new_guid, scan_title)
-        logger.info("Fixing match of '%s' (%s) to '%s' (%s)", parent_title, parent_guid, scan_title, new_guid)
+        logger.info("Fixing match of '%s' (%s) to '%s' (%s).", parent_title, parent_guid, scan_title, new_guid)
         # fix item
         match_plex_item(config, parent_metadata_item_id, new_guid, scan_title)
+        refresh_plex_item(config, parent_metadata_item_id, scan_title)
     else:
         logger.debug(
-            "Skipped match fixing for 'metadata_item' parent '%s' as existing 'GUID' matches what was expected (%s)",
-            parent_title, new_guid)
-        logger.info("Match validated for '%s' (%s)", parent_title, parent_guid)
+            "Skipped match fixing for 'metadata_item' parent '%s' as existing 'GUID' (%s) matches what was "
+            "expected (%s).", parent_title, parent_guid, new_guid)
+        logger.info("Match validated for '%s' (%s).", parent_title, parent_guid)
 
     return
 
@@ -615,31 +616,6 @@ def get_deleted_count(config):
     return -1
 
 
-def match_plex_item(config, metadata_item_id, new_guid, new_name):
-    try:
-        url_params = {
-            'X-Plex-Token': config['PLEX_TOKEN'],
-            'guid': new_guid,
-            'name': new_name
-        }
-        url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
-
-        requests.options(url_str, params=url_params, timeout=30)
-        resp = requests.put(url_str, params=url_params, timeout=30)
-        if resp.status_code == 200:
-            logger.info("Successfully matched 'metadata_item_id' '%d' to '%s' (%s).", int(metadata_item_id), new_name,
-                        new_guid)
-            return True
-        else:
-            logger.error("Failed matching 'metadata_item_id' '%d' to '%s': %s... Response =\n%s\n",
-                         int(metadata_item_id),
-                         new_name, new_guid, resp.text)
-
-    except Exception:
-        logger.exception("Exception matching 'metadata_item' %d: ", int(metadata_item_id))
-    return False
-
-
 def split_plex_item(config, metadata_item_id):
     try:
         url_params = {
@@ -659,4 +635,52 @@ def split_plex_item(config, metadata_item_id):
 
     except Exception:
         logger.exception("Exception splitting 'metadata_item' %d: ", int(metadata_item_id))
+    return False
+
+
+def match_plex_item(config, metadata_item_id, new_guid, new_name):
+    try:
+        url_params = {
+            'X-Plex-Token': config['PLEX_TOKEN'],
+            'guid': new_guid,
+            'name': new_name,
+        }
+        url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
+
+        requests.options(url_str, params=url_params, timeout=30)
+        resp = requests.put(url_str, params=url_params, timeout=30)
+        if resp.status_code == 200:
+            logger.info("Successfully matched 'metadata_item_id' '%d' to '%s' (%s).", int(metadata_item_id), new_name,
+                        new_guid)
+            return True
+        else:
+            logger.error("Failed matching 'metadata_item_id' '%d' to '%s': %s... Response =\n%s\n",
+                         int(metadata_item_id),
+                         new_name, new_guid, resp.text)
+
+    except Exception:
+        logger.exception("Exception matching 'metadata_item' %d: ", int(metadata_item_id))
+    return False
+
+
+def refresh_plex_item(config, metadata_item_id, new_name):
+    try:
+        url_params = {
+            'X-Plex-Token': config['PLEX_TOKEN'],
+        }
+        url_str = '%s/library/metadata/%d/refresh' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
+
+        requests.options(url_str, params=url_params, timeout=30)
+        resp = requests.put(url_str, params=url_params, timeout=30)
+        if resp.status_code == 200:
+            logger.info("Successfully refreshed 'metadata_item_id' '%d' of '%s'.", int(metadata_item_id),
+                        new_name)
+            return True
+        else:
+            logger.error("Failed refreshing 'metadata_item_id' '%d' of '%s': Response =\n%s\n",
+                         int(metadata_item_id),
+                         new_name, resp.text)
+
+    except Exception:
+        logger.exception("Exception refreshing 'metadata_item' %d: ", int(metadata_item_id))
     return False
