@@ -100,7 +100,7 @@ def queue_processor():
                                           db_item['scan_type'], resleep_paths])
             items += 1
             time.sleep(2)
-        logger.info("Restored %d scan requests from Plex Autoscan database.", items)
+        logger.info("Restored %d scan request(s) from Plex Autoscan database.", items)
     except Exception:
         logger.exception("Exception while processing scan requests from Plex Autoscan database.")
     return
