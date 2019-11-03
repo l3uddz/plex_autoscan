@@ -151,7 +151,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             if db.remove_item(path):
                 logger.debug("Removed '%s' from Plex Autoscan database.", path)
                 time.sleep(1)
-                logger.info("There are %d queued item(s) remaining.", db.queued_count())
+                logger.info("There are %d queued items remaining.", db.queued_count())
             else:
                 logger.error("Failed removing '%s' from Plex Autoscan database.", path)
 
@@ -314,6 +314,7 @@ def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_look
         # fix item
         match_plex_item(config, parent_metadata_item_id, new_guid, scan_title)
         refresh_plex_item(config, parent_metadata_item_id, scan_title)
+        set_item_added_at_date(config, int(metadata_item_id))
     else:
         logger.debug(
             "Skipped match fixing for 'metadata_item' parent '%s' as existing 'GUID' (%s) matches what was "
@@ -638,12 +639,28 @@ def split_plex_item(config, metadata_item_id):
     return False
 
 
+def set_item_added_at_date(config, metadata_item_id):
+    try:
+        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            with closing(conn.cursor()) as c:
+                c.execute('UPDATE metadata_items '
+                          'SET added_at = (SELECT updated_at FROM metadata_items WHERE id = ?) '
+                          'WHERE ID = ?',(metadata_item_id, metadata_item_id))
+            conn.commit()
+            logger.info("Successfully set added_at date for 'metadata_item_id': '%d'", int(metadata_item_id))
+            return True
+
+    except Exception as ex:
+        logger.exception("Exception setting added_at date for 'metadata_item' %d: ", int(metadata_item_id))
+    return -1
+
+
 def match_plex_item(config, metadata_item_id, new_guid, new_name):
     try:
         url_params = {
             'X-Plex-Token': config['PLEX_TOKEN'],
             'guid': new_guid,
-            'name': new_name,
+            'name': new_name
         }
         url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
 
@@ -667,7 +684,6 @@ def refresh_plex_item(config, metadata_item_id, new_name):
     try:
         url_params = {
             'X-Plex-Token': config['PLEX_TOKEN'],
-            'force': 1,
         }
         url_str = '%s/library/metadata/%d/refresh' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
 
