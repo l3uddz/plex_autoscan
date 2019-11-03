@@ -7,6 +7,10 @@ import sys
 import time
 from logging.handlers import RotatingFileHandler
 
+# urllib3
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Replace Python2.X input with raw_input, renamed to input in Python 3
 if hasattr(__builtins__, 'raw_input'):
     input = raw_input
@@ -96,9 +100,9 @@ def queue_processor():
                                           db_item['scan_type'], resleep_paths])
             items += 1
             time.sleep(2)
-        logger.info("Restored %d scan requests from database.", items)
+        logger.info("Restored %d scan request(s) from Plex Autoscan database.", items)
     except Exception:
-        logger.exception("Exception while processing scan requests from database.")
+        logger.exception("Exception while processing scan requests from Plex Autoscan database.")
     return
 
 
@@ -112,12 +116,12 @@ def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None
     if section <= 0:
         return False
     else:
-        logger.debug("Using Section ID '%d' for '%s'", section, path)
+        logger.info("Using Section ID '%d' for '%s'", section, path)
 
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
         if not db_exists and db.add_item(path, scan_for, section, scan_type):
-            logger.info("Added '%s' to database.", path)
+            logger.info("Added '%s' to Plex Autoscan database.", path)
             logger.info("Proceeding with scan...")
         else:
             logger.info(
@@ -192,7 +196,7 @@ def thread_google_monitor():
     if conf.configs['RCLONE']['CRYPT_MAPPINGS'] != {}:
         logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
         crypt_decoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
-                                            conf.configs['RCLONE']['CONFIG'])
+                                             conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
@@ -332,44 +336,44 @@ def client_pushed():
             return """<!DOCTYPE html>
             <html lang="en">
             <head>
-            	<title>Plex Autoscan</title>
-            	<meta charset="utf-8">
-            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+                <title>Plex Autoscan</title>
+                <meta charset="utf-8">
+                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
             </head>
             <body>
-            	<div class="container">
-            		<div class="row justify-content-md-center">
-            			<div class="col-md-auto text-center" style="padding-top: 10px;">
-            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
-            				<h3 class="text-left" style="margin: 10px;">Success</h3>
-            				<div class="alert alert-info" role="alert">
-            					<code style="color: #000;">'{0}'</code> was added to scan queue.
-            				</div>
-            			</div>
-            		</div>
-            	</div>
+                <div class="container">
+                    <div class="row justify-content-md-center">
+                        <div class="col-md-auto text-center" style="padding-top: 10px;">
+                            <h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+                            <h3 class="text-left" style="margin: 10px;">Success</h3>
+                            <div class="alert alert-info" role="alert">
+                                <code style="color: #000;">'{0}'</code> was added to scan queue.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </body>
             </html>""".format(final_path)
         else:
             return """<!DOCTYPE html>
             <html lang="en">
             <head>
-            	<title>Plex Autoscan</title>
-            	<meta charset="utf-8">
-            	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+                <title>Plex Autoscan</title>
+                <meta charset="utf-8">
+                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
             </head>
             <body>
-            	<div class="container">
-            		<div class="row justify-content-md-center">
-            			<div class="col-md-auto text-center" style="padding-top: 10px;">
-            				<h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
-            				<h3 class="text-left" style="margin: 10px;">Error</h3>
-            				<div class="alert alert-danger" role="alert">
-            					<code style="color: #000;">'{0}'</code> has already been added to the scan queue.
-            				</div>
-            			</div>
-            		</div>
-            	</div>
+                <div class="container">
+                    <div class="row justify-content-md-center">
+                        <div class="col-md-auto text-center" style="padding-top: 10px;">
+                            <h1 style="margin: 10px; margin-bottom: 150px;">Plex Autoscan</h1>
+                            <h3 class="text-left" style="margin: 10px;">Error</h3>
+                            <div class="alert alert-danger" role="alert">
+                                <code style="color: #000;">'{0}'</code> has already been added to the scan queue.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </body>
             </html>""".format(data['filepath'])
 
@@ -476,7 +480,7 @@ if __name__ == "__main__":
  | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
  | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
  |_|                                                           
- 
+
 ###########################################################
 # Author:   l3uddz                                        #
 # URL:      https://github.com/l3uddz/plex_autoscan       #
@@ -491,8 +495,6 @@ if __name__ == "__main__":
         exit(0)
     elif conf.args['cmd'] == 'update_config':
         exit(0)
-    elif conf.args['cmd'] == 'update_sections':
-        plex.updateSectionMappings(conf)
     elif conf.args['cmd'] == 'authorize':
         if not conf.configs['GOOGLE']['ENABLED']:
             logger.error("You must enable the GOOGLE section in config.")

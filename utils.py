@@ -21,19 +21,30 @@ logger = logging.getLogger("UTILS")
 
 
 def get_plex_section(config, path):
-    for section, mappings in config['PLEX_SECTION_PATH_MAPPINGS'].items():
-        for mapping in mappings:
-            if mapping.lower() in path.lower():
-                return int(section)
-    logger.error("Unable to map '%s' to a Section ID.", path)
-    return -1
+    try:
+        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.text_factory = str
+            with closing(conn.cursor()) as c:
+                # check if file exists in plex
+                logger.debug("Checking if root folder path '%s' matches Plex Library root path in the Plex DB.", path)
+                section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
+                for section_id, root_path in section_data:
+                    if path.startswith(root_path + os.sep):
+                        logger.debug("Plex Library Section ID '%d' matching root folder '%s' was found in the Plex DB.",
+                                     section_id, root_path)
+                        return int(section_id)
+                logger.error("Unable to map '%s' to a Section ID.", path)
 
+    except Exception:
+        logger.exception("Exception while trying to map '%s' to a Section ID in the Plex DB: ", path)
+    return -1
 
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
-                logger.debug("Mapping '%s' to '%s'.", mapping, mapped_path)
+            if path.startswith(mapping):
+                logger.debug("Mapping server path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
@@ -41,17 +52,18 @@ def map_pushed_path(config, path):
 def map_pushed_path_file_exists(config, path):
     for mapped_path, mappings in config['SERVER_FILE_EXIST_PATH_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
+            if path.startswith(mapping):
                 logger.debug("Mapping file check path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 
 
+# For Rclone dir cache clear request
 def map_file_exists_path_for_rclone(config, path):
     for mapped_path, mappings in config['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'].items():
         for mapping in mappings:
-            if mapping in path:
-                logger.debug("Mapping file check path '%s' to '%s' for Rclone dir cache clear request.", mapping, mapped_path)
+            if path.startswith(mapping):
+                logger.debug("Mapping Rclone file check path '%s' to '%s'.", mapping, mapped_path)
                 return path.replace(mapping, mapped_path)
     return path
 

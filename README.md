@@ -121,14 +121,6 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_EMPTY_TRASH_ZERO_DELETED": false,
   "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
   "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
-  "PLEX_SECTION_PATH_MAPPINGS": {
-    "1": [
-      "/Movies/"
-    ],
-    "2": [
-      "/TV/"
-    ]
-  },
   "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
   "PLEX_USER": "plex",
   "PLEX_TOKEN": "",
@@ -292,11 +284,8 @@ _Note: Verify the settings below by running the Plex Section IDs command (see be
 
 ```json
 "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
-
 "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
-
 "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
-
 "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
 ```
 
@@ -358,70 +347,6 @@ Sample output:
  2018-06-23 08:28:27,070 -     INFO -      PLEX [140425529542400]: Using Plex Scanner
   1: Movies
   2: TV
-```
-
-### Plex Section Mappings
-
-Tells Plex what library sections to map the media paths to when the Plex Scanner command is ran.
-
-
-By running the following command, you can fill in this section automatically:
-
-```shell
-python scan.py update_sections
-```
-
-The format is mentioned below for reference.
-
-***
-
-Format:
-
-
-```json
-"PLEX_SECTION_PATH_MAPPINGS": {
-  "SECTION ID #": [
-    "/path/to/library/"
-  ]
-},
-```
-
-For example, if a request is sent to scan a filepath with `/Movies/` in it, then to map it to Section ID 1, and to map filepath `/TV` to Section ID 2.
-
-
-Example:
-
-```json
-"PLEX_SECTION_PATH_MAPPINGS": {
-  "1": [
-    "/Movies/"
-  ],
-  "2": [
-    "/TV/"
-  ]
-},
-```
-
-
-If you have a complex library setup, you will need to specify the child paths as well:
-
-Example:
-
-```json
-"PLEX_SECTION_PATH_MAPPINGS": {
-  "1": [
-    "/Movies/Movies/"
-  ],
-  "2": [
-    "/Movies/Movies-4K/"
-  ],
-  "3": [
-    "/Movies/Movies-Foreign/"
-  ],
-  "4": [
-    "/TV/"
-  ]
-},
 ```
 
 ### Plex Emptying Trash
@@ -669,8 +594,6 @@ You can leave this empty if it is not required:
 
 `SERVER_SCAN_PRIORITIES` - What paths are picked first when multiple scan requests are being processed.
 
-  - This section is similar to `PLEX_SECTION_PATH_MAPPINGS` mentioned earlier.
-
   - Format:
     ```json
     "SERVER_SCAN_PRIORITIES": {
@@ -789,7 +712,18 @@ Once a change is detected, the file will be checked against the Plex database to
 
 `TEAMDRIVES` - What Team Drives to monitor. Requires `TEAMDRIVE` to be enabled.
 
+- Format:
+
+  ```json
+  "TEAMDRIVES": [
+    "NAME_OF_TEAMDRIVE_1",
+    "NAME_OF_TEAMDRIVE_2"
+  ],
+  ```
+
 - Example:
+
+  For 2 Teamdrives named `Shared_Movies` and `Shared_TV`.
 
   ```json
   "TEAMDRIVES": [
@@ -933,14 +867,27 @@ To set this up:
 
       - For example, if you store your files under Google Drive's Teamdrive called "shared_movies" and within a Media folder (`shared_movies/Media/...`) AND run Plex in a docker container, the server path mappings will look like this:
 
-        ```json
-        "SERVER_PATH_MAPPINGS": {
-          "/data/Movies/": [
-            "/movies/",
-            "shared_movies/Media/Movies/"
-          ]
-        }
-        ```
+        - Format:
+
+          ```json
+          "SERVER_PATH_MAPPINGS": {
+            "/data/Movies/": [
+              "/movies/",
+              "NAME_OF_TEAMDRIVE/Media/Movies/"
+            ]
+          }
+          ```
+
+        - Example:
+
+          ```json
+          "SERVER_PATH_MAPPINGS": {
+            "/data/Movies/": [
+              "/movies/",
+              "shared_movies/Media/Movies/"
+            ]
+          }
+          ```
 
 1. Rclone Crypt Support - If your mounted Google Drive is encrypted using Rclone Crypt, Plex Autoscan can also decode the filenames for processing changes. This includes drives/team drives entirely encrypted or just a subfolder i.e. in the below example only the encrypt subfolder is encrypted.
 

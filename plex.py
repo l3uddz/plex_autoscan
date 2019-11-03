@@ -17,27 +17,6 @@ import utils
 logger = logging.getLogger("PLEX")
 
 
-def updateSectionMappings(conf):
-    from xml.etree import ElementTree
-    try:
-        logger.info("Requesting section info from Plex...")
-        resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
-            conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
-        if resp.status_code == 200:
-            logger.info("Requesting of section info was successful.")
-            logger.debug("Request response: %s", resp.text)
-            root = ElementTree.fromstring(resp.text)
-            output = {}
-            for document in root.findall("Directory"):
-                output[document.get('key')] = [os.path.join(k.get('path'), '') for k in document.findall("Location")]
-            conf.configs['PLEX_SECTION_PATH_MAPPINGS'] = {}
-            for k, v in output.items():
-                conf.configs['PLEX_SECTION_PATH_MAPPINGS'][k] = v
-            conf.save(conf.configs)
-    except Exception as e:
-        logger.exception("Issue encountered when attemping to dynamically update section mappings.")
-
-
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_title=None, scan_lookup_type=None,
          scan_lookup_id=None):
     scan_path = ""
@@ -90,10 +69,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             # remove item from database if sqlite is enabled
             if config['SERVER_USE_SQLITE']:
                 if db.remove_item(path):
-                    logger.info("Removed '%s' from database.", path)
+                    logger.info("Removed '%s' from Plex Autoscan database.", path)
                     time.sleep(1)
                 else:
-                    logger.error("Failed removing '%s' from database.", path)
+                    logger.error("Failed removing '%s' from Plex Autoscan database.", path)
             return
 
         else:
@@ -141,10 +120,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                 # remove item from database if sqlite is enabled
                 if config['SERVER_USE_SQLITE']:
                     if db.remove_item(path):
-                        logger.info("Removed '%s' from database.", path)
+                        logger.info("Removed '%s' from Plex Autoscan database.", path)
                         time.sleep(1)
                     else:
-                        logger.error("Failed removing '%s' from database.", path)
+                        logger.error("Failed removing '%s' from Plex Autoscan database.", path)
                 return
             else:
                 logger.info("No '%s' processes were found.", scanner_name)
@@ -170,11 +149,11 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
         # remove item from Plex database if sqlite is enabled
         if config['SERVER_USE_SQLITE']:
             if db.remove_item(path):
-                logger.debug("Removed '%s' from database.", path)
+                logger.debug("Removed '%s' from Plex Autoscan database.", path)
                 time.sleep(1)
-                logger.info("There are %d queued items remaining.", db.queued_count())
+                logger.info("There are %d queued item(s) remaining.", db.queued_count())
             else:
-                logger.error("Failed removing '%s' from database.", path)
+                logger.error("Failed removing '%s' from Plex Autoscan database.", path)
 
         # empty trash if configured
         if config['PLEX_EMPTY_TRASH'] and config['PLEX_TOKEN'] and config['PLEX_EMPTY_TRASH_MAX_FILES']:
@@ -251,7 +230,7 @@ def show_sections(config):
 
 def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_lookup_id):
     if not os.path.exists(config['PLEX_DATABASE_PATH']):
-        logger.info("Could not analyze '%s' because plex database could not be found.", scan_path)
+        logger.info("Could not analyze '%s' because Plex database could not be found.", scan_path)
         return
 
     # get files metadata_item_id
@@ -328,17 +307,18 @@ def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_look
     new_guid = 'com.plexapp.agents.%s://%s?lang=en' % (scan_lookup_type.lower(), str(scan_lookup_id).lower())
     # does good match?
     if parent_guid and (parent_guid.lower() != new_guid):
-        logger.debug("Fixing match for 'metadata_item' '%s' as existing 'GUID' '%s' does not match '%s' ('%s')",
+        logger.debug("Fixing match for 'metadata_item' '%s' as existing 'GUID' '%s' does not match '%s' ('%s').",
                      parent_title,
                      parent_guid, new_guid, scan_title)
-        logger.info("Fixing match of '%s' (%s) to '%s' (%s)", parent_title, parent_guid, scan_title, new_guid)
+        logger.info("Fixing match of '%s' (%s) to '%s' (%s).", parent_title, parent_guid, scan_title, new_guid)
         # fix item
         match_plex_item(config, parent_metadata_item_id, new_guid, scan_title)
+        refresh_plex_item(config, parent_metadata_item_id, scan_title)
     else:
         logger.debug(
-            "Skipped match fixing for 'metadata_item' parent '%s' as existing 'GUID' matches what was expected (%s)",
-            parent_title, new_guid)
-        logger.info("Match validated for '%s' (%s)", parent_title, parent_guid)
+            "Skipped match fixing for 'metadata_item' parent '%s' as existing 'GUID' (%s) matches what was "
+            "expected (%s).", parent_title, parent_guid, new_guid)
+        logger.info("Match validated for '%s' (%s).", parent_title, parent_guid)
 
     return
 
@@ -430,7 +410,7 @@ def get_metadata_item_id_has_duplicates(config, metadata_item_id, scan_directory
                                                      'from media_items mi '
                                                      'join media_parts mp on mp.media_item_id = mi.id '
                                                      'where mi.metadata_item_id=? and mp.file not like ?',
-                                                     (metadata_item_id, '{}%'.format(scan_directory),)).fetchone()
+                                                     (metadata_item_id, scan_directory + '%',)).fetchone()
                 if metadata_item_id_matches:
                     row_dict = dict(metadata_item_id_matches)
                     if 'matches' in row_dict and row_dict['matches'] >= 1:
@@ -632,33 +612,8 @@ def get_deleted_count(config):
         return int(deleted_metadata) + int(deleted_media_parts)
 
     except Exception as ex:
-        logger.exception("Exception retrieving deleted item count from database: ")
+        logger.exception("Exception retrieving deleted item count from Plex DB: ")
     return -1
-
-
-def match_plex_item(config, metadata_item_id, new_guid, new_name):
-    try:
-        url_params = {
-            'X-Plex-Token': config['PLEX_TOKEN'],
-            'guid': new_guid,
-            'name': new_name
-        }
-        url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
-
-        requests.options(url_str, params=url_params, timeout=30)
-        resp = requests.put(url_str, params=url_params, timeout=30)
-        if resp.status_code == 200:
-            logger.info("Successfully matched 'metadata_item_id' '%d' to '%s' (%s).", int(metadata_item_id), new_name,
-                        new_guid)
-            return True
-        else:
-            logger.error("Failed matching 'metadata_item_id' '%d' to '%s': %s... Response =\n%s\n",
-                         int(metadata_item_id),
-                         new_name, new_guid, resp.text)
-
-    except Exception:
-        logger.exception("Exception matching 'metadata_item' %d: ", int(metadata_item_id))
-    return False
 
 
 def split_plex_item(config, metadata_item_id):
@@ -680,4 +635,53 @@ def split_plex_item(config, metadata_item_id):
 
     except Exception:
         logger.exception("Exception splitting 'metadata_item' %d: ", int(metadata_item_id))
+    return False
+
+
+def match_plex_item(config, metadata_item_id, new_guid, new_name):
+    try:
+        url_params = {
+            'X-Plex-Token': config['PLEX_TOKEN'],
+            'guid': new_guid,
+            'name': new_name,
+        }
+        url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
+
+        requests.options(url_str, params=url_params, timeout=30)
+        resp = requests.put(url_str, params=url_params, timeout=30)
+        if resp.status_code == 200:
+            logger.info("Successfully matched 'metadata_item_id' '%d' to '%s' (%s).", int(metadata_item_id), new_name,
+                        new_guid)
+            return True
+        else:
+            logger.error("Failed matching 'metadata_item_id' '%d' to '%s': %s... Response =\n%s\n",
+                         int(metadata_item_id),
+                         new_name, new_guid, resp.text)
+
+    except Exception:
+        logger.exception("Exception matching 'metadata_item' %d: ", int(metadata_item_id))
+    return False
+
+
+def refresh_plex_item(config, metadata_item_id, new_name):
+    try:
+        url_params = {
+            'X-Plex-Token': config['PLEX_TOKEN'],
+            'force': 1,
+        }
+        url_str = '%s/library/metadata/%d/refresh' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
+
+        requests.options(url_str, params=url_params, timeout=30)
+        resp = requests.put(url_str, params=url_params, timeout=30)
+        if resp.status_code == 200:
+            logger.info("Successfully refreshed 'metadata_item_id' '%d' of '%s'.", int(metadata_item_id),
+                        new_name)
+            return True
+        else:
+            logger.error("Failed refreshing 'metadata_item_id' '%d' of '%s': Response =\n%s\n",
+                         int(metadata_item_id),
+                         new_name, resp.text)
+
+    except Exception:
+        logger.exception("Exception refreshing 'metadata_item' %d: ", int(metadata_item_id))
     return False
