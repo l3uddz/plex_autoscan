@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 import time
+import datatime
 from contextlib import closing
 
 import db
@@ -151,7 +152,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             if db.remove_item(path):
                 logger.debug("Removed '%s' from Plex Autoscan database.", path)
                 time.sleep(1)
-                logger.info("There are %d queued items remaining.", db.queued_count())
+                logger.info("There are %d queued item(s) remaining.", db.queued_count())
             else:
                 logger.error("Failed removing '%s' from Plex Autoscan database.", path)
 
@@ -646,6 +647,7 @@ def set_item_added_at_date(config, metadata_item_id):
                 c.execute('UPDATE metadata_items '
                           'SET added_at = (SELECT updated_at FROM metadata_items WHERE id = ?) '
                           'WHERE ID = ?',(metadata_item_id, metadata_item_id))
+#                          'WHERE ID= ?',datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), metadata_item_id)
             conn.commit()
             logger.info("Successfully set added_at date for 'metadata_item_id': '%d'", int(metadata_item_id))
             return True
@@ -660,7 +662,7 @@ def match_plex_item(config, metadata_item_id, new_guid, new_name):
         url_params = {
             'X-Plex-Token': config['PLEX_TOKEN'],
             'guid': new_guid,
-            'name': new_name
+            'name': new_name,
         }
         url_str = '%s/library/metadata/%d/match' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
 
@@ -684,6 +686,7 @@ def refresh_plex_item(config, metadata_item_id, new_name):
     try:
         url_params = {
             'X-Plex-Token': config['PLEX_TOKEN'],
+            'force': 1,
         }
         url_str = '%s/library/metadata/%d/refresh' % (config['PLEX_LOCAL_URL'], int(metadata_item_id))
 
@@ -701,3 +704,4 @@ def refresh_plex_item(config, metadata_item_id, new_name):
     except Exception:
         logger.exception("Exception refreshing 'metadata_item' %d: ", int(metadata_item_id))
     return False
+    
