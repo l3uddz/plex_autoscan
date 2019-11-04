@@ -2,7 +2,6 @@ import logging
 import os
 import sqlite3
 import time
-import datatime
 from contextlib import closing
 
 import db
@@ -647,7 +646,6 @@ def set_item_added_at_date(config, metadata_item_id):
                 c.execute('UPDATE metadata_items '
                           'SET added_at = (SELECT updated_at FROM metadata_items WHERE id = ?) '
                           'WHERE ID = ?',(metadata_item_id, metadata_item_id))
-#                          'WHERE ID= ?',datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), metadata_item_id)
             conn.commit()
             logger.info("Successfully set added_at date for 'metadata_item_id': '%d'", int(metadata_item_id))
             return True
