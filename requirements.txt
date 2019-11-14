@@ -13,6 +13,6 @@ psutil==5.4.8
 requests==2.20.1
 requests-oauthlib==1.2.0
 sqlitedict==1.5.0
-urllib3==1.24.1
+urllib3==1.24.2
 Werkzeug==0.15.3
 pyfiglet
