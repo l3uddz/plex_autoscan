@@ -17,6 +17,29 @@ import utils
 logger = logging.getLogger("PLEX")
 
 
+def show_detailed_sections_info(conf):
+    from xml.etree import ElementTree
+    try:
+        logger.info("Requesting section info from Plex...")
+        resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
+            conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
+        if resp.status_code == 200:
+            logger.info("Requesting of section info was successful.")
+            logger.debug("Request response: %s", resp.text)
+            root = ElementTree.fromstring(resp.text)
+            print('')
+            print("Plex Sections:")
+            print("==============")
+            for document in root.findall("Directory"):
+                print('')
+                print(document.get('key') + ') ' + document.get('title'))
+                dashes_length = len(document.get('key') + ') ' + document.get('title'))
+                print('-' * dashes_length)
+                print("\n".join([os.path.join(k.get('path'), '') for k in document.findall("Location")]))
+    except Exception as e:
+        logger.exception("Issue encountered when attempting to list detailed sections info.")
+
+
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_title=None, scan_lookup_type=None,
          scan_lookup_id=None):
     scan_path = ""
