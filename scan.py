@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+from pyfiglet import Figlet
 from logging.handlers import RotatingFileHandler
 
 # urllib3
@@ -473,22 +474,21 @@ def client_pushed():
 ############################################################
 
 if __name__ == "__main__":
-    logger.info("""
-        _                         _                            
-  _ __ | | _____  __   __ _ _   _| |_ ___  ___  ___ __ _ _ __  
- | '_ \| |/ _ \ \/ /  / _` | | | | __/ _ \/ __|/ __/ _` | '_ \ 
- | |_) | |  __/>  <  | (_| | |_| | || (_) \__ \ (_| (_| | | | |
- | .__/|_|\___/_/\_\  \__,_|\__,_|\__\___/|___/\___\__,_|_| |_|
- |_|                                                           
+    print("")
 
-###########################################################
-# Author:   l3uddz                                        #
-# URL:      https://github.com/l3uddz/plex_autoscan       #
-# --                                                      #
-#  Part of the Cloudbox project: https://cloudbox.works   #
-###########################################################
-#            GNU General Public License v3.0              #
-###########################################################
+    f = Figlet(font='slant', width=100)
+    print(f.renderText('Plex Autoscan'))
+
+    logger.info("""
+#########################################################################
+# Title:    Plex Autoscan                                               #
+# Author:   l3uddz                                                      #
+# URL:      https://github.com/l3uddz/plex_autoscan                     #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
 """)
     if conf.args['cmd'] == 'sections':
         plex.show_sections(conf.configs)

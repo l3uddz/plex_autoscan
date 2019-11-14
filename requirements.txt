@@ -15,3 +15,4 @@ requests-oauthlib==1.2.0
 sqlitedict==1.5.0
 urllib3==1.24.1
 Werkzeug==0.15.3
+pyfiglet
