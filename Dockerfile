@@ -9,10 +9,21 @@ LABEL org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.build-date=$BUILD_DATE
 
 # linking the base image's rclone binary to the path expected by plex_autoscan's default config
-RUN ln /root/rclone /usr/bin/rclone
+RUN ln /usr/local/bin/rclone /usr/bin/rclone
 
 # install plex_autoscan dependencies, shadow for user management, and curl and grep for healthcheck script dependencies.
-RUN apk -U --no-cache add docker gcc git python2-dev py2-pip musl-dev linux-headers curl grep shadow
+RUN apk -U --no-cache add \
+        curl \
+        docker \
+        gcc \
+        git \
+        grep \
+        linux-headers \
+        musl-dev \
+        py2-pip \
+        python2-dev \
+        shadow \
+        tzdata
 
 # install s6-overlay for process management
 ADD https://github.com/just-containers/s6-overlay/releases/download/v1.22.1.0/s6-overlay-amd64.tar.gz /tmp/
@@ -36,8 +47,8 @@ ENV PLEX_AUTOSCAN_CACHEFILE /config/cache.db
 ADD . /opt/plex_autoscan
 
 # install
-RUN cd /opt/plex_autoscan && \
-    python -m pip install --no-cache-dir -r requirements.txt && \
+WORKDIR /opt/plex_autoscan
+RUN python -m pip install --no-cache-dir -r requirements.txt && \
     # link the config directory to expose as a volume
     ln -s /opt/plex_autoscan/config /config
 
