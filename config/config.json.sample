@@ -28,6 +28,7 @@
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
   "PLEX_FIX_MISMATCHED": false,
+  "PLEX_FIX_MISMATCHED_LANG": "en",
   "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
   "PLEX_EMPTY_TRASH_CONTROL_FILES": [

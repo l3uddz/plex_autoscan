@@ -327,7 +327,8 @@ def match_item_parent(config, scan_path, scan_title, scan_lookup_type, scan_look
         logger.info("No duplicate 'media_items' found with 'metadata_item_id': '%d'", int(parent_metadata_item_id))
 
     # generate new guid
-    new_guid = 'com.plexapp.agents.%s://%s?lang=en' % (scan_lookup_type.lower(), str(scan_lookup_id).lower())
+    new_guid = 'com.plexapp.agents.%s://%s?lang=%s' % (scan_lookup_type.lower(), str(scan_lookup_id).lower(),
+                                                       config['PLEX_FIX_MISMATCHED_LANG'].lower())
     # does good match?
     if parent_guid and (parent_guid.lower() != new_guid):
         logger.debug("Fixing match for 'metadata_item' '%s' as existing 'GUID' '%s' does not match '%s' ('%s').",

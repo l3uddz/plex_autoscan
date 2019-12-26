@@ -38,6 +38,7 @@ class Config(object):
         'PLEX_ANALYZE_TYPE': 'basic',
         'PLEX_ANALYZE_DIRECTORY': True,
         'PLEX_FIX_MISMATCHED': False,
+        'PLEX_FIX_MISMATCHED_LANG': 'en',
         'PLEX_TOKEN': '',
         'PLEX_CHECK_BEFORE_SCAN': False,
         'SERVER_IP': '0.0.0.0',
@@ -254,7 +255,7 @@ class Config(object):
                 exit(0)
             else:
                 logger.debug("Config was not upgraded as there were no changes to add.")
-                
+
         self.configs = cfg
 
     def save(self, cfg, exitOnSave=True):

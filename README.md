@@ -112,6 +112,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
   "PLEX_ANALYZE_DIRECTORY": true,
   "PLEX_ANALYZE_TYPE": "basic",
   "PLEX_FIX_MISMATCHED": false,
+  "PLEX_FIX_MISMATCHED_LANG": "en",
   "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
   "PLEX_EMPTY_TRASH_CONTROL_FILES": [
@@ -227,6 +228,7 @@ Plex Media Server options.
 "PLEX_ANALYZE_TYPE": "basic",
 "PLEX_ANALYZE_DIRECTORY": true,
 "PLEX_FIX_MISMATCHED": false,
+"PLEX_FIX_MISMATCHED_LANG": "en",
 ```
 
 `PLEX_USER` - User account that Plex runs as. This only gets used when either `USE_SUDO` or `USE_DOCKER` is set to `true`.
@@ -276,6 +278,10 @@ Plex Media Server options.
   - This only works when 1) requests come from Sonarr/Radarr, 2) season folders are being used, and 3) all movies and TV shows have their own unique paths.
 
   - Default is `false`.
+
+`PLEX_FIX_MISMATCHED_LANG` - What language to use for TheTVDB agent in Plex. 
+ 
+  - Default is `"en"`.
 
 ### Plex File Locations
 
