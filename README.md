@@ -44,13 +44,13 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 # Requirements
 
-1. Ubuntu/Debian
+1. Ubuntu/Debian or Windows
 
 2. Python 2.7 or higher (`sudo apt install python python-pip`).
 
 3. requirements.txt modules (see below).
 
-# Installation
+# Ubuntu/Debian Installation
 
 1. `cd /opt`
 
@@ -74,12 +74,15 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `sudo systemctl start plex_autoscan.service`
 
+# Windows Installation
+
+_Note: It's recommended that you install rclone and python using chocolatey.
 
 # Configuration
 
 _Note: Changes to config file require a restart of the Plex Autoscan service: `sudo systemctl restart plex_autoscan.service`._
 
-## Example
+## Ubuntu/Debian Example
 
 ```json
 {
@@ -182,6 +185,36 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 }
 
 ```
+
+## Windows Example
+
+_Note: Windows specific differences only shown. This assumes you mounted your rclone mount to G:\
+
+```json
+{
+  "PLEX_DATABASE_PATH": "%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db",
+  "PLEX_SCANNER": "%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe",
+  "PLEX_SUPPORT_DIR": "%LOCALAPPDATA%\\Plex Media Server",
+  "PLEX_LD_LIBRARY_PATH": "%LOCALAPPDATA%\\Plex Media Server",
+    "RCLONE": {
+    "BINARY": "%ChocolateyInstall%\\bin\\rclone.exe",
+    "CONFIG": "%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf",
+    "RC_CACHE_REFRESH": {
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+        "Media/": [
+            "G:\\Media"
+        ]
+      }
+    }
+  },
+   "SERVER_PATH_MAPPINGS": {
+    "G:\\media\\movies\\": [
+      "/data/media/movies/"
+    ]
+  }
+}
+```
+
 ## Basics
 
 
