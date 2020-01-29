@@ -136,7 +136,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
         logger.info("Scan request is now being processed...")
         # wait for existing scanners being ran by Plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
-            scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
+            if os.name == 'nt':
+                scanner_name = os.path.basename(config['PLEX_SCANNER'])
+            else:
+                scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
             if not utils.wait_running_process(scanner_name, config['USE_DOCKER'], cmd_quote(config['DOCKER_NAME'])):
                 logger.warning(
                     "There was a problem waiting for existing '%s' process(s) to finish. Aborting scan.", scanner_name)
