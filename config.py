@@ -215,9 +215,11 @@ class Config(object):
 
         # add example Rclone file exists to remote mappings
         if os.name == 'nt':
-            cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS']['Media/'] = [
-                "G:\\Media"
-            ]
+            cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+                'Media/': [
+                    "G:\\Media"
+                ]
+            }
         else:
             cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
                 'Media/': [
