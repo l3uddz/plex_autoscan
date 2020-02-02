@@ -297,7 +297,7 @@ class Config(object):
                         value
                     ))
 
-                setts[name] = value
+                setts[name] = os.path.expandvars(value)
 
             except Exception:
                 logger.exception("Exception retrieving setting value: %r" % name)

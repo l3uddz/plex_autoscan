@@ -46,7 +46,7 @@
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE": {
     "BINARY": "/usr/bin/rclone",
-    "CONFIG": "/home/user/.config/rclone/rclone.conf",
+    "CONFIG": "~/.config/rclone/rclone.conf",
     "CRYPT_MAPPINGS": {
     },
     "RC_CACHE_REFRESH": {
@@ -76,7 +76,7 @@
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
       "/mnt/unionfs/": [
-          "/home/user/media/fused/"
+          "~/media/fused/"
       ]
   },
   "SERVER_PORT": 3468,
