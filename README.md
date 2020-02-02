@@ -44,13 +44,15 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 # Requirements
 
-1. Ubuntu/Debian or Windows
+1. Any OS that supports Python.
 
 2. Python 2.7 or higher (`sudo apt install python python-pip`).
 
 3. requirements.txt modules (see below).
 
-# Ubuntu/Debian Installation
+# Installation
+
+## Ubuntu/Debian
 
 1. `cd /opt`
 
@@ -74,15 +76,17 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `sudo systemctl start plex_autoscan.service`
 
-# Windows Installation
+## Windows
 
-_Note: It's recommended that you install rclone and python using chocolatey.
+_Note: It's recommended that you install Rclone and Python using chocolatey._
 
 # Configuration
 
-_Note: Changes to config file require a restart of the Plex Autoscan service: `sudo systemctl restart plex_autoscan.service`._
+_Note: Changes to config file require a restart of the Plex Autoscan service (e.g. `sudo systemctl restart plex_autoscan.service` in Ubuntu)._
 
-## Ubuntu/Debian Example
+## Example
+
+### Ubuntu/Debian 
 
 ```json
 {
@@ -186,7 +190,7 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 
 ```
 
-## Windows Example
+### Windows
 
 _Note: Windows specific differences only shown. This assumes you mounted your rclone mount to G:\
 
