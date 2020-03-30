@@ -1,5 +1,6 @@
 import subprocess
 import os
+import posixpath
 import logging
 
 logger = logging.getLogger("RCLONE")
@@ -36,9 +37,9 @@ class RcloneDecoder:
                     if "failed" in decoded.lower():
                         logger.error("Failed to decode path: '%s'", file_path)
                     else:
-                        logger.debug("Decoded path of '%s' is: '%s'", file_path, os.path.join(crypt_dir, decoded))
+                        logger.debug("Decoded path of '%s' is: '%s'", file_path, posixpath.join(crypt_dir, decoded))
                         logger.info("Decode successful.")
-                        return [os.path.join(crypt_dir, decoded)]
+                        return [posixpath.join(crypt_dir, decoded)]
             else:
                 logger.debug("Ignoring crypt decode for path '%s' because '%s' was not matched from 'CRYPT_MAPPINGS'.", path, crypt_dir)
         return None

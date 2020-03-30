@@ -45,7 +45,7 @@ def map_pushed_path(config, path):
         for mapping in mappings:
             if path.startswith(mapping):
                 logger.debug("Mapping server path '%s' to '%s'.", mapping, mapped_path)
-                return path.replace(mapping, mapped_path)
+                return os.path.normpath(path.replace(mapping, mapped_path))
     return path
 
 

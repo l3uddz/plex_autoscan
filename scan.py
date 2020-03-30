@@ -196,8 +196,8 @@ def thread_google_monitor():
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPINGS'] != {}:
         logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
-        crypt_decoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
-                                             conf.configs['RCLONE']['CONFIG'])
+        crypt_decoder = rclone.RcloneDecoder(os.path.normpath(conf.configs['RCLONE']['BINARY']), conf.configs['RCLONE']['CRYPT_MAPPINGS'],
+                                             os.path.normpath(conf.configs['RCLONE']['CONFIG']))
 
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],

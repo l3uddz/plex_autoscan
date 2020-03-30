@@ -5,7 +5,7 @@ import os
 import sys
 import uuid
 from copy import copy
-
+import collections.abc
 logger = logging.getLogger("CONFIG")
 
 
@@ -296,8 +296,9 @@ class Config(object):
                 exit(0)
             else:
                 logger.debug("Config was not upgraded as there were no changes to add.")
-
-        self.configs = cfg
+        
+        self.configs = expand_cfg(cfg)
+       
 
     def save(self, cfg, exitOnSave=True):
         with open(self.settings['config'], 'w') as fp:
@@ -338,7 +339,7 @@ class Config(object):
                         value
                     ))
 
-                setts[name] = os.path.expandvars(value)
+                setts[name] = os.path.normpath(os.path.expandvars(value))
 
             except Exception:
                 logger.exception("Exception retrieving setting value: %r" % name)
@@ -410,3 +411,14 @@ class Config(object):
 
         else:
             return vars(parser.parse_args())
+
+
+def expand_cfg(d):
+  for k, v in d.items():
+    if isinstance(v, dict):
+      d[k] = expand_cfg(v)
+    else:
+        if isinstance(v, str):
+            d[k] = os.path.normpath(os.path.expandvars(v))
+            
+  return d

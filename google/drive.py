@@ -1,5 +1,5 @@
 import logging
-import os
+import posixpath
 import time
 from collections import OrderedDict
 from copy import copy
@@ -339,7 +339,7 @@ class GoogleDrive:
                 if path.strip() == '':
                     path = obj['name']
                 else:
-                    path = os.path.join(obj['name'], path)
+                    path = posixpath.join(obj['name'], path)
 
                 if 'parents' in obj and obj['parents']:
                     for parent in obj['parents']:
