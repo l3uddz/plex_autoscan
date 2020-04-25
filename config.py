@@ -81,6 +81,7 @@ class Config(object):
                 'MIME_TYPES_LIST': []
             },
             'POLL_INTERVAL': 120,
+            'DISABLE_DISK_FILE_SIZE_CHECK': False,
             'TEAMDRIVE': False,
             'TEAMDRIVES': [],
             'SHOW_CACHE_LOGS': True
@@ -131,10 +132,11 @@ class Config(object):
             cfg['PLEX_SCANNER'] = '%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe'
             cfg['PLEX_SUPPORT_DIR'] = '%LOCALAPPDATA%\\Plex Media Server'
             cfg['PLEX_LD_LIBRARY_PATH'] = '%LOCALAPPDATA%\\Plex Media Server'
-            cfg['PLEX_DATABASE_PATH'] = '%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db'
+            cfg[
+                'PLEX_DATABASE_PATH'] = '%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db'
             cfg['RCLONE']['BINARY'] = '%ChocolateyInstall%\\bin\\rclone.exe'
             cfg['RCLONE']['CONFIG'] = '%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf'
-  
+
         # add example scan priorities
         cfg['SERVER_SCAN_PRIORITIES'] = {
             "0": [
@@ -155,7 +157,7 @@ class Config(object):
             cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ['/mnt/unionfs/mounted.bin']
 
         # add example server path mappings
-        if os.name == 'nt': 
+        if os.name == 'nt':
             cfg['SERVER_PATH_MAPPINGS'] = {
                 'G:\\media': [
                     "/data/media",
@@ -170,7 +172,7 @@ class Config(object):
             }
 
         # add example file exist path mappings
-        if os.name == 'nt': 
+        if os.name == 'nt':
             cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
                 "G:\\": [
                     "/data/"
