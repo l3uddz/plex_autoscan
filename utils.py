@@ -41,12 +41,26 @@ def get_plex_section(config, path):
     return -1
 
 
+def ensure_valid_os_path_sep(path):
+    try:
+        if path.startswith('/'):
+            # replace \ with /
+            return path.replace('\\', '/')
+        elif '\\' in path:
+            # replace / with \
+            return path.replace('/', '\\')
+    except Exception:
+        logger.exception("Exception while trying to ensure valid os path seperator for: '%s'", path)
+
+    return path
+
+
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if path.startswith(mapping):
                 logger.debug("Mapping server path '%s' to '%s'.", mapping, mapped_path)
-                return path.replace(mapping, mapped_path)
+                return ensure_valid_os_path_sep(path.replace(mapping, mapped_path))
     return path
 
 
@@ -55,7 +69,7 @@ def map_pushed_path_file_exists(config, path):
         for mapping in mappings:
             if path.startswith(mapping):
                 logger.debug("Mapping file check path '%s' to '%s'.", mapping, mapped_path)
-                return path.replace(mapping, mapped_path)
+                return ensure_valid_os_path_sep(path.replace(mapping, mapped_path))
     return path
 
 
