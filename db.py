@@ -55,7 +55,7 @@ def get_next_item():
     return item
 
 
-def exists_file_root_path(file_path):
+def exists_file_root_path(file_path, section):
     items = get_all_items()
     if '.' in file_path:
         dir_path = os.path.dirname(file_path)
@@ -63,10 +63,9 @@ def exists_file_root_path(file_path):
         dir_path = file_path
 
     for item in items:
-        if dir_path.lower() in item['scan_path'].lower():
+        if dir_path.lower() in item['scan_path'].lower() and section == item['scan_section']:
             return True, item['scan_path']
     return False, None
-
 
 def get_all_items():
     items = []
