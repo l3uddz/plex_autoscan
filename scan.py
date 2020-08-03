@@ -7,48 +7,38 @@ import sys
 import time
 from pyfiglet import Figlet
 from logging.handlers import RotatingFileHandler
-
 # urllib3
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 # Replace Python2.X input with raw_input, renamed to input in Python 3
 if hasattr(__builtins__, 'raw_input'):
     input = raw_input
-
 from flask import Flask
 from flask import abort
 from flask import jsonify
 from flask import request
-
 # Get config
 import config
 import threads
-
 ############################################################
 # INIT
 ############################################################
-
-# Logging
+#Logging
 logFormatter = logging.Formatter('%(asctime)24s - %(levelname)8s - %(name)9s [%(thread)5d]: %(message)s')
 rootLogger = logging.getLogger()
 rootLogger.setLevel(logging.INFO)
-
 # Decrease modules logging
 logging.getLogger('requests').setLevel(logging.ERROR)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('peewee').setLevel(logging.ERROR)
 logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 logging.getLogger('sqlitedict').setLevel(logging.ERROR)
-
 # Console logger, log to stdout instead of stderr
 consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
-
 # Load initial config
 conf = config.Config()
-
 # File logger
 fileHandler = RotatingFileHandler(
     conf.settings['logfile'],
@@ -58,36 +48,27 @@ fileHandler = RotatingFileHandler(
 )
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
-
 # Set configured log level
 rootLogger.setLevel(conf.settings['loglevel'])
 # Load config file
 conf.load()
-
 # Scan logger
 logger = rootLogger.getChild("AUTOSCAN")
-
 # Multiprocessing
 thread = threads.Thread()
 scan_lock = threads.PriorityLock()
 resleep_paths = []
-
 # local imports
 import db
 import plex
 import utils
 import rclone
 from google import GoogleDrive, GoogleDriveManager
-
 google = None
 manager = None
-
-
 ############################################################
 # QUEUE PROCESSOR
 ############################################################
-
-
 def queue_processor():
     logger.info("Starting queue processor in 10 seconds...")
     try:
@@ -105,20 +86,15 @@ def queue_processor():
     except Exception:
         logger.exception("Exception while processing scan requests from Plex Autoscan database.")
     return
-
-
 ############################################################
 # FUNCS
 ############################################################
-
-
 def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None, scan_lookup_id=None):
     section = utils.get_plex_section(conf.configs, path)
     if section <= 0:
         return False
     else:
         logger.info("Using Section ID '%d' for '%s'", section, path)
-
     if conf.configs['SERVER_USE_SQLITE']:
         db_exists, db_file = db.exists_file_root_path(path)
         if not db_exists and db.add_item(path, scan_for, section, scan_type):
@@ -129,96 +105,71 @@ def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None
                 "Already processing '%s' from same folder. Skip adding extra scan request to the queue.", db_file)
             resleep_paths.append(db_file)
             return False
-
     thread.start(plex.scan,
                  args=[conf.configs, scan_lock, path, scan_for, section, scan_type, resleep_paths, scan_title,
                        scan_lookup_type, scan_lookup_id])
     return True
-
-
 def start_queue_reloader():
     thread.start(queue_processor)
     return True
-
-
 def start_google_monitor():
     thread.start(thread_google_monitor)
     return True
-
-
 ############################################################
 # GOOGLE DRIVE
 ############################################################
-
 def process_google_changes(items_added):
     new_file_paths = []
-
     # process items added
     if not items_added:
         return True
-
     for file_id, file_paths in items_added.items():
         for file_path in file_paths:
             if file_path in new_file_paths:
                 continue
             new_file_paths.append(file_path)
-
     # remove files that already exist in the plex database
     removed_rejected_exists = utils.remove_files_exist_in_plex_database(conf.configs,
                                                                         new_file_paths)
-
     if removed_rejected_exists:
         logger.info("Rejected %d file(s) from Google Drive changes for already being in Plex.",
                     removed_rejected_exists)
-
     # process the file_paths list
     if len(new_file_paths):
         logger.info("Proceeding with scan of %d file(s) from Google Drive changes: %s", len(new_file_paths),
                     new_file_paths)
-
         # loop each file, remapping and starting a scan thread
         for file_path in new_file_paths:
             final_path = utils.map_pushed_path(conf.configs, file_path)
             start_scan(final_path, 'Google Drive', 'Download')
-
     return True
-
-
 def thread_google_monitor():
     global manager
-
     logger.info("Starting Google Drive monitoring in 30 seconds...")
     time.sleep(30)
-
     # initialize crypt_decoder to None
     crypt_decoder = None
-
     # load rclone client if crypt being used
     if conf.configs['RCLONE']['CRYPT_MAPPINGS'] != {}:
         logger.info("Crypt mappings have been defined. Initializing Rclone Crypt Decoder...")
         crypt_decoder = rclone.RcloneDecoder(conf.configs['RCLONE']['BINARY'], conf.configs['RCLONE']['CRYPT_MAPPINGS'],
                                              conf.configs['RCLONE']['CONFIG'])
-
     # load google drive manager
     manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
                                  crypt_decoder=crypt_decoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
-
     if not manager.is_authorized():
         logger.error("Failed to validate Google Drive Access Token.")
         exit(1)
     else:
         logger.info("Google Drive access token was successfully validated.")
-
     # load teamdrives (if enabled)
     if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
         logger.error("Failed to load Google Teamdrives.")
         exit(1)
-
     # set callbacks
     manager.set_callbacks({'items_added': process_google_changes})
-
     try:
         logger.info("Google Drive changes monitor started.")
         while True:
@@ -226,19 +177,13 @@ def thread_google_monitor():
             manager.get_changes()
             # sleep before polling for changes again
             time.sleep(conf.configs['GOOGLE']['POLL_INTERVAL'])
-
     except Exception:
         logger.exception("Fatal Exception occurred while monitoring Google Drive for changes: ")
-
-
 ############################################################
 # SERVER
 ############################################################
-
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-
-
 @app.route("/api/%s" % conf.configs['SERVER_PASS'], methods=['GET', 'POST'])
 def api_call():
     data = {}
@@ -249,14 +194,12 @@ def api_call():
             data = request.form.to_dict()
         else:
             data = request.args.to_dict()
-
         # verify cmd was supplied
         if 'cmd' not in data:
             logger.error("Unknown %s API call from %r", request.method, request.remote_addr)
             return jsonify({'error': 'No cmd parameter was supplied'})
         else:
             logger.info("Client %s API call from %r, type: %s", request.method, request.remote_addr, data['cmd'])
-
         # process cmds
         cmd = data['cmd'].lower()
         if cmd == 'queue_count':
@@ -265,18 +208,14 @@ def api_call():
                 # return error if SQLITE db is not enabled
                 return jsonify({'error': 'SERVER_USE_SQLITE must be enabled'})
             return jsonify({'queue_count': db.get_queue_count()})
-
         else:
             # unknown cmd
             return jsonify({'error': 'Unknown cmd: %s' % cmd})
-
     except Exception:
         logger.exception("Exception parsing %s API call from %r: ", request.method, request.remote_addr)
-
     return jsonify({'error': 'Unexpected error occurred, check logs...'})
-
-
 @app.route("/%s" % conf.configs['SERVER_PASS'], methods=['GET'])
+
 def manual_scan():
     if not conf.configs['SERVER_ALLOW_MANUAL_SCAN']:
         return abort(401)
@@ -308,7 +247,6 @@ def manual_scan():
         </body>
     </html>"""
     return page, 200
-
 
 @app.route("/%s" % conf.configs['SERVER_PASS'], methods=['POST'])
 def client_pushed():
@@ -483,9 +421,6 @@ if __name__ == "__main__":
 #########################################################################
 # Title:    Plex Autoscan                                               #
 # Author:   l3uddz                                                      #
-# URL:      https://github.com/l3uddz/plex_autoscan                     #
-# --                                                                    #
-#         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
 #                   GNU General Public License v3.0                     #
 #########################################################################
