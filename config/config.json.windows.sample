@@ -29,32 +29,33 @@
   "PLEX_ANALYZE_TYPE": "basic",
   "PLEX_FIX_MISMATCHED": false,
   "PLEX_FIX_MISMATCHED_LANG": "en",
-  "PLEX_DATABASE_PATH": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
+  "PLEX_DATABASE_PATH": "%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db",
   "PLEX_EMPTY_TRASH": false,
   "PLEX_EMPTY_TRASH_CONTROL_FILES": [
-    "/mnt/unionfs/mounted.bin"
+    "G:\\mounted.bin"
   ],
   "PLEX_EMPTY_TRASH_MAX_FILES": 100,
   "PLEX_EMPTY_TRASH_ZERO_DELETED": false,
-  "PLEX_LD_LIBRARY_PATH": "/usr/lib/plexmediaserver/lib",
+  "PLEX_LD_LIBRARY_PATH": "%LOCALAPPDATA%\\Plex Media Server",
   "PLEX_LOCAL_URL": "http://localhost:32400",
-  "PLEX_SCANNER": "/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner",
-  "PLEX_SUPPORT_DIR": "/var/lib/plexmediaserver/Library/Application\\ Support",
+  "PLEX_SCANNER": "%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe",
+  "PLEX_SUPPORT_DIR": "%LOCALAPPDATA%\\Plex Media Server",
   "PLEX_USER": "plex",
   "PLEX_TOKEN": "",
   "PLEX_CHECK_BEFORE_SCAN": false,
   "PLEX_WAIT_FOR_EXTERNAL_SCANNERS": true,
   "RCLONE": {
-    "BINARY": "/usr/bin/rclone",
-    "CONFIG": "~/.config/rclone/rclone.conf",
+    "BINARY": "%ChocolateyInstall%\\bin\\rclone.exe",
+    "CONFIG": "%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf",
     "CRYPT_MAPPINGS": {
     },
     "RC_CACHE_REFRESH": {
       "ENABLED": false,
       "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
-      "Media/": [
-          "/mnt/rclone/Media/"
-      ]
+        "S:\\": [
+          "/data/media",
+          "DRIVENAME\\media"
+        ]
       },
       "RC_URL": "http://localhost:5572"
     }
@@ -62,7 +63,7 @@
   "RUN_COMMAND_BEFORE_SCAN": "",
   "SERVER_ALLOW_MANUAL_SCAN": false,
   "SERVER_FILE_EXIST_PATH_MAPPINGS": {
-      "/mnt/unionfs/media/": [
+      "G:\\media\\": [
           "/data/"
       ]
   },
@@ -75,9 +76,10 @@
   "SERVER_MAX_FILE_CHECKS": 10,
   "SERVER_PASS": "9c4b81fe234e4d6eb9011cefe514d915",
   "SERVER_PATH_MAPPINGS": {
-      "/mnt/unionfs/": [
-          "~/media/fused/"
-      ]
+    "G:\\media\\movies\\": [
+      "/data/media/movies/",
+      "TEAMDRIVENAME/media/movies/"
+    ],
   },
   "SERVER_PORT": 3468,
   "SERVER_SCAN_DELAY": 180,
