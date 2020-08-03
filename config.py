@@ -5,23 +5,15 @@ import os
 import sys
 import uuid
 from copy import copy
-
 logger = logging.getLogger("CONFIG")
-
-
 class Singleton(type):
     _instances = {}
-
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-
         return cls._instances[cls]
-
-
 class Config(object):
     __metaclass__ = Singleton
-
     base_config = {
         'PLEX_USER': 'plex',
         'PLEX_SCANNER': '/usr/lib/plexmediaserver/Plex\\ Media\\ Scanner',
@@ -87,7 +79,6 @@ class Config(object):
             'SHOW_CACHE_LOGS': True
         }
     }
-
     base_settings = {
         'config': {
             'argv': '--config',
@@ -123,20 +114,16 @@ class Config(object):
         self.settings = self.get_settings()
         # Configs
         self.configs = None
-
     @property
     def default_config(self):
         cfg = copy(self.base_config)
-
         if os.name == 'nt':
             cfg['PLEX_SCANNER'] = '%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe'
             cfg['PLEX_SUPPORT_DIR'] = '%LOCALAPPDATA%\\Plex Media Server'
             cfg['PLEX_LD_LIBRARY_PATH'] = '%LOCALAPPDATA%\\Plex Media Server'
-            cfg[
-                'PLEX_DATABASE_PATH'] = '%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db'
+            cfg['PLEX_DATABASE_PATH'] = '%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db'
             cfg['RCLONE']['BINARY'] = '%ChocolateyInstall%\\bin\\rclone.exe'
             cfg['RCLONE']['CONFIG'] = '%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf'
-
         # add example scan priorities
         cfg['SERVER_SCAN_PRIORITIES'] = {
             "0": [
@@ -149,13 +136,11 @@ class Config(object):
                 '/Music/'
             ]
         }
-
         # add example file trash control files
         if os.name == 'nt':
             cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ["G:\\mounted.bin"]
         else:
             cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ['/mnt/unionfs/mounted.bin']
-
         # add example server path mappings
         if os.name == 'nt':
             cfg['SERVER_PATH_MAPPINGS'] = {
@@ -170,7 +155,6 @@ class Config(object):
                     '/home/user/media/fused/'
                 ]
             }
-
         # add example file exist path mappings
         if os.name == 'nt':
             cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
@@ -184,10 +168,8 @@ class Config(object):
                     '/data/'
                 ]
             }
-
         # add example server ignore list
         cfg['SERVER_IGNORE_LIST'] = ['/.grab/', '.DS_Store', 'Thumbs.db']
-
         # add example allowed scan paths to google
         if os.name == 'nt':
             cfg['GOOGLE']['ALLOWED']['FILE_PATHS'] = [
@@ -201,7 +183,6 @@ class Config(object):
                 "My Drive/Media/TV/",
                 "My Drive/Media/4K/"
             ]
-
         # add example scan extensions to google
         cfg['GOOGLE']['ALLOWED']['FILE_EXTENSIONS'] = True
         cfg['GOOGLE']['ALLOWED']['FILE_EXTENSIONS_LIST'] = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gif',
@@ -210,11 +191,9 @@ class Config(object):
                                                             'mpeg', 'mpe', 'mpv', 'm2v', 'm4v', 'svi', '3gp',
                                                             '3g2', 'mxf', 'roq', 'nsv', 'f4v', 'f4p', 'f4a', 'f4b',
                                                             'mp3', 'flac', 'ts']
-
         # add example scan mimes for google
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES'] = True
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
-
         # add example Rclone file exists to remote mappings
         if os.name == 'nt':
             cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
@@ -228,13 +207,10 @@ class Config(object):
                     '/mnt/rclone/Media/'
                 ]
             }
-
         return cfg
-
     def __inner_upgrade(self, settings1, settings2, key=None, overwrite=False):
         sub_upgraded = False
         merged = copy(settings2)
-
         if isinstance(settings1, dict):
             for k, v in settings1.items():
                 # missing k
@@ -246,7 +222,6 @@ class Config(object):
                     else:
                         logger.info("Added %r to config option %r: %s", str(k), str(key), str(v))
                     continue
-
                 # iterate children
                 if isinstance(v, dict) or isinstance(v, list):
                     merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
@@ -262,45 +237,35 @@ class Config(object):
                     sub_upgraded = True
                     logger.info("Added to config option %r: %s", str(key), str(v))
                     continue
-
         return merged, sub_upgraded
-
     def upgrade_settings(self, currents):
         fields_env = {}
-
         # ENV gets priority: ENV > config.json
         for name, data in self.base_config.items():
             if name in os.environ:
                 # Use JSON decoder to get same behaviour as config file
                 fields_env[name] = json.JSONDecoder().decode(os.environ[name])
                 logger.info("Using ENV setting %s=%s", name, fields_env[name])
-
         # Update in-memory config with environment settings
         currents.update(fields_env)
-
         # Do inner upgrade
         upgraded_settings, upgraded = self.__inner_upgrade(self.base_config, currents)
         return upgraded_settings, upgraded
-
     def load(self):
         logger.debug("Upgrading config...")
         if not os.path.exists(self.settings['config']):
             logger.info("No config file found. Creating a default config...")
             self.save(self.default_config)
-
         cfg = {}
         with open(self.settings['config'], 'r') as fp:
             cfg, upgraded = self.upgrade_settings(json.load(fp))
-
             # Save config if upgraded
             if upgraded:
                 self.save(cfg)
                 exit(0)
             else:
                 logger.debug("Config was not upgraded as there were no changes to add.")
-
         self.configs = cfg
-
     def save(self, cfg, exitOnSave=True):
         with open(self.settings['config'], 'w') as fp:
             json.dump(cfg, fp, indent=2, sort_keys=True)
@@ -309,10 +274,8 @@ class Config(object):
                 "Your config was upgraded. You may check the changes here: %r",
                 self.settings['config']
             )
-
         if exitOnSave:
             exit(0)
-
     def get_settings(self):
         setts = {}
         for name, data in self.base_settings.items():
@@ -323,7 +286,6 @@ class Config(object):
                 if self.args[name]:
                     value = self.args[name]
                     logger.info("Using ARG setting %s=%s", name, value)
-
                 # Envirnoment variable
                 elif data['env'] in os.environ:
                     value = os.environ[data['env']]
@@ -331,7 +293,6 @@ class Config(object):
                         data['env'],
                         value
                     ))
-
                 # Default
                 else:
                     value = data['default']
@@ -339,14 +300,10 @@ class Config(object):
                         data['argv'],
                         value
                     ))
-
                 setts[name] = os.path.expandvars(value)
-
             except Exception:
                 logger.exception("Exception retrieving setting value: %r" % name)
-
         return setts
-
     # Parse command line arguments
     def parse_args(self):
         parser = argparse.ArgumentParser(
@@ -356,7 +313,6 @@ class Config(object):
             ),
             formatter_class=argparse.RawTextHelpFormatter
         )
-
         # Mode
         parser.add_argument('cmd',
                             choices=('sections', 'sections+', 'server', 'authorize', 'build_caches', 'update_config'),
@@ -369,46 +325,38 @@ class Config(object):
                                 '"update_config": perform upgrade of config'
                             )
                             )
-
         # Config file
         parser.add_argument(self.base_settings['config']['argv'],
                             nargs='?',
                             const=None,
                             help='Config file location (default: %s)' % self.base_settings['config']['default']
                             )
-
         # Log file
         parser.add_argument(self.base_settings['logfile']['argv'],
                             nargs='?',
                             const=None,
                             help='Log file location (default: %s)' % self.base_settings['logfile']['default']
                             )
-
         # Queue file
         parser.add_argument(self.base_settings['queuefile']['argv'],
                             nargs='?',
                             const=None,
                             help='Queue file location (default: %s)' % self.base_settings['queuefile']['default']
                             )
-
         # Cache file
         parser.add_argument(self.base_settings['cachefile']['argv'],
                             nargs='?',
                             const=None,
                             help='Google cache file location (default: %s)' % self.base_settings['cachefile']['default']
                             )
-
         # Logging level
         parser.add_argument(self.base_settings['loglevel']['argv'],
                             choices=('WARN', 'INFO', 'DEBUG'),
                             help='Log level (default: %s)' % self.base_settings['loglevel']['default']
                             )
-
         # Print help by default if no arguments
         if len(sys.argv) == 1:
             parser.print_help()
-
             sys.exit(0)
-
         else:
             return vars(parser.parse_args())
