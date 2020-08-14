@@ -66,7 +66,9 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `python scan.py sections` - Run once to generate a default `config.json` file.
 
-1. `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
+1. Edit `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
+
+1. Edit `/opt/plex_autoscan/system/plex_autoscan.service` - Change two instances of `YOUR_USER` to your user and group (do this before moving on).
 
 1. `sudo cp /opt/plex_autoscan/system/plex_autoscan.service /etc/systemd/system/`
 
