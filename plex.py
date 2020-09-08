@@ -94,13 +94,13 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
                 utils.rclone_rc_clear_cache(config, check_path)
     # build plex scanner command
     if os.name == 'nt':
-        final_cmd = '"%s" --scan --refresh --section %s --directory "%s"' \
+        final_cmd = '"%s" --scan --section %s --directory "%s"' \
                     % (config['PLEX_SCANNER'], str(section), scan_path)
     else:
         cmd = 'export LD_LIBRARY_PATH=' + config['PLEX_LD_LIBRARY_PATH'] + ';'
         if not config['USE_DOCKER']:
             cmd += 'export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=' + config['PLEX_SUPPORT_DIR'] + ';'
-        cmd += config['PLEX_SCANNER'] + ' --scan --refresh --section ' + str(section) + ' --directory ' + cmd_quote(
+        cmd += config['PLEX_SCANNER'] + ' --scan --section ' + str(section) + ' --directory ' + cmd_quote(
             scan_path)
         if config['USE_DOCKER']:
             final_cmd = 'docker exec -u %s -i %s bash -c %s' % \
