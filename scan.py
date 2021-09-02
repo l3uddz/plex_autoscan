@@ -113,7 +113,7 @@ def queue_processor():
 
 
 def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None, scan_lookup_id=None):
-    section = utils.get_plex_section(conf.configs, path)
+    section = utils.get_plex_section(conf, path)
     if section <= 0:
         return False
     else:
