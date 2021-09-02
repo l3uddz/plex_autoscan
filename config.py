@@ -41,6 +41,7 @@ class Config(object):
         'PLEX_FIX_MISMATCHED_LANG': 'en',
         'PLEX_TOKEN': '',
         'PLEX_CHECK_BEFORE_SCAN': False,
+        'PLEX_SECTION_PATH_MAPPING_WITH_API': False,
         'SERVER_IP': '0.0.0.0',
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
