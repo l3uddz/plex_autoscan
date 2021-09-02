@@ -2,7 +2,6 @@ import logging
 import os
 import sqlite3
 import time
-import config
 from contextlib import closing
 
 import db
@@ -35,7 +34,6 @@ def get_detailed_sections_info(conf):
           plexsections = []
           for document in root.findall("Directory"):
               for k in document.findall("Location"):
-                  #pathz.append([document.get('key'), os.path.join(k.get('path'), '')])
                   pathz.setdefault(document.get('key'), []).append(os.path.join(k.get('path'), ''))
                   sectionz[document.get('key')] = document.get('title')
 
@@ -44,11 +42,6 @@ def get_detailed_sections_info(conf):
           return plexsections
     except Exception as e:
         logger.exception("Issue encountered when attempting to list detailed sections info.")
-
-#conf = config.Config()
-#conf.load()
-
-#print(get_detailed_sections_info(conf))
 
 def show_detailed_sections_info(conf):
     plexsections = get_detailed_sections_info(conf)
