@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
 import logging
@@ -77,7 +77,7 @@ import db
 import plex
 import utils
 import rclone
-from google import GoogleDrive, GoogleDriveManager
+import google
 
 google = None
 manager = None
