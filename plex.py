@@ -156,8 +156,15 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
 
         # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
-            logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
-            utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
+            extCmd = config['RUN_COMMAND_BEFORE_SCAN']
+            for ch in ['%config', '%lock', '%path', '%scan_for', '%section', '%scan_type', '%resleep_paths', '%scan_title', '%scan_lookup_type', '%scan_lookup_id']:
+                if ch in extCmd:
+                 chf = "%("+ch[1:]+")s"
+                 rplc = "\"%s\"" % chf
+                 extCmd = extCmd.replace(ch, rplc)
+            extCmd = extCmd % {'config': config, 'lock': lock, 'path': path, 'scan_for': scan_for, 'section': section, 'scan_type': scan_type, 'resleep_paths': resleep_paths, 'scan_title': scan_title, 'scan_lookup_type': scan_lookup_type, 'scan_lookup_id': scan_lookup_id}
+            logger.info("Running external command: %r", extCmd)
+            utils.run_command(extCmd)
             logger.info("Finished running external command.")
 
         # wait for Plex to become responsive (if PLEX_CHECK_BEFORE_SCAN is enabled)
@@ -222,9 +229,17 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
 
         # run external command after scan if supplied
         if len(config['RUN_COMMAND_AFTER_SCAN']) > 2:
-            logger.info("Running external command: %r", config['RUN_COMMAND_AFTER_SCAN'])
-            utils.run_command(config['RUN_COMMAND_AFTER_SCAN'])
+            extCmd = config['RUN_COMMAND_AFTER_SCAN']
+            for ch in ['%config', '%lock', '%path', '%scan_for', '%section', '%scan_type', '%resleep_paths', '%scan_title', '%scan_lookup_type', '%scan_lookup_id']:
+                if ch in extCmd:
+                 chf = "%("+ch[1:]+")s"
+                 rplc = "\"%s\"" % chf
+                 extCmd = extCmd.replace(ch, rplc)
+            extCmd = extCmd % {'config': config, 'lock': lock, 'path': path, 'scan_for': scan_for, 'section': section, 'scan_type': scan_type, 'resleep_paths': resleep_paths, 'scan_title': scan_title, 'scan_lookup_type': scan_lookup_type, 'scan_lookup_id': scan_lookup_id}
+            logger.info("Running external command: %r", extCmd)
+            utils.run_command(extCmd)
             logger.info("Finished running external command.")
+
 
     except Exception:
         logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)
