@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
 import logging
@@ -77,9 +77,9 @@ import db
 import plex
 import utils
 import rclone
-from google import GoogleDrive, GoogleDriveManager
+import google
 
-google = None
+google_drive = None
 manager = None
 
 
@@ -200,7 +200,7 @@ def thread_google_monitor():
                                              conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
-    manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+    manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
                                  crypt_decoder=crypt_decoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
@@ -506,18 +506,18 @@ if __name__ == "__main__":
             logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
             logger.debug("client_secret: %r", conf.configs['GOOGLE']['CLIENT_SECRET'])
 
-            google = GoogleDrive(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+            google_drive = google.GoogleDrive(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                  conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'])
 
             # Provide authorization link
             logger.info("Visit the link below and paste the authorization code: ")
-            logger.info(google.get_auth_link())
+            logger.info(google_drive.get_auth_link())
             logger.info("Enter authorization code: ")
             auth_code = input()
             logger.debug("auth_code: %r", auth_code)
 
             # Exchange authorization code
-            token = google.exchange_code(auth_code)
+            token = google_drive.exchange_code(auth_code)
             if not token or 'access_token' not in token:
                 logger.error("Failed exchanging authorization code for an Access Token.")
                 sys.exit(1)
@@ -543,7 +543,7 @@ if __name__ == "__main__":
     elif conf.args['cmd'] == 'build_caches':
         logger.info("Building caches")
         # load google drive manager
-        manager = GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
+        manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
                                      conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                      allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 

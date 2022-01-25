@@ -136,7 +136,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
         logger.info("Scan request is now being processed...")
         # wait for existing scanners being ran by Plex
         if config['PLEX_WAIT_FOR_EXTERNAL_SCANNERS']:
-            scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
+            if os.name == 'nt':
+                scanner_name = os.path.basename(config['PLEX_SCANNER'])
+            else:
+                scanner_name = os.path.basename(config['PLEX_SCANNER']).replace('\\', '')
             if not utils.wait_running_process(scanner_name, config['USE_DOCKER'], cmd_quote(config['DOCKER_NAME'])):
                 logger.warning(
                     "There was a problem waiting for existing '%s' process(s) to finish. Aborting scan.", scanner_name)
@@ -173,7 +176,10 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
         # begin scan
         logger.info("Running Plex Media Scanner for: %s", scan_path)
         logger.debug(final_cmd)
-        utils.run_command(final_cmd.encode("utf-8"))
+        if os.name == 'nt':
+            utils.run_command(final_cmd)
+        else:
+            utils.run_command(final_cmd.encode("utf-8"))
         logger.info("Finished scan!")
 
         # remove item from Plex database if sqlite is enabled
@@ -395,7 +401,10 @@ def analyze_item(config, scan_path):
     logger.debug("Starting %s analysis of 'metadata_item': %s",
                  'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
     logger.debug(final_cmd)
-    utils.run_command(final_cmd.encode("utf-8"))
+    if os.name == 'nt':
+        utils.run_command(final_cmd)
+    else:
+        utils.run_command(final_cmd.encode("utf-8"))
     logger.info("Finished %s analysis of 'metadata_item': %s",
                 'deep' if config['PLEX_ANALYZE_TYPE'].lower() == 'deep' else 'basic', metadata_item_id)
 
