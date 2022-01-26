@@ -507,7 +507,7 @@ class GoogleDrive:
                 )
 
                 if not allowed_path:
-                    self._extracted_from__remove_unwanted_paths_12(
+                    self._ignore_item_path(
                         "Ignoring %r because its not an allowed path.",
                         item_path,
                         removed_file_paths,
@@ -526,7 +526,7 @@ class GoogleDrive:
                 )
 
                 if not allowed_file:
-                    self._extracted_from__remove_unwanted_paths_12(
+                    self._ignore_item_path(
                         "Ignoring %r because it was not an allowed extension.",
                         item_path,
                         removed_file_paths,
@@ -559,7 +559,7 @@ class GoogleDrive:
                     paths_list.remove(item_path)
         return removed_file_paths
 
-    def _extracted_from__remove_unwanted_paths_12(self, arg0, item_path, removed_file_paths, paths_list):
+    def _ignore_item_path(self, arg0, item_path, removed_file_paths, paths_list):
         logger.debug(arg0, item_path)
         removed_file_paths.append(item_path)
         paths_list.remove(item_path)
