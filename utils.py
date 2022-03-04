@@ -138,12 +138,11 @@ def run_command(command, get_output=False):
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
         if output and len(output) >= 3:
-            if not get_output:
-                if len(output) >= 8:
-                    logger.info(output)
-            else:
+            if get_output:
                 total_output += output
 
+            elif len(output) >= 8:
+                logger.info(output)
         if process.poll() is not None:
             break
 
@@ -278,12 +277,13 @@ def remove_files_exist_in_plex_database(config, file_paths):
                                                ('%' + file_path_plex,)) \
                             .fetchone()
                         file_path_actual = map_pushed_path_file_exists(config, file_path_plex)
-                        # should plex file size and file size on disk be checked?
-                        disk_file_size_check = True
-
-                        if 'DISABLE_DISK_FILE_SIZE_CHECK' in config['GOOGLE'] \
-                                and config['GOOGLE']['DISABLE_DISK_FILE_SIZE_CHECK']:
-                            disk_file_size_check = False
+                        disk_file_size_check = (
+                            'DISABLE_DISK_FILE_SIZE_CHECK'
+                            not in config['GOOGLE']
+                            or not config['GOOGLE'][
+                                'DISABLE_DISK_FILE_SIZE_CHECK'
+                            ]
+                        )
 
                         if found_item:
                             logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)

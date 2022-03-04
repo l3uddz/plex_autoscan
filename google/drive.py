@@ -152,8 +152,8 @@ class GoogleDrive:
                 logger.debug('Response Content:\n%s\n', resp.text)
 
                 if (
-                    'Content-Type' not in resp.headers
-                    or 'json' not in resp.headers['Content-Type']
+                        'Content-Type' not in resp.headers
+                        or 'json' not in resp.headers['Content-Type']
                 ):
                     return resp.status_code == 200, resp, resp.text
 
@@ -337,10 +337,7 @@ class GoogleDrive:
                                            obj['md5Checksum'] if 'md5Checksum' in obj else None)
                     new_cache_entries += 1
 
-                if path.strip() == '':
-                    path = obj['name']
-                else:
-                    path = os.path.join(obj['name'], path)
+                path = obj['name'] if path.strip() == '' else os.path.join(obj['name'], path)
 
                 if 'parents' in obj and obj['parents']:
                     for parent in obj['parents']:
@@ -488,9 +485,7 @@ class GoogleDrive:
                              token_updater=self._token_saver, token=self.token)
 
     def _get_cached_metdata(self, item_id):
-        if item_id in self.cache:
-            return self.cache[item_id]
-        return None
+        return self.cache[item_id] if item_id in self.cache else None
 
     def _dump_cache(self, blocking=True):
         self.cache.commit(blocking=blocking)
@@ -644,7 +639,7 @@ class GoogleDrive:
                             else:
                                 added_file_paths[change['fileId']] = item_paths
                         elif ('name' in change['file'] and 'name' in existing_cache_item) and \
-                                    change['file']['name'] != existing_cache_item['name']:
+                                change['file']['name'] != existing_cache_item['name']:
                             logger.debug("md5Checksum matches but file was server-side renamed: %s", item_paths)
                             if change['fileId'] in added_file_paths:
                                 added_file_paths[change['fileId']].extend(item_paths)
@@ -689,7 +684,7 @@ class GoogleDrive:
 
             elif 'teamDriveId' in change:
                 # this is a teamdrive change
-                # dont consider trashed/removed events for processing
+                # don't consider trashed/removed events for processing
                 if 'removed' in change and change['removed']:
                     # remove item from cache
                     if self.remove_item_from_cache(change['teamDriveId']):

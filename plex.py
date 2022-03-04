@@ -24,20 +24,26 @@ def show_detailed_sections_info(conf):
         resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
             conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
         if resp.status_code == 200:
-            logger.info("Requesting of section info was successful.")
-            logger.debug("Request response: %s", resp.text)
-            root = ElementTree.fromstring(resp.text)
-            print('')
-            print("Plex Sections:")
-            print("==============")
-            for document in root.findall("Directory"):
-                print('')
-                print(document.get('key') + ') ' + document.get('title'))
-                dashes_length = len(document.get('key') + ') ' + document.get('title'))
-                print('-' * dashes_length)
-                print("\n".join([os.path.join(k.get('path'), '') for k in document.findall("Location")]))
+            print_detailed_sections_info(resp, ElementTree)
     except Exception as e:
-        logger.exception("Issue encountered when attempting to list detailed sections info.")
+        logger.exception(
+            'Issue encountered when attempting to list detailed sections info.'
+        )
+
+
+def print_detailed_sections_info(resp, ElementTree):
+    logger.info("Requesting of section info was successful.")
+    logger.debug("Request response: %s", resp.text)
+    root = ElementTree.fromstring(resp.text)
+    print('')
+    print("Plex Sections:")
+    print("==============")
+    for document in root.findall("Directory"):
+        print('')
+        print(document.get('key') + ') ' + document.get('title'))
+        dashes_length = len(document.get('key') + ') ' + document.get('title'))
+        print('-' * dashes_length)
+        print("\n".join([os.path.join(k.get('path'), '') for k in document.findall("Location")]))
 
 
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_title=None, scan_lookup_type=None,
@@ -52,14 +58,12 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             logger.info("Sleeping for %d seconds...", config['SERVER_SCAN_DELAY'])
             time.sleep(config['SERVER_SCAN_DELAY'])
 
-        # check if root scan folder for
-        if path in resleep_paths:
-            logger.info("Another scan request occurred for folder of '%s'.", path)
-            logger.info("Sleeping again for %d seconds...", config['SERVER_SCAN_DELAY'])
-            utils.remove_item_from_list(path, resleep_paths)
-        else:
+        if path not in resleep_paths:
             break
 
+        logger.info("Another scan request occurred for folder of '%s'.", path)
+        logger.info("Sleeping again for %d seconds...", config['SERVER_SCAN_DELAY'])
+        utils.remove_item_from_list(path, resleep_paths)
     # check file exists
     checks = 0
     check_path = utils.map_pushed_path_file_exists(config, path)
@@ -156,10 +160,7 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
 
         # run external command before scan if supplied
         if len(config['RUN_COMMAND_BEFORE_SCAN']) > 2:
-            logger.info("Running external command: %r", config['RUN_COMMAND_BEFORE_SCAN'])
-            utils.run_command(config['RUN_COMMAND_BEFORE_SCAN'])
-            logger.info("Finished running external command.")
-
+            run_external_command(config, 'RUN_COMMAND_BEFORE_SCAN')
         # wait for Plex to become responsive (if PLEX_CHECK_BEFORE_SCAN is enabled)
         if 'PLEX_CHECK_BEFORE_SCAN' in config and config['PLEX_CHECK_BEFORE_SCAN']:
             plex_account_user = wait_plex_alive(config)
@@ -210,27 +211,35 @@ def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_t
             analyze_item(config, path)
 
         # match item
-        if config['PLEX_FIX_MISMATCHED'] and config['PLEX_TOKEN'] and not scan_path_is_directory:
-            # were we initiated with the scan_title/scan_lookup_type/scan_lookup_id parameters?
-            if scan_title is not None and scan_lookup_type is not None and scan_lookup_id is not None:
-                logger.debug("Sleeping for 10 seconds...")
-                time.sleep(10)
-                logger.debug("Validating match for '%s' (%s ID: %s)...",
-                             scan_title,
-                             scan_lookup_type, str(scan_lookup_id))
-                match_item_parent(config, path, scan_title, scan_lookup_type, scan_lookup_id)
+        if (
+                config['PLEX_FIX_MISMATCHED']
+                and config['PLEX_TOKEN']
+                and not scan_path_is_directory
+                and scan_title is not None
+                and scan_lookup_type is not None
+                and scan_lookup_id is not None
+        ):
+            logger.debug("Sleeping for 10 seconds...")
+            time.sleep(10)
+            logger.debug("Validating match for '%s' (%s ID: %s)...",
+                         scan_title,
+                         scan_lookup_type, str(scan_lookup_id))
+            match_item_parent(config, path, scan_title, scan_lookup_type, scan_lookup_id)
 
         # run external command after scan if supplied
         if len(config['RUN_COMMAND_AFTER_SCAN']) > 2:
-            logger.info("Running external command: %r", config['RUN_COMMAND_AFTER_SCAN'])
-            utils.run_command(config['RUN_COMMAND_AFTER_SCAN'])
-            logger.info("Finished running external command.")
-
+            run_external_command(config, 'RUN_COMMAND_AFTER_SCAN')
     except Exception:
         logger.exception("Unexpected exception occurred while processing: '%s'", scan_path)
     finally:
         lock.release()
     return
+
+
+def run_external_command(config, arg1):
+    logger.info("Running external command: %r", config[arg1])
+    utils.run_command(config[arg1])
+    logger.info("Finished running external command.")
 
 
 def show_sections(config):
@@ -618,8 +627,12 @@ def wait_plex_alive(config):
             if resp.status_code == 200 and 'json' in resp.headers['Content-Type']:
                 resp_json = resp.json()
                 if 'MyPlex' in resp_json:
-                    plex_user = resp_json['MyPlex']['username'] if 'username' in resp_json['MyPlex'] else 'Unknown'
-                    return plex_user
+                    return (
+                        resp_json['MyPlex']['username']
+                        if 'username' in resp_json['MyPlex']
+                        else 'Unknown'
+                    )
+
 
             logger.error("Unexpected response when checking if Plex was available for scans "
                          "(Attempt: %d): status_code = %d - resp_text =\n%s",

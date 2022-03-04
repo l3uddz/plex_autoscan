@@ -248,10 +248,10 @@ class Config(object):
                     continue
 
                 # iterate children
-                if isinstance(v, dict) or isinstance(v, list):
+                if isinstance(v, (dict, list)):
                     merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
                                                                   overwrite=overwrite)
-                    sub_upgraded = did_upgrade if did_upgrade else sub_upgraded
+                    sub_upgraded = did_upgrade or sub_upgraded
                 elif settings1[k] != settings2[k] and overwrite:
                     merged = settings1
                     sub_upgraded = True
@@ -404,11 +404,8 @@ class Config(object):
                             help='Log level (default: %s)' % self.base_settings['loglevel']['default']
                             )
 
-        # Print help by default if no arguments
-        if len(sys.argv) == 1:
-            parser.print_help()
-
-            sys.exit(0)
-
-        else:
+        if len(sys.argv) != 1:
             return vars(parser.parse_args())
+        parser.print_help()
+
+        sys.exit(0)
