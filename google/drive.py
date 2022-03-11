@@ -94,9 +94,11 @@ class GoogleDrive:
     redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
     scopes = ['https://www.googleapis.com/auth/drive']
 
-    def __init__(self, client_id, client_secret, cache_path, allowed_config={}, show_cache_logs=True,
+    def __init__(self, client_id, client_secret, cache_path, allowed_config=None, show_cache_logs=True,
                  crypt_decoder=None,
                  teamdrive_id=None):
+        if allowed_config is None:
+            allowed_config = {}
         self.client_id = client_id
         self.client_secret = client_secret
         self.cache_path = cache_path
@@ -121,7 +123,9 @@ class GoogleDrive:
         self.cache['page_token'] = page_token
         return
 
-    def set_callbacks(self, callbacks={}):
+    def set_callbacks(self, callbacks=None):
+        if callbacks is None:
+            callbacks = {}
         for callback_type, callback_func in callbacks.items():
             self.callbacks[callback_type] = callback_func
         return
@@ -137,7 +141,9 @@ class GoogleDrive:
             # pull in existing team drives and create cache for them
         return self.token
 
-    def query(self, path, method='GET', page_type='changes', fetch_all_pages=False, callbacks={}, **kwargs):
+    def query(self, path, method='GET', page_type='changes', fetch_all_pages=False, callbacks=None, **kwargs):
+        if callbacks is None:
+            callbacks = {}
         resp = None
         pages = 1
         resp_json = {}
@@ -257,7 +263,6 @@ class GoogleDrive:
                      'data_callback': self._process_changes}
 
         # get page token
-        page_token = None
         if 'page_token' in self.cache:
             page_token = self.cache['page_token']
         else:
@@ -363,7 +368,9 @@ class GoogleDrive:
 
         return False, []
 
-    def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum, file_paths=[]):
+    def add_item_to_cache(self, item_id, item_name, item_parents, md5_checksum, file_paths=None):
+        if file_paths is None:
+            file_paths = []
         if self.show_cache_logs and item_id not in self.cache:
             logger.info("Added '%s' to cache: %s", item_id, item_name)
 
