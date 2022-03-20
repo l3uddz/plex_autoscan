@@ -16,3 +16,4 @@ sqlitedict~=1.6.0
 urllib3~=1.25.7
 Werkzeug~=0.16.0
 pyfiglet~=0.8.post1
+Authlib~=1.0.0

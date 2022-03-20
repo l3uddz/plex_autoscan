@@ -1,12 +1,12 @@
 import logging
 import os
 import time
+import json
 from collections import OrderedDict
 from copy import copy
 from threading import Lock
 from time import time
-
-from requests_oauthlib import OAuth2Session
+from authlib.integrations.requests_client import AssertionSession
 
 from .cache import Cache
 
@@ -14,17 +14,15 @@ logger = logging.getLogger("GOOGLE")
 
 
 class GoogleDriveManager:
-    def __init__(self, client_id, client_secret, cache_path, allowed_config=None, show_cache_logs=True,
+    def __init__(self, cache_path, allowed_config=None, show_cache_logs=True,
                  crypt_decoder=None, allowed_teamdrives=None):
-        self.client_id = client_id
-        self.client_secret = client_secret
         self.cache_path = cache_path
         self.allowed_config = {} if not allowed_config else allowed_config
         self.show_cache_logs = show_cache_logs
         self.crypt_decoder = crypt_decoder
         self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
         self.drives = OrderedDict({
-            'drive_root': GoogleDrive(client_id, client_secret, cache_path, crypt_decoder=self.crypt_decoder,
+            'drive_root': GoogleDrive(cache_path, crypt_decoder=self.crypt_decoder,
                                       allowed_config=self.allowed_config, show_cache_logs=show_cache_logs)
         })
 
@@ -47,7 +45,7 @@ class GoogleDriveManager:
                 continue
 
             drive_name = "teamdrive_%s" % teamdrive_name
-            self.drives[drive_name] = GoogleDrive(self.client_id, self.client_secret, self.cache_path,
+            self.drives[drive_name] = GoogleDrive(self.cache_path,
                                                   allowed_config=self.allowed_config,
                                                   show_cache_logs=self.show_cache_logs,
                                                   crypt_decoder=self.crypt_decoder,
@@ -91,16 +89,13 @@ class GoogleDrive:
     auth_url = 'https://accounts.google.com/o/oauth2/v2/auth'
     token_url = 'https://www.googleapis.com/oauth2/v4/token'
     api_url = 'https://www.googleapis.com/drive/'
-    redirect_url = 'urn:ietf:wg:oauth:2.0:oob'
-    scopes = ['https://www.googleapis.com/auth/drive']
+    redirect_url = 'http://localhost:8000/oauth2callback'
 
-    def __init__(self, client_id, client_secret, cache_path, allowed_config=None, show_cache_logs=True,
+    def __init__(self, cache_path, allowed_config=None, show_cache_logs=True,
                  crypt_decoder=None,
                  teamdrive_id=None):
         if allowed_config is None:
             allowed_config = {}
-        self.client_id = client_id
-        self.client_secret = client_secret
         self.cache_path = cache_path
         self.cache_manager = Cache(cache_path)
         self.cache = self.cache_manager.get_cache('drive_root' if not teamdrive_id else 'teamdrive_%s' % teamdrive_id)
@@ -486,10 +481,36 @@ class GoogleDrive:
         return
 
     def _new_http_object(self):
-        return OAuth2Session(client_id=self.client_id, redirect_uri=self.redirect_url, scope=self.scopes,
-                             auto_refresh_url=self.token_url, auto_refresh_kwargs={'client_id': self.client_id,
-                                                                                   'client_secret': self.client_secret},
-                             token_updater=self._token_saver, token=self.token)
+        scopes = ['https://www.googleapis.com/auth/drive']
+
+        def create_assertion_session(conf_file, scopes, subject=None):
+            with open(conf_file, 'r') as f:
+                conf = json.load(f)
+
+            token_url = conf['token_uri']
+            issuer = conf['client_email']
+            key = conf['private_key']
+            key_id = conf.get('private_key_id')
+
+            header = {'alg': 'RS256'}
+            if key_id:
+                header['kid'] = key_id
+
+            # Google puts scope in payload
+            claims = {'scope': ' '.join(scopes)}
+            return AssertionSession(
+                grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
+                token_url=token_url,
+                token_endpoint=token_url,
+                issuer=issuer,
+                audience=token_url,
+                claims=claims,
+                subject=subject,
+                key=key,
+                header=header,
+            )
+
+        return create_assertion_session('credentials.json', scopes)
 
     def _get_cached_metdata(self, item_id):
         return self.cache[item_id] if item_id in self.cache else None

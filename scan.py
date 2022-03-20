@@ -72,9 +72,8 @@ import db
 import plex
 import utils
 import rclone
-import google
+from google_drive import GoogleDrive, GoogleDriveManager
 
-google_drive = None
 manager = None
 
 
@@ -199,17 +198,10 @@ def thread_google_monitor():
                                              conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
-    manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                        conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
-                                        show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
-                                        crypt_decoder=crypt_decoder,
-                                        allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
-
-    if not manager.is_authorized():
-        logger.error("Failed to validate Google Drive Access Token.")
-        exit(1)
-    else:
-        logger.info("Google Drive access token was successfully validated.")
+    manager = GoogleDriveManager(conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                 show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
+                                 crypt_decoder=crypt_decoder,
+                                 allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
     # load teamdrives (if enabled)
     if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
@@ -496,34 +488,6 @@ if __name__ == "__main__":
         exit(0)
     elif conf.args['cmd'] == 'update_config':
         exit(0)
-    elif conf.args['cmd'] == 'authorize':
-        if not conf.configs['GOOGLE']['ENABLED']:
-            logger.error("You must enable the GOOGLE section in config.")
-            exit(1)
-        else:
-            logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
-            logger.debug("client_secret: %r", conf.configs['GOOGLE']['CLIENT_SECRET'])
-
-            google_drive = google.GoogleDrive(conf.configs['GOOGLE']['CLIENT_ID'],
-                                              conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                              conf.settings['cachefile'],
-                                              allowed_config=conf.configs['GOOGLE']['ALLOWED'])
-
-            # Provide authorization link
-            logger.info("Visit the link below and paste the authorization code: ")
-            logger.info(google_drive.get_auth_link())
-            logger.info("Enter authorization code: ")
-            auth_code = input()
-            logger.debug("auth_code: %r", auth_code)
-
-            # Exchange authorization code
-            token = google_drive.exchange_code(auth_code)
-            if not token or 'access_token' not in token:
-                logger.error("Failed exchanging authorization code for an Access Token.")
-                sys.exit(1)
-            else:
-                logger.info("Exchanged authorization code for an Access Token:\n\n%s\n", json.dumps(token, indent=2))
-            sys.exit(0)
 
     elif conf.args['cmd'] == 'server':
         if conf.configs['SERVER_USE_SQLITE']:
@@ -543,10 +507,9 @@ if __name__ == "__main__":
     elif conf.args['cmd'] == 'build_caches':
         logger.info("Building caches")
         # load google drive manager
-        manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'],
-                                            conf.configs['GOOGLE']['CLIENT_SECRET'], conf.settings['cachefile'],
-                                            allowed_config=conf.configs['GOOGLE']['ALLOWED'],
-                                            allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
+        manager = GoogleDriveManager(conf.settings['cachefile'],
+                                     allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+                                     allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
         if not manager.is_authorized():
             logger.error("Failed to validate Google Drive Access Token.")

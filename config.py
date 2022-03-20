@@ -71,8 +71,6 @@ class Config(object):
         'USE_SUDO': True,
         'GOOGLE': {
             'ENABLED': False,
-            'CLIENT_ID': '',
-            'CLIENT_SECRET': '',
             'ALLOWED': {
                 'FILE_PATHS': [],
                 'FILE_EXTENSIONS': False,
