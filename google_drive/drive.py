@@ -17,10 +17,10 @@ class GoogleDriveManager:
     def __init__(self, cache_path, allowed_config=None, show_cache_logs=True,
                  crypt_decoder=None, allowed_teamdrives=None):
         self.cache_path = cache_path
-        self.allowed_config = {} if not allowed_config else allowed_config
+        self.allowed_config = allowed_config or {}
         self.show_cache_logs = show_cache_logs
         self.crypt_decoder = crypt_decoder
-        self.allowed_teamdrives = [] if not allowed_teamdrives else allowed_teamdrives
+        self.allowed_teamdrives = allowed_teamdrives or []
         self.drives = OrderedDict({
             'drive_root': GoogleDrive(cache_path, crypt_decoder=self.crypt_decoder,
                                       allowed_config=self.allowed_config, show_cache_logs=show_cache_logs)
@@ -44,7 +44,7 @@ class GoogleDriveManager:
             if teamdrive_name not in self.allowed_teamdrives:
                 continue
 
-            drive_name = "teamdrive_%s" % teamdrive_name
+            drive_name = f"teamdrive_{teamdrive_name}"
             self.drives[drive_name] = GoogleDrive(self.cache_path,
                                                   allowed_config=self.allowed_config,
                                                   show_cache_logs=self.show_cache_logs,
@@ -98,7 +98,10 @@ class GoogleDrive:
             allowed_config = {}
         self.cache_path = cache_path
         self.cache_manager = Cache(cache_path)
-        self.cache = self.cache_manager.get_cache('drive_root' if not teamdrive_id else 'teamdrive_%s' % teamdrive_id)
+        self.cache = self.cache_manager.get_cache(
+            f'teamdrive_{teamdrive_id}' if teamdrive_id else 'drive_root'
+        )
+
         self.settings_cache = self.cache_manager.get_cache('settings', autocommit=True)
         self.support_team_drives = teamdrive_id is not None
         self.token = self._load_token()
@@ -125,24 +128,15 @@ class GoogleDrive:
             self.callbacks[callback_type] = callback_func
         return
 
-    def get_auth_link(self):
-        auth_url, state = self.http.authorization_url(self.auth_url, access_type='offline', prompt='select_account')
-        return auth_url
-
-    def exchange_code(self, code):
-        token = self.http.fetch_token(self.token_url, code=code, client_secret=self.client_secret)
-        if 'access_token' in token:
-            self._token_saver(token)
-            # pull in existing team drives and create cache for them
-        return self.token
-
     def query(self, path, method='GET', page_type='changes', fetch_all_pages=False, callbacks=None, **kwargs):
         if callbacks is None:
             callbacks = {}
         resp = None
         pages = 1
         resp_json = {}
-        request_url = self.api_url + path.lstrip('/') if not path.startswith('http') else path
+        request_url = (
+            path if path.startswith('http') else self.api_url + path.lstrip('/')
+        )
 
         try:
             while True:
@@ -282,8 +276,8 @@ class GoogleDrive:
             params['teamDriveId'] = self.teamdrive_id
 
         # make call(s)
-        success, resp, data = self.query('/v3/changes', params=params, fetch_all_pages=True,
-                                         callbacks=callbacks)
+        _, resp, data = self.query('/v3/changes', params=params, fetch_all_pages=True,
+                                   callbacks=callbacks)
         return
 
     ############################################################
@@ -291,28 +285,30 @@ class GoogleDrive:
     ############################################################
 
     def get_id_metadata(self, item_id, teamdrive_id=None):
-        # return cache from metadata if available
-        cached_metadata = self._get_cached_metdata(item_id)
-        if cached_metadata:
+        if cached_metadata := self._get_cached_metdata(item_id):
             return True, cached_metadata
 
         # does item_id match teamdrive_id?
         if teamdrive_id is not None and item_id == teamdrive_id:
-            success, resp, data = self.query('v3/teamdrives/%s' % str(item_id))
+            success, resp, data = self.query(f'v3/teamdrives/{str(item_id)}')
             if success and resp.status_code == 200 and 'name' in data:
                 # we successfully retrieved this teamdrive info, lets place a mimeType key in the result
                 # so we know it needs to be cached
                 data['mimeType'] = 'application/vnd.google-apps.folder'
                 # lets create a cache for this teamdrive aswell
-                self.cache_manager.get_cache("teamdrive_%s" % teamdrive_id)
+                self.cache_manager.get_cache(f"teamdrive_{teamdrive_id}")
                 self._do_callback('teamdrive_added', data)
         else:
             # retrieve file metadata
-            success, resp, data = self.query('v3/files/%s' % str(item_id),
-                                             params={
-                                                 'supportsTeamDrives': self.support_team_drives,
-                                                 'fields': 'id,md5Checksum,mimeType,modifiedTime,name,parents,'
-                                                           'trashed,teamDriveId'})
+            success, resp, data = self.query(
+                f'v3/files/{str(item_id)}',
+                params={
+                    'supportsTeamDrives': self.support_team_drives,
+                    'fields': 'id,md5Checksum,mimeType,modifiedTime,name,parents,'
+                              'trashed,teamDriveId',
+                },
+            )
+
         if success and resp.status_code == 200:
             return True, data
         logger.error("Error retrieving metadata for item %r:\n\n%s\n", item_id, data)
@@ -446,9 +442,7 @@ class GoogleDrive:
 
     def _load_token(self):
         try:
-            if 'token' not in self.settings_cache:
-                return {}
-            return self.settings_cache['token']
+            return self.settings_cache['token'] if 'token' in self.settings_cache else {}
         except Exception:
             logger.exception("Exception loading token from cache: ")
         return {}
@@ -483,34 +477,32 @@ class GoogleDrive:
     def _new_http_object(self):
         scopes = ['https://www.googleapis.com/auth/drive']
 
-        def create_assertion_session(conf_file, scopes, subject=None):
-            with open(conf_file, 'r') as f:
-                conf = json.load(f)
+        with open('credentials.json', 'r') as f:
+            conf = json.load(f)
 
-            token_url = conf['token_uri']
-            issuer = conf['client_email']
-            key = conf['private_key']
-            key_id = conf.get('private_key_id')
+        token_url = conf['token_uri']
+        issuer = conf['client_email']
+        key = conf['private_key']
+        key_id = conf.get('private_key_id')
+        subject = None
 
-            header = {'alg': 'RS256'}
-            if key_id:
-                header['kid'] = key_id
+        header = {'alg': 'RS256'}
+        if key_id:
+            header['kid'] = key_id
 
-            # Google puts scope in payload
-            claims = {'scope': ' '.join(scopes)}
-            return AssertionSession(
-                grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
-                token_url=token_url,
-                token_endpoint=token_url,
-                issuer=issuer,
-                audience=token_url,
-                claims=claims,
-                subject=subject,
-                key=key,
-                header=header,
-            )
-
-        return create_assertion_session('credentials.json', scopes)
+        # Google puts scope in payload
+        claims = {'scope': ' '.join(scopes)}
+        return AssertionSession(
+            grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
+            token_url=token_url,
+            token_endpoint=token_url,
+            issuer=issuer,
+            audience=token_url,
+            claims=claims,
+            subject=subject,
+            key=key,
+            header=header,
+        )
 
     def _get_cached_metdata(self, item_id):
         return self.cache[item_id] if item_id in self.cache else None
@@ -632,8 +624,7 @@ class GoogleDrive:
 
                 # check if decoder is present
                 if self.crypt_decoder:
-                    decoded = self.crypt_decoder.decode_path(item_paths[0])
-                    if decoded:
+                    if decoded := self.crypt_decoder.decode_path(item_paths[0]):
                         item_paths = decoded
 
                 # dont process folder events
@@ -729,7 +720,7 @@ class GoogleDrive:
                 if 'teamDrive' in change and 'id' in change['teamDrive'] and 'name' in change['teamDrive']:
                     # we always want to add changes to the cache so renames etc can be reflected inside the cache
                     if change['teamDrive']['id'] not in self.cache:
-                        self.cache_manager.get_cache("teamdrive_%s" % change['teamDrive']['id'])
+                        self.cache_manager.get_cache(f"teamdrive_{change['teamDrive']['id']}")
                         self._do_callback('teamdrive_added', change)
 
                     self.add_item_to_cache(change['teamDrive']['id'], change['teamDrive']['name'], [], None)

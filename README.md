@@ -811,9 +811,9 @@ To set this up:
 
 1. Next, you will need to supply a service account with access to Google Drive.
 
-    ### TODO: Explainer on how to setup the service account.
+    ### TODO: Explainer on how to set up the service account.
 
-1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counter part.
+1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counterpart.
 
    i. Native install
 
