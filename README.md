@@ -392,6 +392,8 @@ Sample output:
   2: TV
 ```
 
+`PLEX_SECTION_PATH_MAPPINGS_WITH_API` - Use the Plex Server's API to obtain Section Paths instead of querying the sqlite database directly. Default is `false`.
+
 ### Plex Emptying Trash
 
 When media is upgraded by Sonarr/Radarr/Lidarr, the previous files are then deleted. When Plex gets the scan request after the upgrade, the new media is added in to the library, but the previous media files would still be listed there but labeled as "unavailable".

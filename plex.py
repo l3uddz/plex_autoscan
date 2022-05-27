@@ -16,34 +16,45 @@ import utils
 
 logger = logging.getLogger("PLEX")
 
+from collections import namedtuple
+PlexSection = namedtuple("PlexSection", "id title paths")
 
-def show_detailed_sections_info(conf):
+def get_detailed_sections_info(conf):
     from xml.etree import ElementTree
     try:
         logger.info("Requesting section info from Plex...")
         resp = requests.get('%s/library/sections/all?X-Plex-Token=%s' % (
             conf.configs['PLEX_LOCAL_URL'], conf.configs['PLEX_TOKEN']), timeout=30)
         if resp.status_code == 200:
-            print_detailed_sections_info(resp, ElementTree)
+          logger.info("Requesting of section info was successful.")
+          logger.debug("Request response: %s", resp.text)
+          root = ElementTree.fromstring(resp.text)
+          pathz = {}
+          sectionz = {}
+          plexsections = []
+          for document in root.findall("Directory"):
+              for k in document.findall("Location"):
+                  pathz.setdefault(document.get('key'), []).append(os.path.join(k.get('path'), ''))
+                  sectionz[document.get('key')] = document.get('title')
+
+          for key in sorted(sectionz):
+              plexsections.append(PlexSection(key, sectionz[key], pathz[key]))
+          return plexsections
     except Exception as e:
         logger.exception(
             'Issue encountered when attempting to list detailed sections info.'
         )
 
-
-def print_detailed_sections_info(resp, ElementTree):
-    logger.info("Requesting of section info was successful.")
-    logger.debug("Request response: %s", resp.text)
-    root = ElementTree.fromstring(resp.text)
+def show_detailed_sections_info(conf):
+    plexsections = get_detailed_sections_info(conf)
     print('')
     print("Plex Sections:")
     print("==============")
-    for document in root.findall("Directory"):
+    for section in plexsections:
         print('')
-        print(document.get('key') + ') ' + document.get('title'))
-        dashes_length = len(document.get('key') + ') ' + document.get('title'))
-        print('-' * dashes_length)
-        print("\n".join([os.path.join(k.get('path'), '') for k in document.findall("Location")]))
+        print(section.id + ') ' + section.title)
+        print('-' * len(section.id + ') ' + section.title))
+        print("\n".join(section.paths))
 
 
 def scan(config, lock, path, scan_for, section, scan_type, resleep_paths, scan_title=None, scan_lookup_type=None,
