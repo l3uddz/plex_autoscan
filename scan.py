@@ -7,15 +7,7 @@ import sys
 import time
 from pyfiglet import Figlet
 from logging.handlers import RotatingFileHandler
-
-# urllib3
 import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-# Replace Python2.X input with raw_input, renamed to input in Python 3
-if hasattr(__builtins__, 'raw_input'):
-    input = raw_input
-
 from flask import Flask
 from flask import abort
 from flask import jsonify
@@ -24,6 +16,9 @@ from flask import request
 # Get config
 import config
 import threads
+
+# urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 ############################################################
 # INIT
@@ -77,9 +72,8 @@ import db
 import plex
 import utils
 import rclone
-import google
+from google_drive import GoogleDrive, GoogleDriveManager
 
-google_drive = None
 manager = None
 
 
@@ -91,20 +85,24 @@ manager = None
 def queue_processor():
     logger.info("Starting queue processor in 10 seconds...")
     try:
-        time.sleep(10)
-        logger.info("Queue processor started.")
-        db_scan_requests = db.get_all_items()
-        items = 0
-        for db_item in db_scan_requests:
-            thread.start(plex.scan, args=[conf.configs, scan_lock, db_item['scan_path'], db_item['scan_for'],
-                                          db_item['scan_section'],
-                                          db_item['scan_type'], resleep_paths])
-            items += 1
-            time.sleep(2)
-        logger.info("Restored %d scan request(s) from Plex Autoscan database.", items)
+        queue_processor_run()
     except Exception:
         logger.exception("Exception while processing scan requests from Plex Autoscan database.")
     return
+
+
+def queue_processor_run():
+    time.sleep(10)
+    logger.info("Queue processor started.")
+    db_scan_requests = db.get_all_items()
+    items = 0
+    for db_item in db_scan_requests:
+        thread.start(plex.scan, args=[conf.configs, scan_lock, db_item['scan_path'], db_item['scan_for'],
+                                      db_item['scan_section'],
+                                      db_item['scan_type'], resleep_paths])
+        items += 1
+        time.sleep(2)
+    logger.info("Restored %d scan request(s) from Plex Autoscan database.", items)
 
 
 ############################################################
@@ -113,7 +111,7 @@ def queue_processor():
 
 
 def start_scan(path, scan_for, scan_type, scan_title=None, scan_lookup_type=None, scan_lookup_id=None):
-    section = utils.get_plex_section(conf.configs, path)
+    section = utils.get_plex_section(conf, path)
     if section <= 0:
         return False
     else:
@@ -200,16 +198,10 @@ def thread_google_monitor():
                                              conf.configs['RCLONE']['CONFIG'])
 
     # load google drive manager
-    manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                 conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+    manager = GoogleDriveManager(conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                  show_cache_logs=conf.configs['GOOGLE']['SHOW_CACHE_LOGS'],
-                                 crypt_decoder=crypt_decoder, allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
-
-    if not manager.is_authorized():
-        logger.error("Failed to validate Google Drive Access Token.")
-        exit(1)
-    else:
-        logger.info("Google Drive access token was successfully validated.")
+                                 crypt_decoder=crypt_decoder,
+                                 allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
     # load teamdrives (if enabled)
     if conf.configs['GOOGLE']['TEAMDRIVE'] and not manager.load_teamdrives():
@@ -241,7 +233,6 @@ app.config['JSON_AS_ASCII'] = False
 
 @app.route("/api/%s" % conf.configs['SERVER_PASS'], methods=['GET', 'POST'])
 def api_call():
-    data = {}
     try:
         if request.content_type == 'application/json':
             data = request.get_json(silent=True)
@@ -259,16 +250,15 @@ def api_call():
 
         # process cmds
         cmd = data['cmd'].lower()
-        if cmd == 'queue_count':
-            # queue count
-            if not conf.configs['SERVER_USE_SQLITE']:
-                # return error if SQLITE db is not enabled
-                return jsonify({'error': 'SERVER_USE_SQLITE must be enabled'})
-            return jsonify({'queue_count': db.get_queue_count()})
-
-        else:
+        if cmd != 'queue_count':
             # unknown cmd
             return jsonify({'error': 'Unknown cmd: %s' % cmd})
+
+        # queue count
+        if not conf.configs['SERVER_USE_SQLITE']:
+            # return error if SQLITE db is not enabled
+            return jsonify({'error': 'SERVER_USE_SQLITE must be enabled'})
+        return jsonify({'queue_count': db.get_queue_count()})
 
     except Exception:
         logger.exception("Exception parsing %s API call from %r: ", request.method, request.remote_addr)
@@ -450,7 +440,7 @@ def client_pushed():
                    scan_lookup_type, scan_lookup_id)
 
     elif 'artist' in data and 'trackFiles' in data and 'eventType' in data:
-        # lidarr download/upgrade webhook
+        # Lidarr download/upgrade webhook
         for track in data['trackFiles']:
             if 'path' not in track and 'relativePath' not in track:
                 continue
@@ -498,32 +488,6 @@ if __name__ == "__main__":
         exit(0)
     elif conf.args['cmd'] == 'update_config':
         exit(0)
-    elif conf.args['cmd'] == 'authorize':
-        if not conf.configs['GOOGLE']['ENABLED']:
-            logger.error("You must enable the GOOGLE section in config.")
-            exit(1)
-        else:
-            logger.debug("client_id: %r", conf.configs['GOOGLE']['CLIENT_ID'])
-            logger.debug("client_secret: %r", conf.configs['GOOGLE']['CLIENT_SECRET'])
-
-            google_drive = google.GoogleDrive(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                 conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'])
-
-            # Provide authorization link
-            logger.info("Visit the link below and paste the authorization code: ")
-            logger.info(google_drive.get_auth_link())
-            logger.info("Enter authorization code: ")
-            auth_code = input()
-            logger.debug("auth_code: %r", auth_code)
-
-            # Exchange authorization code
-            token = google_drive.exchange_code(auth_code)
-            if not token or 'access_token' not in token:
-                logger.error("Failed exchanging authorization code for an Access Token.")
-                sys.exit(1)
-            else:
-                logger.info("Exchanged authorization code for an Access Token:\n\n%s\n", json.dumps(token, indent=2))
-            sys.exit(0)
 
     elif conf.args['cmd'] == 'server':
         if conf.configs['SERVER_USE_SQLITE']:
@@ -543,8 +507,8 @@ if __name__ == "__main__":
     elif conf.args['cmd'] == 'build_caches':
         logger.info("Building caches")
         # load google drive manager
-        manager = google.GoogleDriveManager(conf.configs['GOOGLE']['CLIENT_ID'], conf.configs['GOOGLE']['CLIENT_SECRET'],
-                                     conf.settings['cachefile'], allowed_config=conf.configs['GOOGLE']['ALLOWED'],
+        manager = GoogleDriveManager(conf.settings['cachefile'],
+                                     allowed_config=conf.configs['GOOGLE']['ALLOWED'],
                                      allowed_teamdrives=conf.configs['GOOGLE']['TEAMDRIVES'])
 
         if not manager.is_authorized():

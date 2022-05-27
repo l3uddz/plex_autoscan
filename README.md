@@ -2,8 +2,8 @@
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
-[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
+[![last commit (master)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/master.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/master)
+[![Discord](https://img.shields.io/discord/853755447970758686.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.gg/ugfKXpFND8)
 [![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
 [![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
 
@@ -95,8 +95,6 @@ _Note: Changes to config file require a restart of the Plex Autoscan service (e.
   "DOCKER_NAME": "plex",
   "GOOGLE": {
     "ENABLED": false,
-    "CLIENT_ID": "",
-    "CLIENT_SECRET": "",
     "ALLOWED": {
       "FILE_PATHS": [],
       "FILE_EXTENSIONS": true,
@@ -394,6 +392,8 @@ Sample output:
   2: TV
 ```
 
+`PLEX_SECTION_PATH_MAPPINGS_WITH_API` - Use the Plex Server's API to obtain Section Paths instead of querying the sqlite database directly. Default is `false`.
+
 ### Plex Emptying Trash
 
 When media is upgraded by Sonarr/Radarr/Lidarr, the previous files are then deleted. When Plex gets the scan request after the upgrade, the new media is added in to the library, but the previous media files would still be listed there but labeled as "unavailable".
@@ -657,8 +657,6 @@ Once a change is detected, the file will be checked against the Plex database to
 ```json
 "GOOGLE": {
   "ENABLED": false,
-  "CLIENT_ID": "",
-  "CLIENT_SECRET": "",
   "ALLOWED": {
     "FILE_PATHS": [],
     "FILE_EXTENSIONS": true,
@@ -692,10 +690,6 @@ Once a change is detected, the file will be checked against the Plex database to
 ```
 
 `ENABLED` - Enable or Disable Google Drive Monitoring. Requires one time authorization, see below.
-
-`CLIENT_ID` - Google Drive API Client ID.
-
-`CLIENT_SECRET` - Google Drive API Client Secret.
 
 `ALLOWED` - Specify what paths, extensions, and mime types to whitelist.
 
@@ -815,33 +809,13 @@ To set this up:
 
     ```json
     "ENABLED": true,
-    "CLIENT_ID": "yourclientid",
-    "CLIENT_SECRET": "yourclientsecret",
     ```
 
-1. Next, you will need to authorize Google Drive.
+1. Next, you will need to supply a service account with access to Google Drive.
 
-   ```shell
-   scan.py authorize
-   ```
+    ### TODO: Explainer on how to set up the service account.
 
-1. Visit the link shown to get the authorization code and paste that in and hit `enter`.
-
-    ```
-    Visit https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=&access_type=offline and authorize against the account you wish to use
-    Enter authorization code:
-    ```
-1. When access token retrieval is successful, you'll see this:
-
-   ```
-   2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
-   2018-06-24 05:57:58,509 -     INFO -    GDRIVE [140007964366656]: Retrieved first access token!
-   2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
-   ```
-
-   _Note: Message stating `Segmentation fault` at the end can be ignored._
-
-1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counter part.
+1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counterpart.
 
    i. Native install
 

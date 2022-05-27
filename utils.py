@@ -9,6 +9,7 @@ from contextlib import closing
 from copy import copy
 
 import requests
+import plex
 
 try:
     from urlparse import urljoin
@@ -19,26 +20,36 @@ import psutil
 
 logger = logging.getLogger("UTILS")
 
+def get_plex_section(conf, path):
+    if conf.configs['PLEX_SECTION_PATH_MAPPINGS_WITH_API']:
+        logger.debug("Using API to obtain section paths")
+        plexsections = plex.get_detailed_sections_info(conf)
+        for section in plexsections:
+            for root_path in section.paths:
+                if path.startswith(root_path):
+                    logger.debug("Plex Library Section ID '%s' matching root folder '%s' was found in the Plex DB.",
+                                  section.id, root_path)
+                    return int(section.id)
+        logger.error("Unable to map '%s' to a Section ID.", path)
+    else:
+        try:
+            with sqlite3.connect(conf.configs['PLEX_DATABASE_PATH']) as conn:
+                conn.row_factory = sqlite3.Row
+                conn.text_factory = str
+                with closing(conn.cursor()) as c:
+                    # check if file exists in plex
+                    logger.debug("Checking if root folder path '%s' matches Plex Library root path in the Plex DB.", path)
+                    section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
+                    for section_id, root_path in section_data:
+                        if path.startswith(root_path + os.sep):
+                            logger.debug("Plex Library Section ID '%d' matching root folder '%s' was found in the Plex DB.",
+                                         section_id, root_path)
+                            return int(section_id)
+                    logger.error("Unable to map '%s' to a Section ID.", path)
 
-def get_plex_section(config, path):
-    try:
-        with sqlite3.connect(config['PLEX_DATABASE_PATH']) as conn:
-            conn.row_factory = sqlite3.Row
-            conn.text_factory = str
-            with closing(conn.cursor()) as c:
-                # check if file exists in plex
-                logger.debug("Checking if root folder path '%s' matches Plex Library root path in the Plex DB.", path)
-                section_data = c.execute("SELECT library_section_id,root_path FROM section_locations").fetchall()
-                for section_id, root_path in section_data:
-                    if path.startswith(root_path + os.sep):
-                        logger.debug("Plex Library Section ID '%d' matching root folder '%s' was found in the Plex DB.",
-                                     section_id, root_path)
-                        return int(section_id)
-                logger.error("Unable to map '%s' to a Section ID.", path)
-
-    except Exception:
-        logger.exception("Exception while trying to map '%s' to a Section ID in the Plex DB: ", path)
-    return -1
+        except Exception:
+            logger.exception("Exception while trying to map '%s' to a Section ID in the Plex DB: ", path)
+        return -1
 
 
 def ensure_valid_os_path_sep(path):
@@ -138,12 +149,11 @@ def run_command(command, get_output=False):
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
         if output and len(output) >= 3:
-            if not get_output:
-                if len(output) >= 8:
-                    logger.info(output)
-            else:
+            if get_output:
                 total_output += output
 
+            elif len(output) >= 8:
+                logger.info(output)
         if process.poll() is not None:
             break
 
@@ -278,12 +288,13 @@ def remove_files_exist_in_plex_database(config, file_paths):
                                                ('%' + file_path_plex,)) \
                             .fetchone()
                         file_path_actual = map_pushed_path_file_exists(config, file_path_plex)
-                        # should plex file size and file size on disk be checked?
-                        disk_file_size_check = True
-
-                        if 'DISABLE_DISK_FILE_SIZE_CHECK' in config['GOOGLE'] \
-                                and config['GOOGLE']['DISABLE_DISK_FILE_SIZE_CHECK']:
-                            disk_file_size_check = False
+                        disk_file_size_check = (
+                            'DISABLE_DISK_FILE_SIZE_CHECK'
+                            not in config['GOOGLE']
+                            or not config['GOOGLE'][
+                                'DISABLE_DISK_FILE_SIZE_CHECK'
+                            ]
+                        )
 
                         if found_item:
                             logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)

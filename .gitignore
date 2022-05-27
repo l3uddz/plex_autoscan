@@ -1,5 +1,6 @@
 # User-specific stuff:
 /.idea
+/.vscode
 
 ## File-based project format:
 *.iws
@@ -22,6 +23,7 @@ __pycache__/
 # configs
 *.cfg
 /config/config.json
+credentials.json
 
 # generators
 *.bat

@@ -41,6 +41,7 @@ class Config(object):
         'PLEX_FIX_MISMATCHED_LANG': 'en',
         'PLEX_TOKEN': '',
         'PLEX_CHECK_BEFORE_SCAN': False,
+        'PLEX_SECTION_PATH_MAPPINGS_WITH_API': False,
         'SERVER_IP': '0.0.0.0',
         'SERVER_PORT': 3467,
         'SERVER_PASS': uuid.uuid4().hex,
@@ -71,8 +72,6 @@ class Config(object):
         'USE_SUDO': True,
         'GOOGLE': {
             'ENABLED': False,
-            'CLIENT_ID': '',
-            'CLIENT_SECRET': '',
             'ALLOWED': {
                 'FILE_PATHS': [],
                 'FILE_EXTENSIONS': False,
@@ -248,10 +247,10 @@ class Config(object):
                     continue
 
                 # iterate children
-                if isinstance(v, dict) or isinstance(v, list):
+                if isinstance(v, (dict, list)):
                     merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
                                                                   overwrite=overwrite)
-                    sub_upgraded = did_upgrade if did_upgrade else sub_upgraded
+                    sub_upgraded = did_upgrade or sub_upgraded
                 elif settings1[k] != settings2[k] and overwrite:
                     merged = settings1
                     sub_upgraded = True
@@ -359,12 +358,11 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'sections+', 'server', 'authorize', 'build_caches', 'update_config'),
+                            choices=('sections', 'sections+', 'server', 'build_caches', 'update_config'),
                             help=(
                                 '"sections": prints Plex Sections\n'
                                 '"sections+": prints Plex Sections with more details\n'
                                 '"server": starts the application\n'
-                                '"authorize": authorize against a Google account\n'
                                 '"build_caches": build complete Google Drive caches\n'
                                 '"update_config": perform upgrade of config'
                             )
@@ -404,11 +402,8 @@ class Config(object):
                             help='Log level (default: %s)' % self.base_settings['loglevel']['default']
                             )
 
-        # Print help by default if no arguments
-        if len(sys.argv) == 1:
-            parser.print_help()
-
-            sys.exit(0)
-
-        else:
+        if len(sys.argv) != 1:
             return vars(parser.parse_args())
+        parser.print_help()
+
+        sys.exit(0)

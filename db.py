@@ -34,9 +34,7 @@ def create_database(db, db_path):
 
 
 def connect(db):
-    if not db.is_closed():
-        return False
-    return db.connect()
+    return False if not db.is_closed() else db.connect()
 
 
 def init(db, db_path):
@@ -57,11 +55,7 @@ def get_next_item():
 
 def exists_file_root_path(file_path):
     items = get_all_items()
-    if '.' in file_path:
-        dir_path = os.path.dirname(file_path)
-    else:
-        dir_path = file_path
-
+    dir_path = os.path.dirname(file_path) if '.' in file_path else file_path
     for item in items:
         if dir_path.lower() in item['scan_path'].lower():
             return True, item['scan_path']
