@@ -2,8 +2,8 @@
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-blue.svg?style=flat-square)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%203-blue.svg?style=flat-square)](https://github.com/l3uddz/plex_autoscan/blob/master/LICENSE.md)
-[![last commit (develop)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/develop.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/develop)
-[![Discord](https://img.shields.io/discord/381077432285003776.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.io/cloudbox)
+[![last commit (master)](https://img.shields.io/github/last-commit/l3uddz/plex_autoscan/master.svg?colorB=177DC1&label=Last%20Commit&style=flat-square)](https://github.com/l3uddz/plex_autoscan/commits/master)
+[![Discord](https://img.shields.io/discord/853755447970758686.svg?colorB=177DC1&label=Discord&style=flat-square)](https://discord.gg/ugfKXpFND8)
 [![Contributing](https://img.shields.io/badge/Contributing-gray.svg?style=flat-square)](CONTRIBUTING.md)
 [![Donate](https://img.shields.io/badge/Donate-gray.svg?style=flat-square)](#donate)
 
@@ -44,13 +44,15 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 # Requirements
 
-1. Ubuntu/Debian
+1. Any OS that supports Python.
 
 2. Python 2.7 or higher (`sudo apt install python python-pip`).
 
 3. requirements.txt modules (see below).
 
 # Installation
+
+## Ubuntu/Debian
 
 1. `cd /opt`
 
@@ -64,7 +66,9 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `python scan.py sections` - Run once to generate a default `config.json` file.
 
-1. `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
+1. Edit `/opt/plex_autoscan/config/config.json` - Configure settings (do this before moving on).
+
+1. Edit `/opt/plex_autoscan/system/plex_autoscan.service` - Change two instances of `YOUR_USER` to your user and group (do this before moving on).
 
 1. `sudo cp /opt/plex_autoscan/system/plex_autoscan.service /etc/systemd/system/`
 
@@ -74,20 +78,23 @@ Plex Autoscan is installed on the same server as the Plex Media Server.
 
 1. `sudo systemctl start plex_autoscan.service`
 
+## Windows
+
+_Note: It's recommended that you install Rclone and Python using chocolatey._
 
 # Configuration
 
-_Note: Changes to config file require a restart of the Plex Autoscan service: `sudo systemctl restart plex_autoscan.service`._
+_Note: Changes to config file require a restart of the Plex Autoscan service (e.g. `sudo systemctl restart plex_autoscan.service` in Ubuntu)._
 
 ## Example
+
+### Ubuntu/Debian 
 
 ```json
 {
   "DOCKER_NAME": "plex",
   "GOOGLE": {
     "ENABLED": false,
-    "CLIENT_ID": "",
-    "CLIENT_SECRET": "",
     "ALLOWED": {
       "FILE_PATHS": [],
       "FILE_EXTENSIONS": true,
@@ -182,6 +189,36 @@ _Note: Changes to config file require a restart of the Plex Autoscan service: `s
 }
 
 ```
+
+### Windows
+
+_Note: Windows specific differences only shown. This assumes you mounted your rclone mount to G:\
+
+```json
+{
+  "PLEX_DATABASE_PATH": "%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db",
+  "PLEX_SCANNER": "%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe",
+  "PLEX_SUPPORT_DIR": "%LOCALAPPDATA%\\Plex Media Server",
+  "PLEX_LD_LIBRARY_PATH": "%LOCALAPPDATA%\\Plex Media Server",
+    "RCLONE": {
+    "BINARY": "%ChocolateyInstall%\\bin\\rclone.exe",
+    "CONFIG": "%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf",
+    "RC_CACHE_REFRESH": {
+      "FILE_EXISTS_TO_REMOTE_MAPPINGS": {
+        "Media/": [
+            "G:\\Media"
+        ]
+      }
+    }
+  },
+   "SERVER_PATH_MAPPINGS": {
+    "G:\\media\\movies\\": [
+      "/data/media/movies/"
+    ]
+  }
+}
+```
+
 ## Basics
 
 
@@ -620,8 +657,6 @@ Once a change is detected, the file will be checked against the Plex database to
 ```json
 "GOOGLE": {
   "ENABLED": false,
-  "CLIENT_ID": "",
-  "CLIENT_SECRET": "",
   "ALLOWED": {
     "FILE_PATHS": [],
     "FILE_EXTENSIONS": true,
@@ -655,10 +690,6 @@ Once a change is detected, the file will be checked against the Plex database to
 ```
 
 `ENABLED` - Enable or Disable Google Drive Monitoring. Requires one time authorization, see below.
-
-`CLIENT_ID` - Google Drive API Client ID.
-
-`CLIENT_SECRET` - Google Drive API Client Secret.
 
 `ALLOWED` - Specify what paths, extensions, and mime types to whitelist.
 
@@ -778,33 +809,13 @@ To set this up:
 
     ```json
     "ENABLED": true,
-    "CLIENT_ID": "yourclientid",
-    "CLIENT_SECRET": "yourclientsecret",
     ```
 
-1. Next, you will need to authorize Google Drive.
+1. Next, you will need to supply a service account with access to Google Drive.
 
-   ```shell
-   scan.py authorize
-   ```
+    ### TODO: Explainer on how to set up the service account.
 
-1. Visit the link shown to get the authorization code and paste that in and hit `enter`.
-
-    ```
-    Visit https://accounts.google.com/o/oauth2/v2/auth?scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&client_id=&access_type=offline and authorize against the account you wish to use
-    Enter authorization code:
-    ```
-1. When access token retrieval is successful, you'll see this:
-
-   ```
-   2018-06-24 05:57:58,252 -     INFO -    GDRIVE [140007964366656]: Requesting access token for auth code '4/AAAfPHmX9H_kMkMasfdsdfE4r8ImXI_BddbLF-eoCOPsdfasdfHBBzffKto'
-   2018-06-24 05:57:58,509 -     INFO -    GDRIVE [140007964366656]: Retrieved first access token!
-   2018-06-24 05:57:58,511 -     INFO -  AUTOSCAN [140007964366656]: Access tokens were successfully retrieved!
-   ```
-
-   _Note: Message stating `Segmentation fault` at the end can be ignored._
-
-1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counter part.
+1. You will now need to add in your Google Drive paths into `SERVER_PATH_MAPPINGS`. This will tell Plex Autoscan to map Google Drive paths to their local counterpart.
 
    i. Native install
 

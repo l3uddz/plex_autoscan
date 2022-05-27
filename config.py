@@ -72,8 +72,6 @@ class Config(object):
         'USE_SUDO': True,
         'GOOGLE': {
             'ENABLED': False,
-            'CLIENT_ID': '',
-            'CLIENT_SECRET': '',
             'ALLOWED': {
                 'FILE_PATHS': [],
                 'FILE_EXTENSIONS': False,
@@ -82,6 +80,7 @@ class Config(object):
                 'MIME_TYPES_LIST': []
             },
             'POLL_INTERVAL': 120,
+            'DISABLE_DISK_FILE_SIZE_CHECK': False,
             'TEAMDRIVE': False,
             'TEAMDRIVES': [],
             'SHOW_CACHE_LOGS': True
@@ -128,6 +127,15 @@ class Config(object):
     def default_config(self):
         cfg = copy(self.base_config)
 
+        if os.name == 'nt':
+            cfg['PLEX_SCANNER'] = '%PROGRAMFILES(X86)%\\Plex\\Plex Media Server\\Plex Media Scanner.exe'
+            cfg['PLEX_SUPPORT_DIR'] = '%LOCALAPPDATA%\\Plex Media Server'
+            cfg['PLEX_LD_LIBRARY_PATH'] = '%LOCALAPPDATA%\\Plex Media Server'
+            cfg[
+                'PLEX_DATABASE_PATH'] = '%LOCALAPPDATA%\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db'
+            cfg['RCLONE']['BINARY'] = '%ChocolateyInstall%\\bin\\rclone.exe'
+            cfg['RCLONE']['CONFIG'] = '%HOMEDRIVE%%HOMEPATH%\\.config\\rclone\\rclone.conf'
+
         # add example scan priorities
         cfg['SERVER_SCAN_PRIORITIES'] = {
             "0": [
@@ -142,30 +150,56 @@ class Config(object):
         }
 
         # add example file trash control files
-        cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ['/mnt/unionfs/mounted.bin']
+        if os.name == 'nt':
+            cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ["G:\\mounted.bin"]
+        else:
+            cfg['PLEX_EMPTY_TRASH_CONTROL_FILES'] = ['/mnt/unionfs/mounted.bin']
 
         # add example server path mappings
-        cfg['SERVER_PATH_MAPPINGS'] = {
-            '/mnt/unionfs/': [
-                '/home/user/media/fused/'
-            ]
-        }
+        if os.name == 'nt':
+            cfg['SERVER_PATH_MAPPINGS'] = {
+                'G:\\media': [
+                    "/data/media",
+                    "DRIVENAME\\media"
+                ]
+            }
+        else:
+            cfg['SERVER_PATH_MAPPINGS'] = {
+                '/mnt/unionfs/': [
+                    '/home/user/media/fused/'
+                ]
+            }
 
         # add example file exist path mappings
-        cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
-            '/home/user/rclone/': [
-                '/data/'
-            ]
-        }
+        if os.name == 'nt':
+            cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
+                "G:\\": [
+                    "/data/"
+                ]
+            }
+        else:
+            cfg['SERVER_FILE_EXIST_PATH_MAPPINGS'] = {
+                '/home/user/rclone/': [
+                    '/data/'
+                ]
+            }
+
         # add example server ignore list
         cfg['SERVER_IGNORE_LIST'] = ['/.grab/', '.DS_Store', 'Thumbs.db']
 
         # add example allowed scan paths to google
-        cfg['GOOGLE']['ALLOWED']['FILE_PATHS'] = [
-            "My Drive/Media/Movies/",
-            "My Drive/Media/TV/",
-            "My Drive/Media/4K/"
-        ]
+        if os.name == 'nt':
+            cfg['GOOGLE']['ALLOWED']['FILE_PATHS'] = [
+                "My Drive\\Media\\Movies\\",
+                "My Drive\\Media\\TV\\",
+                "My Drive\\Media\\4K\\"
+            ]
+        else:
+            cfg['GOOGLE']['ALLOWED']['FILE_PATHS'] = [
+                "My Drive/Media/Movies/",
+                "My Drive/Media/TV/",
+                "My Drive/Media/4K/"
+            ]
 
         # add example scan extensions to google
         cfg['GOOGLE']['ALLOWED']['FILE_EXTENSIONS'] = True
@@ -181,11 +215,18 @@ class Config(object):
         cfg['GOOGLE']['ALLOWED']['MIME_TYPES_LIST'] = ['video']
 
         # add example Rclone file exists to remote mappings
-        cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
-            'Media/': [
-                '/mnt/rclone/Media/'
-            ]
-        }
+        if os.name == 'nt':
+            cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+                'Media/': [
+                    "G:\\Media"
+                ]
+            }
+        else:
+            cfg['RCLONE']['RC_CACHE_REFRESH']['FILE_EXISTS_TO_REMOTE_MAPPINGS'] = {
+                'Media/': [
+                    '/mnt/rclone/Media/'
+                ]
+            }
 
         return cfg
 
@@ -206,10 +247,10 @@ class Config(object):
                     continue
 
                 # iterate children
-                if isinstance(v, dict) or isinstance(v, list):
+                if isinstance(v, (dict, list)):
                     merged[k], did_upgrade = self.__inner_upgrade(settings1[k], settings2[k], key=k,
                                                                   overwrite=overwrite)
-                    sub_upgraded = did_upgrade if did_upgrade else sub_upgraded
+                    sub_upgraded = did_upgrade or sub_upgraded
                 elif settings1[k] != settings2[k] and overwrite:
                     merged = settings1
                     sub_upgraded = True
@@ -298,7 +339,7 @@ class Config(object):
                         value
                     ))
 
-                setts[name] = value
+                setts[name] = os.path.expandvars(value)
 
             except Exception:
                 logger.exception("Exception retrieving setting value: %r" % name)
@@ -317,12 +358,11 @@ class Config(object):
 
         # Mode
         parser.add_argument('cmd',
-                            choices=('sections', 'sections+', 'server', 'authorize', 'build_caches', 'update_config'),
+                            choices=('sections', 'sections+', 'server', 'build_caches', 'update_config'),
                             help=(
                                 '"sections": prints Plex Sections\n'
                                 '"sections+": prints Plex Sections with more details\n'
                                 '"server": starts the application\n'
-                                '"authorize": authorize against a Google account\n'
                                 '"build_caches": build complete Google Drive caches\n'
                                 '"update_config": perform upgrade of config'
                             )
@@ -362,11 +402,8 @@ class Config(object):
                             help='Log level (default: %s)' % self.base_settings['loglevel']['default']
                             )
 
-        # Print help by default if no arguments
-        if len(sys.argv) == 1:
-            parser.print_help()
-
-            sys.exit(0)
-
-        else:
+        if len(sys.argv) != 1:
             return vars(parser.parse_args())
+        parser.print_help()
+
+        sys.exit(0)

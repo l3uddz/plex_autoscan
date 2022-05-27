@@ -51,12 +51,27 @@ def get_plex_section(conf, path):
             logger.exception("Exception while trying to map '%s' to a Section ID in the Plex DB: ", path)
         return -1
 
+
+def ensure_valid_os_path_sep(path):
+    try:
+        if path.startswith('/'):
+            # replace \ with /
+            return path.replace('\\', '/')
+        elif '\\' in path:
+            # replace / with \
+            return path.replace('/', '\\')
+    except Exception:
+        logger.exception("Exception while trying to ensure valid os path seperator for: '%s'", path)
+
+    return path
+
+
 def map_pushed_path(config, path):
     for mapped_path, mappings in config['SERVER_PATH_MAPPINGS'].items():
         for mapping in mappings:
             if path.startswith(mapping):
                 logger.debug("Mapping server path '%s' to '%s'.", mapping, mapped_path)
-                return path.replace(mapping, mapped_path)
+                return ensure_valid_os_path_sep(path.replace(mapping, mapped_path))
     return path
 
 
@@ -65,7 +80,7 @@ def map_pushed_path_file_exists(config, path):
         for mapping in mappings:
             if path.startswith(mapping):
                 logger.debug("Mapping file check path '%s' to '%s'.", mapping, mapped_path)
-                return path.replace(mapping, mapped_path)
+                return ensure_valid_os_path_sep(path.replace(mapping, mapped_path))
     return path
 
 
@@ -134,12 +149,11 @@ def run_command(command, get_output=False):
     while True:
         output = str(process.stdout.readline()).lstrip('b').replace('\\n', '').strip()
         if output and len(output) >= 3:
-            if not get_output:
-                if len(output) >= 8:
-                    logger.info(output)
-            else:
+            if get_output:
                 total_output += output
 
+            elif len(output) >= 8:
+                logger.info(output)
         if process.poll() is not None:
             break
 
@@ -187,8 +201,9 @@ def rclone_rc_clear_cache(config, scan_path):
             cache_clear_path = os.path.dirname(cache_clear_path)
             if cache_clear_path == last_clear_path or not len(cache_clear_path):
                 # is the last path we tried to clear, the same as this path, if so, abort
-                logger.error("Aborting Rclone dir cache clear request for '%s' due to directory level exhaustion, last level: '%s'",
-                             scan_path, last_clear_path)
+                logger.error(
+                    "Aborting Rclone dir cache clear request for '%s' due to directory level exhaustion, last level: '%s'",
+                    scan_path, last_clear_path)
                 return False
             else:
                 last_clear_path = cache_clear_path
@@ -208,7 +223,8 @@ def rclone_rc_clear_cache(config, scan_path):
                             if 'result' in data and cache_clear_path in data['result'] \
                                     and data['result'][cache_clear_path] == 'OK':
                                 # successfully vfs refreshed
-                                logger.info("Successfully refreshed Rclone VFS mount's dir cache for '%s'", cache_clear_path)
+                                logger.info("Successfully refreshed Rclone VFS mount's dir cache for '%s'",
+                                            cache_clear_path)
                                 return True
 
                         logger.info("Failed to clear Rclone mount's dir cache for '%s': %s", cache_clear_path,
@@ -224,7 +240,8 @@ def rclone_rc_clear_cache(config, scan_path):
                 break
 
             except Exception:
-                logger.exception("Exception sending Rclone mount dir cache clear request to %s for '%s': ", rclone_rc_expire_url,
+                logger.exception("Exception sending Rclone mount dir cache clear request to %s for '%s': ",
+                                 rclone_rc_expire_url,
                                  cache_clear_path)
                 break
 
@@ -271,15 +288,30 @@ def remove_files_exist_in_plex_database(config, file_paths):
                                                ('%' + file_path_plex,)) \
                             .fetchone()
                         file_path_actual = map_pushed_path_file_exists(config, file_path_plex)
-                        if found_item and os.path.isfile(file_path_actual):
-                            # check if file sizes match in plex
-                            file_size = os.path.getsize(file_path_actual)
+                        disk_file_size_check = (
+                            'DISABLE_DISK_FILE_SIZE_CHECK'
+                            not in config['GOOGLE']
+                            or not config['GOOGLE'][
+                                'DISABLE_DISK_FILE_SIZE_CHECK'
+                            ]
+                        )
+
+                        if found_item:
                             logger.debug("'%s' was found in the Plex DB media_parts table.", file_name)
-                            logger.debug(
-                                "Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.",
-                                file_size, found_item[0])
-                            if file_size == found_item[0]:
-                                logger.debug("'%s' size matches size found in the Plex DB.", file_size)
+                            skip_file = False
+                            if not disk_file_size_check:
+                                skip_file = True
+                            elif os.path.isfile(file_path_actual):
+                                # check if file sizes match in plex
+                                file_size = os.path.getsize(file_path_actual)
+                                logger.debug(
+                                    "Checking to see if the file size of '%s' matches the existing file size of '%s' in the Plex DB.",
+                                    file_size, found_item[0])
+                                if file_size == found_item[0]:
+                                    logger.debug("'%s' size matches size found in the Plex DB.", file_size)
+                                    skip_file = True
+
+                            if skip_file:
                                 logger.debug("Removing path from scan queue: '%s'", file_path)
                                 file_paths.remove(file_path)
                                 removed_items += 1
